@@ -19,11 +19,11 @@ asset inexistente).
 
 ### Visibilidad
 
-| Superficie | Filtro |
-|------------|--------|
-| Export `/v1/export/content-cache` | `status === published` (incluye `isActive: false`) |
+| Superficie                           | Filtro                                                    |
+| ------------------------------------ | --------------------------------------------------------- |
+| Export `/v1/export/content-cache`    | `status === published` (incluye `isActive: false`)        |
 | Bundle runtime `/v1/content/:locale` | `published`; locales atendibles: `published` + `isActive` |
-| CLI / importación inicial | registros del golden nacen `published` |
+| CLI / importación inicial            | registros del golden nacen `published`                    |
 
 ### Fallback de locale
 

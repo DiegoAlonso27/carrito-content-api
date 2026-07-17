@@ -125,7 +125,10 @@ export function validateCacheSemantics(cache: ContentCache): string[] {
 
   const defaults = cache.locales.filter((l) => l.isDefault);
   if (defaults.length !== 1) {
-    pushUnique(errors, `locales: se espera exactamente 1 isDefault:true (hay ${String(defaults.length)})`);
+    pushUnique(
+      errors,
+      `locales: se espera exactamente 1 isDefault:true (hay ${String(defaults.length)})`,
+    );
   }
 
   const localeCodes = new Set(cache.locales.map((l) => l.code));
@@ -134,7 +137,10 @@ export function validateCacheSemantics(cache: ContentCache): string[] {
 
   for (const page of cache.pages) {
     if (!localeCodes.has(page.localeCode)) {
-      pushUnique(errors, `pages/${sourceKeyOf.Page(page)}: locale '${page.localeCode}' inexistente`);
+      pushUnique(
+        errors,
+        `pages/${sourceKeyOf.Page(page)}: locale '${page.localeCode}' inexistente`,
+      );
     }
     if (page.ogImageSlug !== null && !assetSlugs.has(page.ogImageSlug)) {
       pushUnique(
@@ -146,7 +152,10 @@ export function validateCacheSemantics(cache: ContentCache): string[] {
 
   for (const text of cache.texts) {
     if (!localeCodes.has(text.localeCode)) {
-      pushUnique(errors, `texts/${sourceKeyOf.ContentText(text)}: locale '${text.localeCode}' inexistente`);
+      pushUnique(
+        errors,
+        `texts/${sourceKeyOf.ContentText(text)}: locale '${text.localeCode}' inexistente`,
+      );
     }
   }
 
@@ -208,10 +217,7 @@ export function validateCacheSemantics(cache: ContentCache): string[] {
       continue;
     }
     if (exp.token !== undefined && exp.token !== token) {
-      pushUnique(
-        errors,
-        `items/${exp.key}: rowVersionToken ${exp.token} ≠ versionTokens ${token}`,
-      );
+      pushUnique(errors, `items/${exp.key}: rowVersionToken ${exp.token} ≠ versionTokens ${token}`);
     }
     tokenByRef.delete(ref);
   }
@@ -340,7 +346,9 @@ type Bare<T> = Omit<T, 'createdAt' | 'updatedAt'>;
 export async function importCache(db: Db, cache: ContentCache): Promise<ImportSummary> {
   const semanticErrors = validateCacheSemantics(cache);
   if (semanticErrors.length > 0) {
-    throw new Error(`cache semánticamente inválido:\n${semanticErrors.map((e) => `  - ${e}`).join('\n')}`);
+    throw new Error(
+      `cache semánticamente inválido:\n${semanticErrors.map((e) => `  - ${e}`).join('\n')}`,
+    );
   }
 
   const repo = new ContentRepo(db);

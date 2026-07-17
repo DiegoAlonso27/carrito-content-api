@@ -129,9 +129,4 @@ export interface ContentMetaDoc {
   contentVersion: number;
   /** Próximo valor de token sintético a asignar. */
   tokenSeq: number;
-  /**
-   * true = escritura editorial en curso o interrumpida (standalone).
-   * La lectura reconcilia con un bump de contentVersion (ADR-001).
-   */
-  editorialDirty: boolean;
 }

@@ -2,84 +2,54 @@
 
 **Estado:** aceptado  
 **Fecha:** 2026-07-17  
-**Actualizado:** 2026-07-17 (reconciliación `editorialDirty`)  
+**Actualizado:** 2026-07-17 (replica set obligatorio para mutaciones)  
 **Fases:** F3–F4
 
 ## Contexto
 
-Las mutaciones editoriales (CLIs `scripts/content/`) deben:
-
-1. Invalidar cachés en memoria y ETags vía `meta.contentVersion`.
-2. Asignar `tokenSeq` monótono por cambio (`revision` → `rowVersionToken`).
-3. Respetar integridad referencial y reglas de publicación.
-
-MongoDB en este proyecto puede desplegarse como **standalone** (plan F7). Las
-transacciones multi-documento requieren replica set.
-
-Hallazgos de auditoría (A2–A4): lotes parcialmente escritos, desincronización
-entre contenido y `contentVersion`, publicación sin validar padres.
+Las mutaciones editoriales deben invalidar cachés vía `contentVersion`, asignar
+`tokenSeq` monótono y respetar integridad referencial. MongoDB standalone no
+soporta transacciones multi-documento; un fallback con `editorialDirty` sufría
+carreras con lecturas concurrentes.
 
 ## Decisión
 
 ### Persistencia única (`content.repo.ts`)
 
-Toda lectura/escritura de `carrito_content` pasa por `ContentRepo`. La lógica
-de dominio vive en `content-write.ts` y `content-read.ts` (sin capa `*service*`).
+Toda lectura, escritura y DDL de `carrito_content` pasa por `ContentRepo`.
+`content.collections.ts` solo expone nombres, validadores e índices (datos
+puros).
 
-### Preflight todo-o-nada (A2, A4)
+### Preflight todo-o-nada
 
-Antes de la primera escritura de un lote, `setRecords` / `setStatus`:
+Antes de escribir: esquema TypeBox, claves naturales **únicas en el lote**,
+referencias e invariantes de publicación. Sin escritura si el preflight falla.
 
-- Valida esquema TypeBox de todos los registros.
-- Carga referencias en bloque (locales, colecciones, assets).
-- Comprueba existencia mínima (draft o published).
-- Si el estado destino es `published`, exige padres `published` y locale
-  `published` + `isActive`; assets referenciados deben existir.
+### Transacciones obligatorias para mutaciones
 
-Un fallo de preflight aborta sin tocar MongoDB.
+`withEditorialWrite` **solo** usa transacción multi-documento (contenido +
+`contentVersion` en el mismo commit).
 
-### `contentVersion` acoplado a la escritura (A3)
+Si el deployment no soporta transacciones → `ContentTopologyError` (no hay
+fallback standalone). Operativamente: MongoDB debe ser **replica set** (puede
+ser de un nodo) para CLIs editoriales y cualquier mutación.
 
-`ContentRepo.withEditorialWrite`:
+La importación inicial (`importCache`) no usa este camino: es migración
+idempotente con `--verify` por defecto.
 
-1. **Preferido:** transacción multi-documento (contenido + `meta.contentVersion`
-   en el mismo commit) cuando el deployment es replica set.
-2. **Fallback (standalone):**
-   1. Marca `meta.editorialDirty = true`.
-   2. Aplica las escrituras del lote.
-   3. `$inc contentVersion` y `editorialDirty = false` en la misma actualización
-      de meta.
+### Lectura
 
-### Reconciliación verificable (riesgo residual cerrado)
-
-Si el proceso cae entre (2) y (3), `editorialDirty` permanece `true`.
-
-Toda lectura de versión (`getContentVersion`, usada por export y bundles)
-detecta el flag y ejecuta un compare-and-swap:
-
-- filtro `{ editorialDirty: true }`
-- `$inc: { contentVersion: 1 }, $set: { editorialDirty: false }`
-
-Efecto: la siguiente petición invalidará ETag/caché en memoria y reconstruirá
-desde Mongo (que ya tiene el contenido escrito). Un bump “de más” tras dirty
-sin escrituras es inocuo (solo adelanta la versión).
-
-### Importación
-
-`importCache` usa el mismo repositorio pero no participa del ciclo editorial
-runtime; es migración idempotente con meta inicial (`editorialDirty: false`).
+`getContentVersion` lee el contador; no reconcilia flags de escritura (ya no
+existen). Cachés/ETag dependen de commits transaccionales exitosos.
 
 ## Consecuencias
 
-- Replica set en producción: consistencia fuerte por transacción.
-- Standalone: soportado con dirty-flag + reconciliación en lectura; no hace
-  falta intervención manual tras un crash a mitad de escritura.
-- Nuevas escrituras editoriales deben usar `withEditorialWrite`.
+- Desarrollo/CI de escritura: `MongoMemoryReplSet` (1 nodo).
+- Producción/local con mutaciones: iniciar mongod como replica set.
+- Lectura/export sobre datos ya importados puede usar standalone.
 
 ## Alternativas descartadas
 
-- **Bump de versión antes de escribir:** invalida cachés con datos incompletos.
-- **Versión por documento:** rompe el contrato actual de ETag global.
-- **Prometer atomicidad de lote sin transacción ni preflight:** incumple
-  AGENTS.md y la auditoría F4.
-- **Solo mitigación operativa manual:** insuficiente frente al hallazgo A3.
+- **Dirty-flag + reconciliación en lectura:** carrera con escrituras activas.
+- **Bump antes de escribir:** invalida cachés con datos incompletos.
+- **Prometer atomicidad de lote en standalone:** incumplible sin transacciones.

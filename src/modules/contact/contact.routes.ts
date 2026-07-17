@@ -57,7 +57,11 @@ function trimTextFields(body: Record<string, unknown>): void {
 }
 
 function fakeHoneypotSuccess(): ContactMessageDto {
-  return { id: new ObjectId().toHexString(), receivedAtUtc: new Date().toISOString(), isViewed: false };
+  return {
+    id: new ObjectId().toHexString(),
+    receivedAtUtc: new Date().toISOString(),
+    isViewed: false,
+  };
 }
 
 export function contactRoutes(app: FastifyInstance): void {

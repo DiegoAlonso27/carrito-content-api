@@ -35,7 +35,8 @@ const dniPattern = '^[A-Za-z0-9]{8,12}$';
 const noControlCharsPattern = '^[^\\u0000-\\u001F\\u007F]*$';
 
 /** Igual que arriba pero permite tab/CR/LF: un mensaje puede tener saltos de línea. */
-const noControlCharsExceptNewlinesPattern = '^[^\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F]*$';
+const noControlCharsExceptNewlinesPattern =
+  '^[^\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F]*$';
 
 export const contactBodySchema = Type.Object(
   {

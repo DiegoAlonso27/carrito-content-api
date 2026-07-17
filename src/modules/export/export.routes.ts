@@ -1,6 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
 import { parseExportKeys, requireExportKey } from '../../shared/security/export-key.js';
+import { contentCacheSchema } from '../content/content.schemas.js';
+import type { ContentCache } from '../content/content.types.js';
 import { ExportService } from './export.service.js';
 
 /**
@@ -11,8 +13,8 @@ import { ExportService } from './export.service.js';
  *   sin claves configuradas el endpoint queda deshabilitado → 401).
  * - ETag fuerte por contentVersion: sync-content.mjs puede hacer GET
  *   condicional (If-None-Match → 304 sin cuerpo).
- * - Cuerpo 200 pre-serializado y validado contra `contentCacheSchema` en
- *   ExportService (ADR-002: no fast-json-stringify sobre el golden).
+ * - Response schema 200 = contentCacheSchema: barrera anti-fuga Fastify
+ *   (serialización por schema; el golden exige el mismo orden de claves).
  */
 
 const exportHeadersSchema = Type.Object({
@@ -45,6 +47,7 @@ export function exportRoutes(app: FastifyInstance): void {
       schema: {
         headers: exportHeadersSchema,
         response: {
+          200: contentCacheSchema,
           304: Type.Null(),
           401: errorEnvelopeSchema,
         },
@@ -61,7 +64,11 @@ export function exportRoutes(app: FastifyInstance): void {
       if (req.headers['if-none-match'] === snapshot.etag) {
         return reply.code(304).send();
       }
-      return reply.type('application/json; charset=utf-8').send(snapshot.body);
+
+      // Barrera Fastify: serialización vía contentCacheSchema (sin serializer
+      // personalizado). El builder ya validó la forma; el test de contrato
+      // exige que la salida coincida byte-a-byte con el golden.
+      return JSON.parse(snapshot.body) as ContentCache;
     },
   );
 }

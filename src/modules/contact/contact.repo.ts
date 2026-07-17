@@ -1,6 +1,10 @@
 import type { Db, Document, WithId } from 'mongodb';
 import { MongoServerError } from 'mongodb';
-import type { ContactMessageDoc, ContactMessageDto, ContactSubmissionInput } from './contact.types.js';
+import type {
+  ContactMessageDoc,
+  ContactMessageDto,
+  ContactSubmissionInput,
+} from './contact.types.js';
 
 /**
  * Persistencia del formulario de contacto — única vía de lectura/escritura

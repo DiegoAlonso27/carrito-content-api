@@ -23,7 +23,9 @@ const client = new MongoClient(uri);
 try {
   const db = client.db(config.MONGO_DB_FORMS);
   await ensureContactSetup(db);
-  console.log(`OK: ${config.MONGO_DB_FORMS}.contact_messages listo (validador e índices aplicados).`);
+  console.log(
+    `OK: ${config.MONGO_DB_FORMS}.contact_messages listo (validador e índices aplicados).`,
+  );
 } finally {
   await client.close();
 }

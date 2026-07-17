@@ -1,4 +1,4 @@
-import type { Db, Document } from 'mongodb';
+import type { Document } from 'mongodb';
 
 /** Nombres de colecciones de carrito_content (snake_case, convención del proyecto). */
 export const contentCollections = {
@@ -40,8 +40,9 @@ function envelope(required: string[], properties: Document): Document {
  * Validadores $jsonSchema por colección (nivel moderate): defensa en
  * profundidad sobre el sobre común y las claves naturales. La validación
  * fina (formas de `data`, longitudes) vive en el borde con TypeBox.
+ * Definiciones puras: el DDL que las aplica vive en `ContentRepo.ensureSetup`.
  */
-const validators: Record<string, Document> = {
+export const contentCollectionValidators: Record<string, Document> = {
   [contentCollections.locales]: envelope(['code', 'name', 'isDefault'], {
     code: { bsonType: 'string' },
     name: { bsonType: 'string' },
@@ -92,7 +93,7 @@ interface IndexSpec {
  * natural); los ix_ cubren la consulta pública "publicados por locale
  * (y colección) en orden".
  */
-const indexes: IndexSpec[] = [
+export const contentCollectionIndexes: IndexSpec[] = [
   {
     collection: contentCollections.locales,
     name: 'ux_locales_code',
@@ -154,31 +155,3 @@ const indexes: IndexSpec[] = [
     unique: false,
   },
 ];
-
-/**
- * Crea colecciones, validadores e índices de forma idempotente.
- * Se ejecuta desde la migración y los scripts operativos, no en el arranque
- * del servidor (la API de lectura no necesita permisos de DDL).
- */
-export async function ensureContentSetup(db: Db): Promise<void> {
-  const existing = new Set(
-    (await db.listCollections({}, { nameOnly: true }).toArray()).map((c) => c.name),
-  );
-
-  for (const [name, validator] of Object.entries(validators)) {
-    if (existing.has(name)) {
-      await db.command({ collMod: name, validator, validationLevel: 'moderate' });
-    } else {
-      await db.createCollection(name, { validator, validationLevel: 'moderate' });
-    }
-  }
-  if (!existing.has(contentCollections.meta)) {
-    await db.createCollection(contentCollections.meta);
-  }
-
-  for (const spec of indexes) {
-    await db
-      .collection(spec.collection)
-      .createIndex(spec.keys, { name: spec.name, unique: spec.unique });
-  }
-}

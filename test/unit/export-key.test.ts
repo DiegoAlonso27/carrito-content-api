@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  EXPORT_KEY_MIN_LENGTH,
-  parseExportKeys,
-} from '../../src/shared/security/export-key.js';
+import { EXPORT_KEY_MIN_LENGTH, parseExportKeys } from '../../src/shared/security/export-key.js';
 
 describe('parseExportKeys', () => {
   it('acepta vacío (export deshabilitado)', () => {

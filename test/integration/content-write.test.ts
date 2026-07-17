@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { MongoClient } from 'mongodb';
 import type { Db } from 'mongodb';
 import { importCache, validateCache } from '../../src/modules/content/content-import.js';
@@ -12,13 +12,13 @@ import {
   statusSummary,
 } from '../../src/modules/content/content-write.js';
 import { contentCollections } from '../../src/modules/content/content.collections.js';
-import { ContentRepo } from '../../src/modules/content/content.repo.js';
 import { ExportService } from '../../src/modules/export/export.service.js';
 import type { ContentCache, ContentMetaDoc } from '../../src/modules/content/content.types.js';
 
 const goldenPath = fileURLToPath(new URL('../contract/golden/content-cache.json', import.meta.url));
 
-let mongod: MongoMemoryServer;
+/** Mutaciones editoriales exigen replica set (ADR-001). */
+let replSet: MongoMemoryReplSet;
 let client: MongoClient;
 let db: Db;
 let golden: ContentCache;
@@ -29,15 +29,16 @@ const exportNow = async (): Promise<ContentCache> =>
 
 beforeAll(async () => {
   golden = validateCache(JSON.parse(await readFile(goldenPath, 'utf8'))).cache as ContentCache;
-  mongod = await MongoMemoryServer.create();
-  client = new MongoClient(mongod.getUri());
+  replSet = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+  client = new MongoClient(replSet.getUri());
+  await client.connect();
   db = client.db('carrito_content_write_test');
   await importCache(db, golden);
-});
+}, 120_000);
 
 afterAll(async () => {
   await client.close();
-  await mongod.stop();
+  await replSet.stop();
 });
 
 describe('ciclo editorial completo (crear → draft → publicar → export)', () => {
@@ -198,46 +199,25 @@ describe('validación y seguridad de escritura', () => {
     expect(doc).not.toBeNull();
     expect(contentVersion).toBe(versionBefore + 1);
     expect(metaAfter?.contentVersion).toBe(versionBefore + 1);
-    expect(metaAfter?.editorialDirty).toBe(false);
   });
 
-  it('reconcilia editorialDirty en lectura: bump de versión e invalida caché (ADR-001)', async () => {
-    const repo = new ContentRepo(db);
-    const meta0 = await repo.getMeta();
-    const v0 = meta0?.contentVersion ?? 0;
+  it('rechaza claves naturales duplicadas en el mismo lote sin escribir', async () => {
+    const before = await db.collection(contentCollections.texts).countDocuments();
+    const a = {
+      localeCode: 'es-PE',
+      key: 'batch.dup.key',
+      value: 'uno',
+      isActive: true,
+      sortOrder: 1,
+    };
+    const b = { ...a, value: 'dos' };
 
-    await setRecords(db, 'texts', [
-      {
-        localeCode: 'es-PE',
-        key: 'dirty.reconcile.test',
-        value: 'escrito-sin-bump-simulado',
-        isActive: true,
-        sortOrder: 997,
-      },
-    ]);
-    expect((await repo.getMeta())?.contentVersion).toBe(v0 + 1);
-    expect((await repo.getMeta())?.editorialDirty).toBe(false);
-
-    // Crash simulado tras markDirty + escrituras, sin bump: versión vieja + dirty.
-    await db
-      .collection<ContentMetaDoc>(contentCollections.meta)
-      .updateOne({ _id: 'content' }, { $set: { contentVersion: v0, editorialDirty: true } });
-
-    const reconciled = await repo.getContentVersion();
-    expect(reconciled).toBe(v0 + 1);
-    const meta = await repo.getMeta();
-    expect(meta?.editorialDirty).toBe(false);
-    expect(meta?.contentVersion).toBe(v0 + 1);
-
-    // Idempotente: no vuelve a bumpear.
-    expect(await repo.getContentVersion()).toBe(v0 + 1);
-
-    // Export usa getContentVersion → misma versión reconciliada (caché coherente).
-    const after = await new ExportService(db).get();
-    expect(after.contentVersion).toBe(v0 + 1);
+    await expect(setRecords(db, 'texts', [a, b])).rejects.toThrow(ContentWriteError);
+    await expect(setRecords(db, 'texts', [a, b])).rejects.toThrow(/claves naturales duplicadas/);
+    expect(await db.collection(contentCollections.texts).countDocuments()).toBe(before);
     expect(
-      await db.collection(contentCollections.texts).findOne({ key: 'dirty.reconcile.test' }),
-    ).not.toBeNull();
+      await db.collection(contentCollections.texts).findOne({ key: 'batch.dup.key' }),
+    ).toBeNull();
   });
 
   it('rechaza publicar un item si su colección no está publicada', async () => {
@@ -298,7 +278,6 @@ describe('validación y seguridad de escritura', () => {
       ]),
     ).rejects.toThrow(/asset 'asset-que-no-existe' no existe/);
   });
-
 
   it('sanitiza HTML peligroso al escribir y lo reporta', async () => {
     const { results } = await setRecords(db, 'items', [

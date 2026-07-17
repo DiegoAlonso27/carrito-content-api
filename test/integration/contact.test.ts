@@ -4,7 +4,10 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../../src/app.js';
 import { contactCollections, ensureContactSetup } from '../../src/modules/contact/contact.repo.js';
-import type { ContactMessageDoc, ContactMessageDto } from '../../src/modules/contact/contact.types.js';
+import type {
+  ContactMessageDoc,
+  ContactMessageDto,
+} from '../../src/modules/contact/contact.types.js';
 import { makeTestConfig } from '../helpers/test-config.js';
 
 let mongod: MongoMemoryServer;
@@ -182,7 +185,10 @@ describe('POST /v1/contact — idempotencia por submissionId', () => {
 
 describe('POST /v1/contact — honeypot', () => {
   it('website con contenido responde éxito falso (201) y no persiste nada', async () => {
-    const payload = validPayload({ website: 'http://spam.example.test', correo: 'bot@example.test' });
+    const payload = validPayload({
+      website: 'http://spam.example.test',
+      correo: 'bot@example.test',
+    });
     const res = await app.inject({ method: 'POST', url: '/v1/contact', payload });
 
     expect(res.statusCode).toBe(201);
@@ -216,7 +222,9 @@ describe('POST /v1/contact — validación inválida', () => {
     const res = await app.inject({ method: 'POST', url: '/v1/contact', payload: withoutCorreo });
 
     expect(res.statusCode).toBe(400);
-    const body = res.json<{ error: { code: string; requestId: string; details: Record<string, string[]> } }>();
+    const body = res.json<{
+      error: { code: string; requestId: string; details: Record<string, string[]> };
+    }>();
     expect(body.error.code).toBe('VALIDATION_ERROR');
     expect(body.error.requestId).toBeTruthy();
     expect(body.error.details['correo']).toBeDefined();
@@ -406,7 +414,11 @@ describe('POST /v1/contact — rate limiting', () => {
       await ensureContactSetup(limited.mongo.formsDb);
 
       for (let i = 0; i < 2; i++) {
-        const ok = await limited.inject({ method: 'POST', url: '/v1/contact', payload: validPayload() });
+        const ok = await limited.inject({
+          method: 'POST',
+          url: '/v1/contact',
+          payload: validPayload(),
+        });
         expect(ok.statusCode).toBe(201);
       }
       const blocked = await limited.inject({

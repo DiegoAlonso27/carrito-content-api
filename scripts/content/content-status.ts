@@ -6,7 +6,11 @@
  *   npx tsx scripts/content/content-status.ts --section items [--status draft]
  */
 import { parseArgs } from 'node:util';
-import { sections, statusSummary, listSectionDocs } from '../../src/modules/content/content-write.js';
+import {
+  sections,
+  statusSummary,
+  listSectionDocs,
+} from '../../src/modules/content/content-write.js';
 import { formatToken } from '../../src/modules/content/content.mappers.js';
 import { parseSection, withContentDb } from './cli-helpers.js';
 

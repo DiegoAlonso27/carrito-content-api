@@ -17,7 +17,7 @@ import {
 import { contentCollections } from './content.collections.js';
 import { formatToken } from './content.mappers.js';
 import { sanitizeContentHtml } from './content-import.js';
-import { ContentRepo } from './content.repo.js';
+import { ContentRepo, ContentTopologyError } from './content.repo.js';
 import type { EditorialStoredDoc } from './content.repo.js';
 import type { AssetDoc, CollectionDoc, EditorialStatus, LocaleDoc } from './content.types.js';
 
@@ -348,6 +348,21 @@ export async function setRecords(
     throw new ContentWriteError(`registros inválidos para '${section}'`, allErrors);
   }
 
+  // Claves naturales duplicadas en el mismo lote → fallo de índice único a mitad.
+  const batchKeys = records.map((raw) => keyOf(spec, raw as Record<string, unknown>));
+  const seenKeys = new Set<string>();
+  const duplicateKeys: string[] = [];
+  for (const [i, key] of batchKeys.entries()) {
+    if (seenKeys.has(key)) duplicateKeys.push(`[${String(i)}] clave duplicada '${key}'`);
+    else seenKeys.add(key);
+  }
+  if (duplicateKeys.length > 0) {
+    throw new ContentWriteError(
+      `claves naturales duplicadas en el lote '${section}'`,
+      duplicateKeys,
+    );
+  }
+
   const prepared = records.map((raw) => {
     const record = structuredClone(raw) as Record<string, unknown>;
     const sanitizedFields = sanitizeItemHtml(section, record);
@@ -426,55 +441,62 @@ export async function setRecords(
     return { results: unchanged, contentVersion: null };
   }
 
-  const { result, contentVersion } = await repo.withEditorialWrite(async (tx) => {
-    const results: SetResult[] = [...unchanged];
+  try {
+    const { result, contentVersion } = await repo.withEditorialWrite(async (tx) => {
+      const results: SetResult[] = [...unchanged];
 
-    for (const plan of planned) {
-      const now = new Date();
-      if (plan.action === 'created') {
+      for (const plan of planned) {
+        const now = new Date();
+        if (plan.action === 'created') {
+          const revision = await tx.allocateRevision();
+          await tx.insertEditorialDoc(spec.collection, {
+            ...plan.record,
+            status: plan.targetStatus,
+            revision,
+            createdAt: now,
+            updatedAt: now,
+          });
+          results.push({
+            key: plan.key,
+            action: 'created',
+            status: plan.targetStatus,
+            token: formatToken(revision),
+            sanitizedFields: plan.sanitizedFields,
+          });
+          continue;
+        }
+
+        const existingCreatedAt = plan.existingCreatedAt;
+        if (existingCreatedAt === undefined) {
+          throw new Error('plan editorial sin documento existente');
+        }
         const revision = await tx.allocateRevision();
-        await tx.insertEditorialDoc(spec.collection, {
+        await tx.replaceEditorialDoc(spec.collection, plan.filter, {
           ...plan.record,
           status: plan.targetStatus,
           revision,
-          createdAt: now,
+          createdAt: existingCreatedAt,
           updatedAt: now,
         });
         results.push({
           key: plan.key,
-          action: 'created',
+          action: 'updated',
           status: plan.targetStatus,
           token: formatToken(revision),
           sanitizedFields: plan.sanitizedFields,
         });
-        continue;
       }
 
-      const existingCreatedAt = plan.existingCreatedAt;
-      if (existingCreatedAt === undefined) {
-        throw new Error('plan editorial sin documento existente');
-      }
-      const revision = await tx.allocateRevision();
-      await tx.replaceEditorialDoc(spec.collection, plan.filter, {
-        ...plan.record,
-        status: plan.targetStatus,
-        revision,
-        createdAt: existingCreatedAt,
-        updatedAt: now,
-      });
-      results.push({
-        key: plan.key,
-        action: 'updated',
-        status: plan.targetStatus,
-        token: formatToken(revision),
-        sanitizedFields: plan.sanitizedFields,
-      });
+      return { result: results, wrote: true };
+    });
+
+    return { results: result, contentVersion };
+  } catch (err) {
+    if (err instanceof ContentTopologyError) {
+      throw new ContentWriteError(err.message);
     }
-
-    return { result: results, wrote: true };
-  });
-
-  return { results: result, contentVersion };
+    throw err;
+  }
 }
 
 export async function setStatus(
@@ -512,17 +534,24 @@ export async function setStatus(
     checkPublishInvariants(section, content, refCtx);
   }
 
-  const { result, contentVersion } = await repo.withEditorialWrite(async (tx) => {
-    const revision = await tx.allocateRevision();
-    const now = new Date();
-    await tx.updateEditorialStatus(spec.collection, filter, target, revision, now);
-    return {
-      result: { key, previous, current: target, token: formatToken(revision) },
-      wrote: true,
-    };
-  });
+  try {
+    const { result, contentVersion } = await repo.withEditorialWrite(async (tx) => {
+      const revision = await tx.allocateRevision();
+      const now = new Date();
+      await tx.updateEditorialStatus(spec.collection, filter, target, revision, now);
+      return {
+        result: { key, previous, current: target, token: formatToken(revision) },
+        wrote: true,
+      };
+    });
 
-  return { result, contentVersion };
+    return { result, contentVersion };
+  } catch (err) {
+    if (err instanceof ContentTopologyError) {
+      throw new ContentWriteError(err.message);
+    }
+    throw err;
+  }
 }
 
 export async function statusSummary(db: Db): Promise<{

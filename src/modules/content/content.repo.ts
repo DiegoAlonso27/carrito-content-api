@@ -1,6 +1,10 @@
 import type { ClientSession, Db, Document, Filter, WithId } from 'mongodb';
 import { MongoServerError } from 'mongodb';
-import { contentCollections, ensureContentSetup } from './content.collections.js';
+import {
+  contentCollectionIndexes,
+  contentCollections,
+  contentCollectionValidators,
+} from './content.collections.js';
 import type {
   AssetDoc,
   CollectionDoc,
@@ -30,22 +34,50 @@ export interface ImportUpsertOutcome {
 }
 
 /**
- * Única vía de lectura/escritura sobre `carrito_content`.
- *
- * DDL (`ensureSetup`), meta (`contentVersion`/`tokenSeq`), import, export,
- * lectura pública y escritura editorial pasan por aquí — AGENTS.md exige
- * persistencia solo en `*.repo.ts`.
- *
- * Escrituras editoriales: transacción multi-documento si hay replica set;
- * en standalone, flag `editorialDirty` + reconciliación en lectura (ADR-001).
+ * Mutaciones editoriales requieren transacciones multi-documento (replica set).
+ * Standalone no está soportado para escritura (ADR-001).
+ */
+export class ContentTopologyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ContentTopologyError';
+  }
+}
+
+/**
+ * Única vía de lectura/escritura/DDL sobre `carrito_content` (AGENTS.md:
+ * persistencia solo en `*.repo.ts`).
  */
 export class ContentRepo {
   constructor(private readonly db: Db) {}
 
   // ── DDL ───────────────────────────────────────────────────────────────────
 
+  /**
+   * Crea colecciones, validadores e índices de forma idempotente.
+   * Solo migración/scripts operativos — la API de lectura no necesita DDL.
+   */
   async ensureSetup(): Promise<void> {
-    await ensureContentSetup(this.db);
+    const existing = new Set(
+      (await this.db.listCollections({}, { nameOnly: true }).toArray()).map((c) => c.name),
+    );
+
+    for (const [name, validator] of Object.entries(contentCollectionValidators)) {
+      if (existing.has(name)) {
+        await this.db.command({ collMod: name, validator, validationLevel: 'moderate' });
+      } else {
+        await this.db.createCollection(name, { validator, validationLevel: 'moderate' });
+      }
+    }
+    if (!existing.has(contentCollections.meta)) {
+      await this.db.createCollection(contentCollections.meta);
+    }
+
+    for (const spec of contentCollectionIndexes) {
+      await this.db
+        .collection(spec.collection)
+        .createIndex(spec.keys, { name: spec.name, unique: spec.unique });
+    }
   }
 
   // ── Meta ──────────────────────────────────────────────────────────────────
@@ -54,47 +86,19 @@ export class ContentRepo {
     return this.db.collection<ContentMetaDoc>(contentCollections.meta).findOne({ _id: 'content' });
   }
 
-  /**
-   * Versión global para ETag/caché. Si `editorialDirty` quedó true tras una
-   * interrupción (standalone), incrementa contentVersion y limpia el flag
-   * antes de devolver — invalida cachés que podrían servir datos viejos.
-   */
   async getContentVersion(): Promise<number> {
     const meta = await this.getMeta();
-    if (meta?.editorialDirty === true) {
-      return this.reconcileDirtyMeta();
-    }
     return meta?.contentVersion ?? 0;
-  }
-
-  /**
-   * Compare-and-swap: solo bump si sigue dirty (evita doble bump concurrente).
-   */
-  async reconcileDirtyMeta(): Promise<number> {
-    const meta = await this.db
-      .collection<ContentMetaDoc>(contentCollections.meta)
-      .findOneAndUpdate(
-        { _id: 'content', editorialDirty: true },
-        { $inc: { contentVersion: 1 }, $set: { editorialDirty: false } },
-        { returnDocument: 'after' },
-      );
-    if (meta !== null) return meta.contentVersion;
-    const current = await this.getMeta();
-    return current?.contentVersion ?? 0;
   }
 
   // ── Referencias (preflight editorial) ─────────────────────────────────────
 
   async findLocaleByCode(code: string): Promise<LocaleDoc | null> {
-    return this.db
-      .collection<LocaleDoc>(contentCollections.locales)
-      .findOne({ code });
+    return this.db.collection<LocaleDoc>(contentCollections.locales).findOne({ code });
   }
 
   async findCollectionBySlug(slug: string): Promise<CollectionDoc | null> {
-    return this.db
-      .collection<CollectionDoc>(contentCollections.collections)
-      .findOne({ slug });
+    return this.db.collection<CollectionDoc>(contentCollections.collections).findOne({ slug });
   }
 
   async findAssetBySlug(slug: string): Promise<AssetDoc | null> {
@@ -140,7 +144,10 @@ export class ContentRepo {
 
   // ── Lectura publicada (runtime + export) ──────────────────────────────────
 
-  async findPublished<T extends object>(collection: string, filter: Filter<Document> = {}): Promise<T[]> {
+  async findPublished<T extends object>(
+    collection: string,
+    filter: Filter<Document> = {},
+  ): Promise<T[]> {
     return this.db
       .collection(collection)
       .find({ status: 'published', ...filter })
@@ -200,18 +207,16 @@ export class ContentRepo {
       {
         $setOnInsert: { contentVersion: 1 },
         $max: { tokenSeq: maxRevision + 1 },
-        $set: { editorialDirty: false },
       },
       { upsert: true },
     );
   }
 
-  // ── Escritura editorial transaccional ─────────────────────────────────────
+  // ── Escritura editorial (solo con transacciones / replica set) ────────────
 
   /**
-   * Ejecuta `fn` con escritura editorial + `contentVersion` acoplados.
-   * Usa transacción multi-documento si el deployment lo soporta (replica set);
-   * en Mongo standalone aplica dirty-flag + reconciliación (ADR-001).
+   * Ejecuta `fn` y el bump de `contentVersion` en una transacción.
+   * Si el deployment no soporta transacciones → ContentTopologyError (ADR-001).
    */
   async withEditorialWrite<T>(
     fn: (tx: EditorialTx) => Promise<{ result: T; wrote: boolean }>,
@@ -221,8 +226,14 @@ export class ContentRepo {
       try {
         return await this.runTransactionalWrite(session, fn);
       } catch (err) {
-        if (!isTransactionUnsupported(err)) throw err;
-        return await this.runSequentialWrite(fn);
+        if (isTransactionUnsupported(err)) {
+          throw new ContentTopologyError(
+            'Las escrituras editoriales requieren MongoDB en replica set ' +
+              '(transacciones multi-documento). Standalone no está soportado ' +
+              'para mutaciones (ADR-001).',
+          );
+        }
+        throw err;
       }
     } finally {
       await session.endSession();
@@ -249,47 +260,29 @@ export class ContentRepo {
     }
     return { result: outcome.result, contentVersion };
   }
-
-  /**
-   * Fallback standalone: marca dirty → escribe → bump y limpia dirty.
-   * Si el proceso cae a mitad, la próxima lectura reconcilia (ADR-001).
-   */
-  private async runSequentialWrite<T>(
-    fn: (tx: EditorialTx) => Promise<{ result: T; wrote: boolean }>,
-  ): Promise<{ result: T; contentVersion: number | null }> {
-    const tx = new EditorialTx(this.db);
-    await tx.markEditorialDirty();
-    // Si falla tras markDirty, editorialDirty queda true → getContentVersion reconcilia.
-    const outcome = await fn(tx);
-    if (outcome.wrote) {
-      const contentVersion = await tx.bumpContentVersion();
-      return { result: outcome.result, contentVersion };
-    }
-    await tx.clearEditorialDirty();
-    return { result: outcome.result, contentVersion: null };
-  }
 }
 
 function isTransactionUnsupported(err: unknown): boolean {
   if (!(err instanceof MongoServerError)) return false;
+  // IllegalOperation (20): transacciones solo en replica set / mongos.
   if (err.code === 20) return true;
   const message = err.message.toLowerCase();
   return (
     message.includes('transaction numbers are only allowed') ||
-    message.includes('replica set member') ||
-    message.includes('not master')
+    message.includes('transactions are not supported') ||
+    message.includes('replica set member or mongos')
   );
 }
 
-/** Operaciones editoriales; `session` opcional (transacción o fallback). */
+/** Operaciones editoriales atadas a una sesión/transacción MongoDB. */
 export class EditorialTx {
   constructor(
     private readonly db: Db,
-    private readonly session?: ClientSession,
+    private readonly session: ClientSession,
   ) {}
 
-  private sessionOpts(): { session?: ClientSession } {
-    return this.session !== undefined ? { session: this.session } : {};
+  private sessionOpts(): { session: ClientSession } {
+    return { session: this.session };
   }
 
   findEditorialDoc(
@@ -304,43 +297,18 @@ export class EditorialTx {
       .collection<ContentMetaDoc>(contentCollections.meta)
       .findOneAndUpdate(
         { _id: 'content' },
-        {
-          $inc: { tokenSeq: 1 },
-          $setOnInsert: { contentVersion: 1, editorialDirty: false },
-        },
+        { $inc: { tokenSeq: 1 }, $setOnInsert: { contentVersion: 1 } },
         { upsert: true, returnDocument: 'before', ...this.sessionOpts() },
       );
     return meta?.tokenSeq ?? 1;
   }
 
-  async markEditorialDirty(): Promise<void> {
-    await this.db.collection<ContentMetaDoc>(contentCollections.meta).updateOne(
-      { _id: 'content' },
-      {
-        $set: { editorialDirty: true },
-        $setOnInsert: { contentVersion: 1, tokenSeq: 1 },
-      },
-      { upsert: true, ...this.sessionOpts() },
-    );
-  }
-
-  async clearEditorialDirty(): Promise<void> {
-    await this.db
-      .collection<ContentMetaDoc>(contentCollections.meta)
-      .updateOne({ _id: 'content' }, { $set: { editorialDirty: false } }, this.sessionOpts());
-  }
-
-  /** Incrementa contentVersion y deja editorialDirty=false (éxito o reconciliación). */
   async bumpContentVersion(): Promise<number> {
     const meta = await this.db
       .collection<ContentMetaDoc>(contentCollections.meta)
       .findOneAndUpdate(
         { _id: 'content' },
-        {
-          $inc: { contentVersion: 1 },
-          $set: { editorialDirty: false },
-          $setOnInsert: { tokenSeq: 1 },
-        },
+        { $inc: { contentVersion: 1 }, $setOnInsert: { tokenSeq: 1 } },
         { upsert: true, returnDocument: 'after', ...this.sessionOpts() },
       );
     return meta?.contentVersion ?? 1;
