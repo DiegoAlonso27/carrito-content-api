@@ -1,5 +1,5 @@
 import type { Db } from 'mongodb';
-import { contentCollections } from '../content/content.collections.js';
+import { TypeCompiler } from '@sinclair/typebox/compiler';
 import {
   assetToCache,
   collectionToCache,
@@ -11,19 +11,20 @@ import {
   textToCache,
   versionToken,
 } from '../content/content.mappers.js';
+import { contentCacheSchema } from '../content/content.schemas.js';
+import { ContentRepo } from '../content/content.repo.js';
+import { contentCollections } from '../content/content.collections.js';
 import type {
   AssetDoc,
   CacheVersionToken,
   CollectionDoc,
   ContentCache,
-  ContentMetaDoc,
   ItemDoc,
   LocaleDoc,
   PageDoc,
   SettingDoc,
   TextDoc,
 } from '../content/content.types.js';
-
 import {
   compareAssets,
   compareCollections,
@@ -35,8 +36,9 @@ import {
   compareVersionTokens,
 } from '../content/content.ordering.js';
 
+const cacheChecker = TypeCompiler.Compile(contentCacheSchema);
+
 export interface ExportSnapshot {
-  /** JSON serializado del export (el contrato es estructura + orden). */
   body: string;
   etag: string;
   contentVersion: number;
@@ -45,26 +47,22 @@ export interface ExportSnapshot {
 
 /**
  * Construye el export compatible con content-cache.json desde MongoDB.
+ * Lectura de MongoDB solo vía `ContentRepo`.
  *
- * - Solo documentos `published` (el export ES el contenido publicado;
- *   `isActive` es un dato del contrato que el front filtra en runtime).
- * - Cachea en memoria por contentVersion (≈130 KB): `generatedAtUtc` queda
- *   estable entre cambios y el ETag es coherente para GET condicional.
- * - Serializa a mano (JSON.stringify del objeto construido por los mappers):
- *   aquí NO se usa la serialización por response schema porque el contrato
- *   exige control byte-a-byte del orden de claves; los mappers son la única
- *   fuente del objeto, por lo que no puede filtrarse `_id` ni campos internos.
+ * La forma se valida con `contentCacheSchema` antes de serializar (barrera
+ * anti-fuga + contrato). El JSON se serializa a mano para conservar el orden
+ * de claves del golden (ADR-002).
  */
 export class ExportService {
+  private readonly repo: ContentRepo;
   private cached: ExportSnapshot | null = null;
 
-  constructor(private readonly db: Db) {}
+  constructor(db: Db) {
+    this.repo = new ContentRepo(db);
+  }
 
   async get(): Promise<ExportSnapshot> {
-    const meta = await this.db
-      .collection<ContentMetaDoc>(contentCollections.meta)
-      .findOne({ _id: 'content' });
-    const contentVersion = meta?.contentVersion ?? 0;
+    const contentVersion = await this.repo.getContentVersion();
 
     if (this.cached !== null && this.cached.contentVersion === contentVersion) {
       return this.cached;
@@ -82,18 +80,15 @@ export class ExportService {
 
   private async build(): Promise<ContentCache> {
     const c = contentCollections;
-    const published = { status: 'published' as const };
-    const find = <T extends object>(name: string): Promise<T[]> =>
-      this.db.collection(name).find(published).toArray() as Promise<T[]>;
 
     const [locales, settings, pages, texts, assets, collections, items] = await Promise.all([
-      find<LocaleDoc>(c.locales),
-      find<SettingDoc>(c.settings),
-      find<PageDoc>(c.pages),
-      find<TextDoc>(c.texts),
-      find<AssetDoc>(c.assets),
-      find<CollectionDoc>(c.collections),
-      find<ItemDoc>(c.items),
+      this.repo.findPublished<LocaleDoc>(c.locales),
+      this.repo.findPublished<SettingDoc>(c.settings),
+      this.repo.findPublished<PageDoc>(c.pages),
+      this.repo.findPublished<TextDoc>(c.texts),
+      this.repo.findPublished<AssetDoc>(c.assets),
+      this.repo.findPublished<CollectionDoc>(c.collections),
+      this.repo.findPublished<ItemDoc>(c.items),
     ]);
 
     locales.sort(compareLocales);
@@ -117,8 +112,7 @@ export class ExportService {
     ];
     versionTokens.sort(compareVersionTokens);
 
-    // Orden de claves top-level = contrato (ver golden file).
-    return {
+    const cache: ContentCache = {
       generatedAtUtc: new Date().toISOString(),
       locales: locales.map(localeToCache),
       settings: settings.map(settingToCache),
@@ -129,5 +123,13 @@ export class ExportService {
       items: items.map(itemToCache),
       versionTokens,
     };
+
+    if (!cacheChecker.Check(cache)) {
+      const first = cacheChecker.Errors(cache).First();
+      throw new Error(
+        `export construido no cumple contentCacheSchema: ${first?.path ?? '?'} ${first?.message ?? ''}`,
+      );
+    }
+    return cache;
   }
 }

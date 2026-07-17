@@ -12,6 +12,10 @@ app.post(
   () => ({ ok: true }),
 );
 
+app.get('/test/client-error', () => {
+  throw Object.assign(new Error('detalle interno secreto xyz'), { statusCode: 415 });
+});
+
 afterAll(async () => {
   await app.close();
 });
@@ -47,6 +51,15 @@ describe('contrato de error estándar', () => {
     const res = await app.inject({ method: 'GET', url: '/no-existe' });
     expect(res.body).not.toContain('at ');
     expect(res.body).not.toContain('stack');
+  });
+
+  it('4xx de plugin no refleja el mensaje interno en la respuesta', async () => {
+    const res = await app.inject({ method: 'GET', url: '/test/client-error' });
+    expect(res.statusCode).toBe(415);
+    const body = res.json<{ error: { code: string; message: string } }>();
+    expect(body.error.message).toBe('Tipo de contenido no soportado.');
+    expect(res.body).not.toContain('secreto');
+    expect(body.error.code).toBe('UNSUPPORTED_MEDIA_TYPE');
   });
 });
 

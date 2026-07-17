@@ -12,14 +12,17 @@ import { makeTestConfig } from '../helpers/test-config.js';
 /**
  * TEST DE CONTRATO — gate central del proyecto (plan F2).
  *
- * Golden file congelado en test/contract/golden/. Si este test falla, el
- * cambio rompe la compatibilidad con carrito-front y está mal salvo decisión
- * explícita de contrato (AGENTS.md).
+ * Fuente canónica: `content-cache.json` en la raíz del repo (AGENTS.md).
+ * La copia en `test/contract/golden/` debe ser byte-idéntica (gate M2).
+ * Si este test falla, el cambio rompe la compatibilidad con carrito-front
+ * salvo decisión explícita de contrato.
  */
-const goldenPath = fileURLToPath(new URL('./golden/content-cache.json', import.meta.url));
+const rootGoldenPath = fileURLToPath(new URL('../../content-cache.json', import.meta.url));
+const contractCopyPath = fileURLToPath(new URL('./golden/content-cache.json', import.meta.url));
+const goldenPath = rootGoldenPath;
 const EXPORT_URL = '/v1/export/content-cache';
-const KEY_A = 'test-key-a-0123456789abcdef';
-const KEY_B = 'test-key-b-fedcba9876543210';
+const KEY_A = 'test-key-a-0123456789abcdef01234567';
+const KEY_B = 'test-key-b-fedcba9876543210fedcba98';
 
 let mongod: MongoMemoryServer;
 let app: FastifyInstance;
@@ -28,6 +31,9 @@ let goldenRaw: string;
 
 beforeAll(async () => {
   goldenRaw = await readFile(goldenPath, 'utf8');
+  const contractCopy = await readFile(contractCopyPath, 'utf8');
+  expect(contractCopy, 'copia contractual debe ser byte-idéntica al golden raíz').toBe(goldenRaw);
+
   const validated = validateCache(JSON.parse(goldenRaw));
   expect(validated.errors).toEqual([]);
   golden = validated.cache as ContentCache;

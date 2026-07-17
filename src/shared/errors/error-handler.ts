@@ -96,9 +96,38 @@ export function registerErrorHandling(app: FastifyInstance): void {
       return;
     }
 
-    // 4xx generados por Fastify/plugins (payload too large, media type, etc.):
-    // se conserva el código HTTP pero con la envolvente estándar.
+    // 4xx de Fastify/plugins: código HTTP conservado, mensaje público estable
+    // (el mensaje técnico queda solo en el log sanitizado).
     req.log.info({ err: { message: err.message, code: err.code } }, 'error de cliente');
-    void reply.status(statusCode).send(buildBody(req, err.code ?? 'REQUEST_ERROR', err.message));
+    const { code, message } = publicClientError(statusCode, err.code);
+    void reply.status(statusCode).send(buildBody(req, code, message));
   });
+}
+
+/** Mensajes públicos estables para 4xx no mapeados a AppError. */
+function publicClientError(
+  statusCode: number,
+  pluginCode: string | undefined,
+): { code: string; message: string } {
+  switch (statusCode) {
+    case 400:
+      return { code: ErrorCodes.validation, message: 'Solicitud inválida.' };
+    case 401:
+      return { code: ErrorCodes.unauthorized, message: 'No autorizado.' };
+    case 403:
+      return { code: 'FORBIDDEN', message: 'Acceso denegado.' };
+    case 404:
+      return { code: ErrorCodes.notFound, message: 'Recurso no encontrado.' };
+    case 405:
+      return { code: 'METHOD_NOT_ALLOWED', message: 'Método no permitido.' };
+    case 413:
+      return { code: 'PAYLOAD_TOO_LARGE', message: 'Cuerpo demasiado grande.' };
+    case 415:
+      return { code: 'UNSUPPORTED_MEDIA_TYPE', message: 'Tipo de contenido no soportado.' };
+    default:
+      return {
+        code: pluginCode ?? 'REQUEST_ERROR',
+        message: 'Solicitud rechazada.',
+      };
+  }
 }

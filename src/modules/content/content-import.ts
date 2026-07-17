@@ -1,8 +1,9 @@
-import type { Db, Document, Filter } from 'mongodb';
+import type { Db, Document } from 'mongodb';
 import { TypeCompiler } from '@sinclair/typebox/compiler';
 import sanitizeHtml from 'sanitize-html';
 import { contentCacheSchema, htmlDataFields, itemDataSchemas } from './content.schemas.js';
-import { contentCollections, ensureContentSetup } from './content.collections.js';
+import { contentCollections } from './content.collections.js';
+import { ContentRepo } from './content.repo.js';
 import {
   assetToCache,
   collectionToCache,
@@ -20,7 +21,6 @@ import type {
   CacheItem,
   CollectionDoc,
   ContentCache,
-  ContentMetaDoc,
   ItemDoc,
   LocaleDoc,
   PageDoc,
@@ -60,13 +60,194 @@ export function validateCache(raw: unknown): { cache: ContentCache | null; error
   return errors.length > 0 ? { cache: null, errors } : { cache, errors: [] };
 }
 
-// ── Sanitización de HTML embebido ───────────────────────────────────────────
+function pushUnique(errors: string[], message: string, limit = 40): void {
+  if (errors.length < limit) errors.push(message);
+}
+
+function findDuplicateKeys(keys: string[]): string[] {
+  const seen = new Set<string>();
+  const dupes = new Set<string>();
+  for (const key of keys) {
+    if (seen.has(key)) dupes.add(key);
+    else seen.add(key);
+  }
+  return [...dupes];
+}
+
+function assetSlugsInValue(value: unknown): string[] {
+  const slugs: string[] = [];
+  const walk = (obj: unknown): void => {
+    if (obj === null || typeof obj !== 'object') return;
+    if (Array.isArray(obj)) {
+      for (const entry of obj) walk(entry);
+      return;
+    }
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+      if ((k === 'imageAsset' || k === 'iconAsset') && typeof v === 'string' && v.length > 0) {
+        slugs.push(v);
+      } else {
+        walk(v);
+      }
+    }
+  };
+  walk(value);
+  return slugs;
+}
 
 /**
- * Allowlist estricta para answerHtml/bodyHtml. El contenido actual solo usa
- * <p> y <h4> sin atributos; se admite un margen editorial mínimo sin
- * atributos de evento ni estilos.
+ * Validación semántica del cache (unicidad, tokens, relaciones).
+ * Complementa `validateCache` (forma TypeBox + data por colección).
  */
+export function validateCacheSemantics(cache: ContentCache): string[] {
+  const errors: string[] = [];
+
+  for (const code of findDuplicateKeys(cache.locales.map((l) => l.code))) {
+    pushUnique(errors, `locales: code duplicado '${code}'`);
+  }
+  for (const key of findDuplicateKeys(cache.settings.map((s) => s.key))) {
+    pushUnique(errors, `settings: key duplicado '${key}'`);
+  }
+  for (const key of findDuplicateKeys(cache.pages.map((p) => sourceKeyOf.Page(p)))) {
+    pushUnique(errors, `pages: clave duplicada '${key}'`);
+  }
+  for (const key of findDuplicateKeys(cache.texts.map((t) => sourceKeyOf.ContentText(t)))) {
+    pushUnique(errors, `texts: clave duplicada '${key}'`);
+  }
+  for (const slug of findDuplicateKeys(cache.assets.map((a) => a.slug))) {
+    pushUnique(errors, `assets: slug duplicado '${slug}'`);
+  }
+  for (const slug of findDuplicateKeys(cache.collections.map((c) => c.slug))) {
+    pushUnique(errors, `collections: slug duplicado '${slug}'`);
+  }
+  for (const key of findDuplicateKeys(cache.items.map((i) => sourceKeyOf.ContentItem(i)))) {
+    pushUnique(errors, `items: clave duplicada '${key}'`);
+  }
+
+  const defaults = cache.locales.filter((l) => l.isDefault);
+  if (defaults.length !== 1) {
+    pushUnique(errors, `locales: se espera exactamente 1 isDefault:true (hay ${String(defaults.length)})`);
+  }
+
+  const localeCodes = new Set(cache.locales.map((l) => l.code));
+  const collectionSlugs = new Set(cache.collections.map((c) => c.slug));
+  const assetSlugs = new Set(cache.assets.map((a) => a.slug));
+
+  for (const page of cache.pages) {
+    if (!localeCodes.has(page.localeCode)) {
+      pushUnique(errors, `pages/${sourceKeyOf.Page(page)}: locale '${page.localeCode}' inexistente`);
+    }
+    if (page.ogImageSlug !== null && !assetSlugs.has(page.ogImageSlug)) {
+      pushUnique(
+        errors,
+        `pages/${sourceKeyOf.Page(page)}: ogImageSlug '${page.ogImageSlug}' inexistente`,
+      );
+    }
+  }
+
+  for (const text of cache.texts) {
+    if (!localeCodes.has(text.localeCode)) {
+      pushUnique(errors, `texts/${sourceKeyOf.ContentText(text)}: locale '${text.localeCode}' inexistente`);
+    }
+  }
+
+  for (const item of cache.items) {
+    const id = sourceKeyOf.ContentItem(item);
+    if (!collectionSlugs.has(item.collectionSlug)) {
+      pushUnique(errors, `items/${id}: collectionSlug '${item.collectionSlug}' inexistente`);
+    }
+    if (!localeCodes.has(item.localeCode)) {
+      pushUnique(errors, `items/${id}: locale '${item.localeCode}' inexistente`);
+    }
+    for (const assetSlug of assetSlugsInValue(item.data)) {
+      if (!assetSlugs.has(assetSlug)) {
+        pushUnique(errors, `items/${id}: asset '${assetSlug}' inexistente`);
+      }
+    }
+  }
+
+  // Correspondencia completa versionTokens ↔ registros.
+  type Expected = { table: SourceTable; key: string; token?: string };
+  const expected: Expected[] = [
+    ...cache.locales.map((r) => ({ table: 'Locale' as const, key: sourceKeyOf.Locale(r) })),
+    ...cache.settings.map((r) => ({ table: 'Setting' as const, key: sourceKeyOf.Setting(r) })),
+    ...cache.pages.map((r) => ({ table: 'Page' as const, key: sourceKeyOf.Page(r) })),
+    ...cache.texts.map((r) => ({ table: 'ContentText' as const, key: sourceKeyOf.ContentText(r) })),
+    ...cache.assets.map((r) => ({ table: 'Asset' as const, key: sourceKeyOf.Asset(r) })),
+    ...cache.collections.map((r) => ({
+      table: 'ContentCollection' as const,
+      key: sourceKeyOf.ContentCollection(r),
+    })),
+    ...cache.items.map((r) => ({
+      table: 'ContentItem' as const,
+      key: sourceKeyOf.ContentItem(r),
+      token: r.rowVersionToken,
+    })),
+  ];
+
+  const tokenByRef = new Map<string, string>();
+  for (const t of cache.versionTokens) {
+    const ref = `${t.sourceTable}:${t.sourceKey}`;
+    if (tokenByRef.has(ref)) {
+      pushUnique(errors, `versionTokens: entrada duplicada ${ref}`);
+    }
+    tokenByRef.set(ref, t.rowVersionToken);
+  }
+
+  if (cache.versionTokens.length !== expected.length) {
+    pushUnique(
+      errors,
+      `versionTokens: ${String(cache.versionTokens.length)} entradas vs ${String(expected.length)} registros`,
+    );
+  }
+
+  for (const exp of expected) {
+    const ref = `${exp.table}:${exp.key}`;
+    const token = tokenByRef.get(ref);
+    if (token === undefined) {
+      pushUnique(errors, `versionTokens: falta ${ref}`);
+      continue;
+    }
+    if (exp.token !== undefined && exp.token !== token) {
+      pushUnique(
+        errors,
+        `items/${exp.key}: rowVersionToken ${exp.token} ≠ versionTokens ${token}`,
+      );
+    }
+    tokenByRef.delete(ref);
+  }
+  for (const orphan of tokenByRef.keys()) {
+    pushUnique(errors, `versionTokens: huérfano ${orphan}`);
+  }
+
+  return errors;
+}
+
+/**
+ * Preflight completo del archivo fuente (forma + semántica + sanitización).
+ * Lo usan `--dry-run` y la importación real: mismo camino de validación.
+ */
+export function preflightCache(raw: unknown): {
+  cache: ContentCache | null;
+  errors: string[];
+  sanitizationChanges: SanitizationChange[];
+} {
+  const shape = validateCache(raw);
+  if (shape.cache === null) {
+    return { cache: null, errors: shape.errors, sanitizationChanges: [] };
+  }
+  const semanticErrors = validateCacheSemantics(shape.cache);
+  if (semanticErrors.length > 0) {
+    return { cache: null, errors: semanticErrors, sanitizationChanges: [] };
+  }
+  return {
+    cache: shape.cache,
+    errors: [],
+    sanitizationChanges: checkHtmlSanitization(shape.cache),
+  };
+}
+
+// ── Sanitización de HTML embebido ───────────────────────────────────────────
+
 const sanitizeOptions: sanitizeHtml.IOptions = {
   allowedTags: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'h3', 'h4'],
   allowedAttributes: {},
@@ -84,7 +265,6 @@ export interface SanitizationChange {
   sanitized: string;
 }
 
-/** Devuelve los campos cuyo HTML cambiaría al sanitizar (gate de importación). */
 export function checkHtmlSanitization(cache: ContentCache): SanitizationChange[] {
   const changes: SanitizationChange[] = [];
   for (const item of cache.items) {
@@ -155,57 +335,16 @@ function deepEqual(a: unknown, b: unknown): boolean {
   );
 }
 
-/** Forma mínima común de los documentos almacenados (con sobre temporal). */
-interface StoredDoc extends Document {
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-async function upsertSection<T extends Document>(
-  db: Db,
-  collection: string,
-  records: T[],
-  keyOf: (r: T) => Filter<StoredDoc>,
-  now: Date,
-): Promise<SectionSummary> {
-  const col = db.collection<StoredDoc>(collection);
-  const summary: SectionSummary = { inserted: 0, updated: 0, unchanged: 0, total: records.length };
-
-  for (const desired of records) {
-    const existing = await col.findOne(keyOf(desired));
-    if (existing === null) {
-      await col.insertOne({ ...desired, createdAt: now, updatedAt: now });
-      summary.inserted += 1;
-      continue;
-    }
-    const { _id, createdAt, updatedAt, ...existingContent } = existing;
-    void _id;
-    void updatedAt;
-    if (deepEqual(existingContent, desired)) {
-      summary.unchanged += 1;
-      continue;
-    }
-    await col.replaceOne(keyOf(desired), { ...desired, createdAt, updatedAt: now });
-    summary.updated += 1;
-  }
-  return summary;
-}
-
 type Bare<T> = Omit<T, 'createdAt' | 'updatedAt'>;
 
-/**
- * Importa el cache a carrito_content de forma idempotente (upsert por clave
- * natural; una segunda corrida sin cambios no modifica nada).
- *
- * Todo registro presente en el cache nace `published`: el export del pipeline
- * SQL incluye también registros isActive:false (el filtrado es del front),
- * así que `status` e `isActive` son dimensiones independientes.
- *
- * `revision` se siembra desde versionTokens para que el primer export
- * reproduzca los tokens originales exactos.
- */
 export async function importCache(db: Db, cache: ContentCache): Promise<ImportSummary> {
-  await ensureContentSetup(db);
+  const semanticErrors = validateCacheSemantics(cache);
+  if (semanticErrors.length > 0) {
+    throw new Error(`cache semánticamente inválido:\n${semanticErrors.map((e) => `  - ${e}`).join('\n')}`);
+  }
+
+  const repo = new ContentRepo(db);
+  await repo.ensureSetup();
   const tokens = new TokenMap(cache);
   const now = new Date();
   const published = { status: 'published' as const };
@@ -251,49 +390,58 @@ export async function importCache(db: Db, cache: ContentCache): Promise<ImportSu
 
   const c = contentCollections;
   const summary: ImportSummary = {
-    locales: await upsertSection(db, c.locales, locales, (r) => ({ code: r.code }), now),
-    settings: await upsertSection(db, c.settings, settings, (r) => ({ key: r.key }), now),
-    pages: await upsertSection(
-      db,
+    locales: await repo.upsertImportSection(
+      c.locales,
+      locales,
+      (r) => ({ code: r.code }),
+      now,
+      deepEqual,
+    ),
+    settings: await repo.upsertImportSection(
+      c.settings,
+      settings,
+      (r) => ({ key: r.key }),
+      now,
+      deepEqual,
+    ),
+    pages: await repo.upsertImportSection(
       c.pages,
       pages,
       (r) => ({ localeCode: r.localeCode, slug: r.slug }),
       now,
+      deepEqual,
     ),
-    texts: await upsertSection(
-      db,
+    texts: await repo.upsertImportSection(
       c.texts,
       texts,
       (r) => ({ localeCode: r.localeCode, key: r.key }),
       now,
+      deepEqual,
     ),
-    assets: await upsertSection(db, c.assets, assets, (r) => ({ slug: r.slug }), now),
-    collections: await upsertSection(
-      db,
+    assets: await repo.upsertImportSection(
+      c.assets,
+      assets,
+      (r) => ({ slug: r.slug }),
+      now,
+      deepEqual,
+    ),
+    collections: await repo.upsertImportSection(
       c.collections,
       collections,
       (r) => ({ slug: r.slug }),
       now,
+      deepEqual,
     ),
-    items: await upsertSection(
-      db,
+    items: await repo.upsertImportSection(
       c.items,
       items,
       (r) => ({ collectionSlug: r.collectionSlug, localeCode: r.localeCode, slug: r.slug }),
       now,
+      deepEqual,
     ),
   };
 
-  // contentVersion solo se inicializa; tokenSeq nunca retrocede (ediciones
-  // posteriores a una migración repetida conservan tokens monótonos).
-  await db
-    .collection<ContentMetaDoc>(c.meta)
-    .updateOne(
-      { _id: 'content' },
-      { $setOnInsert: { contentVersion: 1 }, $max: { tokenSeq: tokens.maxRevision + 1 } },
-      { upsert: true },
-    );
-
+  await repo.seedImportMeta(tokens.maxRevision);
   return summary;
 }
 
@@ -304,13 +452,8 @@ export interface VerifyResult {
   diffs: string[];
 }
 
-/**
- * Reconstruye la forma del contrato desde MongoDB y la compara registro a
- * registro con el archivo fuente (incluidos los rowVersionToken derivados de
- * `revision`). No compara orden: eso pertenece al test de contrato del
- * export (F2).
- */
 export async function verifyCache(db: Db, cache: ContentCache): Promise<VerifyResult> {
+  const repo = new ContentRepo(db);
   const diffs: string[] = [];
   const c = contentCollections;
 
@@ -321,10 +464,10 @@ export async function verifyCache(db: Db, cache: ContentCache): Promise<VerifyRe
     toCache: (d: TDoc) => TCache,
     keyOf: (r: TCache) => string,
   ): Promise<void> {
-    const docs = await db.collection(collection).find({}).toArray();
+    const docs = await repo.findAll<TDoc>(collection);
     const fromDb = new Map(
       docs.map((d) => {
-        const mapped = toCache(d as unknown as TDoc);
+        const mapped = toCache(d);
         return [keyOf(mapped), mapped] as const;
       }),
     );
@@ -362,7 +505,7 @@ export async function verifyCache(db: Db, cache: ContentCache): Promise<VerifyRe
     sourceKeyOf.ContentItem,
   );
 
-  const meta = await db.collection<ContentMetaDoc>(c.meta).findOne({ _id: 'content' });
+  const meta = await repo.getMeta();
   if (meta === null) {
     diffs.push('meta/content: ausente');
   } else {

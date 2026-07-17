@@ -65,7 +65,11 @@ export function buildApp(config: AppConfig): FastifyInstance {
   app.register(healthRoutes);
   app.register(exportRoutes);
   app.register(contentRoutes);
-  app.register(contactRoutes);
+  // F5 cerrado: contacto registrado por defecto. FEATURE_CONTACT_ENABLED=false
+  // es kill-switch operativo (ADR-006), no aislamiento de fase.
+  if (config.FEATURE_CONTACT_ENABLED) {
+    app.register(contactRoutes);
+  }
 
   return app;
 }

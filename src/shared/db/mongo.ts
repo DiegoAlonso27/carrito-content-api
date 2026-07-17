@@ -37,6 +37,7 @@ export function createMongoContext(config: AppConfig): MongoContext {
   // Fallar rápido en health checks y requests en vez de colgar la respuesta.
   const clientOptions = { serverSelectionTimeoutMS: 2_000 };
   const contentClient = new MongoClient(config.MONGO_URI, clientOptions);
+  // Vacío solo permitido fuera de producción (validado en loadConfig).
   const formsUri = config.MONGO_URI_FORMS.length > 0 ? config.MONGO_URI_FORMS : config.MONGO_URI;
   const formsClient = new MongoClient(formsUri, clientOptions);
 

@@ -31,7 +31,13 @@ beforeAll(async () => {
   // prueba de validación/idempotencia/honeypot, que no son lo que se quiere
   // ejercitar aquí. El rate limit real (5/10min por defecto) se prueba
   // aparte, con apps dedicadas de límite bajo (describe "rate limiting").
-  app = buildApp(makeTestConfig({ MONGO_URI: mongod.getUri(), RATE_LIMIT_CONTACT_MAX: '1000' }));
+  app = buildApp(
+    makeTestConfig({
+      MONGO_URI: mongod.getUri(),
+      FEATURE_CONTACT_ENABLED: 'true',
+      RATE_LIMIT_CONTACT_MAX: '1000',
+    }),
+  );
   await app.ready();
   // La colección se aprovisiona una única vez, de forma explícita — como lo
   // haría scripts/forms/setup-contact.ts en un entorno real (contact.repo.ts
@@ -358,7 +364,9 @@ describe('POST /v1/contact — validación inválida', () => {
 
 describe('POST /v1/contact — fallo de MongoDB (5xx seguro)', () => {
   it('500 genérico sin datos internos y sin datos personales en los logs', async () => {
-    const broken = buildApp(makeTestConfig({ MONGO_URI: 'mongodb://127.0.0.1:1' }));
+    const broken = buildApp(
+      makeTestConfig({ MONGO_URI: 'mongodb://127.0.0.1:1', FEATURE_CONTACT_ENABLED: 'true' }),
+    );
     try {
       await broken.ready();
       const errorSpy = vi.spyOn(broken.log, 'error');
@@ -388,6 +396,7 @@ describe('POST /v1/contact — rate limiting', () => {
     const limited = buildApp(
       makeTestConfig({
         MONGO_URI: mongod.getUri(),
+        FEATURE_CONTACT_ENABLED: 'true',
         RATE_LIMIT_CONTACT_MAX: '2',
         RATE_LIMIT_CONTACT_WINDOW_MINUTES: '10',
       }),
@@ -417,6 +426,7 @@ describe('POST /v1/contact — rate limiting', () => {
     const limited = buildApp(
       makeTestConfig({
         MONGO_URI: mongod.getUri(),
+        FEATURE_CONTACT_ENABLED: 'true',
         RATE_LIMIT_CONTACT_MAX: '1',
         RATE_LIMIT_CONTACT_WINDOW_MINUTES: '10',
       }),

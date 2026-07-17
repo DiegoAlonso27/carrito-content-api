@@ -25,16 +25,15 @@ const schema = Type.Object({
   /**
    * Credenciales propias de `carrito_forms` (usuario Mongo separado del de
    * contenido, AGENTS.md — datos personales). Vacío = usa MONGO_URI (solo
-   * conveniencia de desarrollo local con un único mongod); en producción
-   * debe apuntar a un usuario distinto, con permisos mínimos (sin DDL: la
-   * colección/índices los provisiona `scripts/forms/setup-contact.ts`).
+   * development/test). En producción es obligatorio y distinto de MONGO_URI
+   * (ADR-003); permisos mínimos sin DDL (`scripts/forms/setup-contact.ts`).
    */
   MONGO_URI_FORMS: Type.String({ default: '' }),
   MONGO_DB_CONTENT: Type.String({ default: 'carrito_content' }),
   MONGO_DB_FORMS: Type.String({ default: 'carrito_forms' }),
   /**
-   * Claves del export servidor-a-servidor, separadas por coma (máx. 2 para
-   * rotación sin corte). Vacío = endpoint deshabilitado (todo request → 401).
+   * Claves del export servidor-a-servidor, separadas por coma (máx. 2;
+   * cada una ≥ 32 caracteres). Vacío = endpoint deshabilitado (→ 401).
    */
   EXPORT_API_KEYS: Type.String({ default: '' }),
   /**
@@ -52,6 +51,12 @@ const schema = Type.Object({
    */
   RATE_LIMIT_CONTACT_MAX: Type.Number({ default: 5, minimum: 1 }),
   RATE_LIMIT_CONTACT_WINDOW_MINUTES: Type.Number({ default: 10, minimum: 1 }),
+  /**
+   * Formulario de contacto (F5, cerrado). Default `true`: forma parte de la
+   * línea base. `false` es kill-switch operativo (ADR-006), no un gate de
+   * fase pendiente — a diferencia de reclamos (`FEATURE_COMPLAINTS_ENABLED`).
+   */
+  FEATURE_CONTACT_ENABLED: Type.Boolean({ default: true }),
 });
 
 export type AppConfig = Static<typeof schema>;
@@ -64,13 +69,41 @@ export type AppConfig = Static<typeof schema>;
  * su ruta mediante CARRITO_ENV_FILE (ver plan F7).
  */
 export function loadConfig(overrides?: Record<string, string>): AppConfig {
+  let config: AppConfig;
   if (overrides) {
-    return envSchema<AppConfig>({ schema, data: overrides, dotenv: false });
+    config = envSchema<AppConfig>({ schema, data: overrides, dotenv: false });
+  } else {
+    const envFile = process.env['CARRITO_ENV_FILE'] ?? '.env';
+    config = envSchema<AppConfig>({
+      schema,
+      // Sin archivo .env se usan process.env y los defaults del esquema.
+      dotenv: existsSync(envFile) ? { path: envFile } : false,
+    });
   }
-  const envFile = process.env['CARRITO_ENV_FILE'] ?? '.env';
-  return envSchema<AppConfig>({
-    schema,
-    // Sin archivo .env se usan process.env y los defaults del esquema.
-    dotenv: existsSync(envFile) ? { path: envFile } : false,
-  });
+
+  assertProductionFormsCredentials(config);
+  return config;
+}
+
+/**
+ * En producción, si el contacto está habilitado, `carrito_forms` debe usar
+ * credenciales propias y distintas de contenido (AGENTS.md / ADR-003).
+ * Con F5 desactivado no se exige MONGO_URI_FORMS (línea base F0–F4).
+ */
+function assertProductionFormsCredentials(config: AppConfig): void {
+  if (config.NODE_ENV !== 'production') return;
+  if (!config.FEATURE_CONTACT_ENABLED) return;
+
+  if (config.MONGO_URI_FORMS.length === 0) {
+    throw new Error(
+      'MONGO_URI_FORMS es obligatorio en producción cuando FEATURE_CONTACT_ENABLED=true ' +
+        '(credenciales propias de carrito_forms; AGENTS.md — separación de datos personales).',
+    );
+  }
+  if (config.MONGO_URI_FORMS === config.MONGO_URI) {
+    throw new Error(
+      'MONGO_URI_FORMS no puede coincidir con MONGO_URI en producción ' +
+        '(AGENTS.md: usuario Mongo propio para formularios).',
+    );
+  }
 }

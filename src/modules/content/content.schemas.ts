@@ -12,9 +12,20 @@ import type { TObject, TSchema } from '@sinclair/typebox';
 
 const nullable = <T extends TSchema>(schema: T) => Type.Union([schema, Type.Null()]);
 
+/** Entero de orden editorial (sin fracciones ni NaN). */
+const sortOrder = Type.Integer();
+
+/**
+ * ISO 8601 UTC estricto (`…Z`). Usado en generatedAtUtc y en campos editoriales
+ * de fecha cuando no son null (p. ej. announcements.activeFrom).
+ */
+const isoUtcDateTime = Type.String({
+  pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?Z$',
+});
+
 const editorialFlags = {
   isActive: Type.Boolean(),
-  sortOrder: Type.Number(),
+  sortOrder,
 };
 
 export const cacheLocaleSchema = Type.Object(
@@ -68,8 +79,8 @@ export const cacheAssetSchema = Type.Object(
     path: Type.String({ minLength: 1 }),
     altText: nullable(Type.String()),
     mimeType: Type.String({ minLength: 1 }),
-    width: nullable(Type.Number()),
-    height: nullable(Type.Number()),
+    width: nullable(Type.Integer({ minimum: 0 })),
+    height: nullable(Type.Integer({ minimum: 0 })),
     ...editorialFlags,
   },
   { additionalProperties: false },
@@ -90,7 +101,7 @@ export const cacheItemSchema = Type.Object(
     collectionSlug: Type.String({ minLength: 1 }),
     localeCode: Type.String({ minLength: 2 }),
     slug: Type.String({ minLength: 1 }),
-    sortOrder: Type.Number(),
+    sortOrder: sortOrder,
     isActive: Type.Boolean(),
     // La forma fina se valida por colección con itemDataSchemas.
     data: Type.Record(Type.String(), Type.Unknown()),
@@ -118,7 +129,7 @@ export const cacheVersionTokenSchema = Type.Object(
 
 export const contentCacheSchema = Type.Object(
   {
-    generatedAtUtc: Type.String(),
+    generatedAtUtc: isoUtcDateTime,
     locales: Type.Array(cacheLocaleSchema),
     settings: Type.Array(cacheSettingSchema),
     pages: Type.Array(cachePageSchema),
@@ -167,8 +178,8 @@ export const itemDataSchemas: Record<string, TObject> = {
       title: Type.String(),
       body: Type.String(),
       style: Type.String(),
-      activeFrom: nullable(Type.String()),
-      activeTo: nullable(Type.String()),
+      activeFrom: nullable(isoUtcDateTime),
+      activeTo: nullable(isoUtcDateTime),
       dismissKey: Type.Optional(Type.String()),
     },
     { additionalProperties: false },

@@ -9,7 +9,7 @@ import {
   cacheSettingSchema,
   cacheTextSchema,
 } from './content.schemas.js';
-import { ContentReadService } from './content-read.service.js';
+import { ContentReader } from './content-read.js';
 import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
 
 /**
@@ -70,7 +70,7 @@ function withHttpCache(
 }
 
 export function contentRoutes(app: FastifyInstance): void {
-  const service = new ContentReadService(app.mongo.contentDb);
+  const reader = new ContentReader(app.mongo.contentDb);
   const rateLimit = {
     max: app.config.RATE_LIMIT_READ_PER_MINUTE,
     timeWindow: '1 minute',
@@ -83,7 +83,7 @@ export function contentRoutes(app: FastifyInstance): void {
       schema: { response: { 200: localesSchema, 304: Type.Null() } },
     },
     async (req, reply) => {
-      const { contentVersion, locales } = await service.getLocales();
+      const { contentVersion, locales } = await reader.getLocales();
       if (withHttpCache(reply, contentVersion, req.headers['if-none-match'])) {
         return reply.code(304).send();
       }
@@ -99,7 +99,7 @@ export function contentRoutes(app: FastifyInstance): void {
     },
     async (req, reply) => {
       const { locale } = req.params as { locale: string };
-      const bundle = await service.getBundle(locale);
+      const bundle = await reader.getBundle(locale);
       if (bundle === null) {
         throw new AppError(ErrorCodes.notFound, 'Idioma no disponible.', 404);
       }
@@ -118,11 +118,11 @@ export function contentRoutes(app: FastifyInstance): void {
     },
     async (req, reply) => {
       const { locale, slug } = req.params as { locale: string; slug: string };
-      const bundle = await service.getBundle(locale);
+      const bundle = await reader.getBundle(locale);
       if (bundle === null) {
         throw new AppError(ErrorCodes.notFound, 'Idioma no disponible.', 404);
       }
-      const items = await service.getCollectionItems(locale, slug);
+      const items = await reader.getCollectionItems(locale, slug);
       if (items === null) {
         throw new AppError(ErrorCodes.notFound, 'Colección no encontrada.', 404);
       }

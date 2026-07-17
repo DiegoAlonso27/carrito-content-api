@@ -6,7 +6,7 @@ import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../../src/app.js';
 import { importCache, validateCache } from '../../src/modules/content/content-import.js';
 import { contentCollections } from '../../src/modules/content/content.collections.js';
-import type { ContentBundle } from '../../src/modules/content/content-read.service.js';
+import type { ContentBundle } from '../../src/modules/content/content-read.js';
 import type { ContentCache, ContentMetaDoc } from '../../src/modules/content/content.types.js';
 import { makeTestConfig } from '../helpers/test-config.js';
 

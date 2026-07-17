@@ -5,17 +5,25 @@
  *
  * Uso:
  *   npx tsx scripts/content/content-export.ts [--out content-cache.generated.json]
+ *
+ * No admite sobrescribir el golden canónico ni su copia contractual.
  */
 import { parseArgs } from 'node:util';
 import { writeFile } from 'node:fs/promises';
 import { ExportService } from '../../src/modules/export/export.service.js';
-import { withContentDb } from './cli-helpers.js';
+import { exportOutPathError, withContentDb } from './cli-helpers.js';
 
 const { values: args } = parseArgs({
   options: {
     out: { type: 'string', default: 'content-cache.generated.json' },
   },
 });
+
+const outError = exportOutPathError(args.out);
+if (outError !== null) {
+  console.error(`ERROR: ${outError}`);
+  process.exit(1);
+}
 
 const snapshot = await withContentDb((db) => new ExportService(db).get());
 const pretty = JSON.stringify(JSON.parse(snapshot.body), null, 2) + '\n';

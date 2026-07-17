@@ -19,6 +19,7 @@ Decisiones y plan por fases: `docs/decisions/` (ADRs, desde F1).
 ```bash
 npm install
 copy .env.example .env   # ajustar valores locales
+npx tsx scripts/forms/setup-contact.ts   # una vez: colección contact_messages
 npm run dev              # servidor con recarga
 ```
 
@@ -28,6 +29,14 @@ Verificación rápida:
 curl http://127.0.0.1:3000/health/live    # 200 siempre que el proceso viva
 curl http://127.0.0.1:3000/health/ready   # 200 solo si MongoDB responde
 ```
+
+## Formulario de contacto (F5)
+
+- `POST /v1/contact` — activo por defecto (`FEATURE_CONTACT_ENABLED=true`).
+- Kill-switch: `FEATURE_CONTACT_ENABLED=false`.
+- En producción hace falta `MONGO_URI_FORMS` distinto de `MONGO_URI` (ADR-003).
+- Aprovisionar índices/validador con `npx tsx scripts/forms/setup-contact.ts`
+  (cuenta con DDL; el runtime no crea la colección).
 
 ## Scripts
 

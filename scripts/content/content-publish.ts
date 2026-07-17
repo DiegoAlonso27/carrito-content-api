@@ -10,7 +10,7 @@
  * --to: published (default) | draft | archived
  */
 import { parseArgs } from 'node:util';
-import { ContentWriteError, setStatus } from '../../src/modules/content/content-write.service.js';
+import { ContentWriteError, setStatus } from '../../src/modules/content/content-write.js';
 import { parseSection, withContentDb } from './cli-helpers.js';
 
 const { values: args } = parseArgs({

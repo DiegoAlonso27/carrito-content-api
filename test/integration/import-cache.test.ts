@@ -7,7 +7,9 @@ import type { Db } from 'mongodb';
 import {
   checkHtmlSanitization,
   importCache,
+  preflightCache,
   validateCache,
+  validateCacheSemantics,
   verifyCache,
 } from '../../src/modules/content/content-import.js';
 import { contentCollections } from '../../src/modules/content/content.collections.js';
@@ -45,6 +47,55 @@ describe('validación y sanitización del golden file', () => {
 
   it('la sanitización del HTML embebido es no-op sobre el contenido actual', () => {
     expect(checkHtmlSanitization(cache)).toEqual([]);
+  });
+
+  it('preflightCache acepta el golden (forma + semántica)', () => {
+    const result = preflightCache(cache);
+    expect(result.errors).toEqual([]);
+    expect(result.cache).not.toBeNull();
+    expect(result.sanitizationChanges).toEqual([]);
+  });
+
+  it('validateCacheSemantics detecta locale inexistente en un text', () => {
+    const broken = structuredClone(cache);
+    const victim = broken.texts[0];
+    expect(victim).toBeDefined();
+    if (victim === undefined) return;
+    victim.localeCode = 'xx-XX';
+    const errors = validateCacheSemantics(broken);
+    expect(errors.some((e) => e.includes("locale 'xx-XX' inexistente"))).toBe(true);
+  });
+
+  it('validateCacheSemantics detecta versionToken huérfano y falta de correspondencia', () => {
+    const broken = structuredClone(cache);
+    broken.versionTokens.push({
+      sourceTable: 'Setting',
+      sourceKey: 'clave-fantasma',
+      rowVersionToken: '0x00000000000000FF',
+    });
+    const errors = validateCacheSemantics(broken);
+    expect(errors.some((e) => e.includes('huérfano') || e.includes('entradas vs'))).toBe(true);
+  });
+
+  it('validateCacheSemantics detecta collectionSlug inexistente', () => {
+    const broken = structuredClone(cache);
+    const victim = broken.items.find((i) => i.collectionSlug === 'faqs');
+    expect(victim).toBeDefined();
+    if (victim === undefined) return;
+    victim.collectionSlug = 'coleccion-fantasma';
+    // El esquema de data también falla en validateCache; semántica cubre la relación.
+    const errors = validateCacheSemantics(broken);
+    expect(errors.some((e) => e.includes("collectionSlug 'coleccion-fantasma'"))).toBe(true);
+  });
+
+  it('importCache rechaza un cache semánticamente inválido sin escribir', async () => {
+    const before = await db.collection(contentCollections.texts).countDocuments();
+    const broken = structuredClone(cache);
+    const victim = broken.texts[0];
+    if (victim !== undefined) victim.localeCode = 'xx-XX';
+
+    await expect(importCache(db, broken)).rejects.toThrow(/semánticamente inválido/);
+    expect(await db.collection(contentCollections.texts).countDocuments()).toBe(before);
   });
 });
 

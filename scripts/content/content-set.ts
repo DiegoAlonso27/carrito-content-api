@@ -14,7 +14,7 @@
  */
 import { parseArgs } from 'node:util';
 import { readFile } from 'node:fs/promises';
-import { ContentWriteError, setRecords } from '../../src/modules/content/content-write.service.js';
+import { ContentWriteError, setRecords } from '../../src/modules/content/content-write.js';
 import { parseSection, withContentDb } from './cli-helpers.js';
 
 const { values: args } = parseArgs({

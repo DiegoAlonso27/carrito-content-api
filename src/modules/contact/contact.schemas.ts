@@ -64,8 +64,10 @@ export const contactBodySchema = Type.Object(
 
 export const contactResponseSchema = Type.Object(
   {
-    id: Type.String(),
-    receivedAtUtc: Type.String(),
+    id: Type.String({ minLength: 1 }),
+    receivedAtUtc: Type.String({
+      pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?Z$',
+    }),
     isViewed: Type.Boolean(),
   },
   { additionalProperties: false },
