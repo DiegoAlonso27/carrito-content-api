@@ -1,0 +1,47 @@
+# carrito-content-api
+
+API independiente (Fastify + TypeScript + MongoDB) que entrega el contenido editorial
+publicado a `carrito-front`, expone el export compatible con `content-cache.json`
+para el build del front, y recibe los formularios de contacto y el Libro de
+Reclamaciones (este último se activa solo tras la validación legal).
+
+Reglas del proyecto para personas y agentes: ver [AGENTS.md](AGENTS.md).
+Decisiones y plan por fases: `docs/decisions/` (ADRs, desde F1).
+
+## Requisitos
+
+- Node.js >= 22 (LTS)
+- MongoDB local para desarrollo con datos reales (las pruebas usan
+  `mongodb-memory-server` y no requieren instalación)
+
+## Puesta en marcha
+
+```bash
+npm install
+copy .env.example .env   # ajustar valores locales
+npm run dev              # servidor con recarga
+```
+
+Verificación rápida:
+
+```bash
+curl http://127.0.0.1:3000/health/live    # 200 siempre que el proceso viva
+curl http://127.0.0.1:3000/health/ready   # 200 solo si MongoDB responde
+```
+
+## Scripts
+
+| Comando                           | Descripción                                                        |
+| --------------------------------- | ------------------------------------------------------------------ |
+| `npm run dev`                     | desarrollo con recarga (tsx watch)                                 |
+| `npm test`                        | pruebas (vitest; la primera corrida descarga el binario de mongod) |
+| `npm run typecheck`               | verificación de tipos estricta                                     |
+| `npm run lint` / `npm run format` | linting y formato                                                  |
+| `npm run build` / `npm start`     | build a `dist/` y arranque de producción                           |
+
+## Seguridad
+
+- `.env` nunca se versiona; en producción vive fuera del repo (`CARRITO_ENV_FILE`).
+- MongoDB solo escucha en `127.0.0.1` y nunca se expone a Internet.
+- Los datos personales (contacto/reclamos) viven en una base separada del
+  contenido editorial, con credenciales propias.

@@ -1,0 +1,13 @@
+# Dependencias y build
+node_modules/
+dist/
+coverage/
+
+# Secretos y configuración local — jamás en git
+.env
+.env.*
+!.env.example
+
+# Logs y temporales
+*.log
+tmp/
