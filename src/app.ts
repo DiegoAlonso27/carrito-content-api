@@ -13,6 +13,7 @@ import { healthRoutes } from './modules/health/health.routes.js';
 import { exportRoutes } from './modules/export/export.routes.js';
 import { contentRoutes } from './modules/content/content.routes.js';
 import { contactRoutes } from './modules/contact/contact.routes.js';
+import { complaintsRoutes } from './modules/complaints/complaints.routes.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -70,6 +71,11 @@ export function buildApp(config: AppConfig): FastifyInstance {
   if (config.FEATURE_CONTACT_ENABLED) {
     app.register(contactRoutes);
   }
+  // F6 gate de fase: el plugin SIEMPRE se registra, pero con
+  // FEATURE_COMPLAINTS_ENABLED=false (default) solo expone un 503 «no
+  // disponible» sin tocar Mongo (ADR-007). La activación exige cerrar el
+  // gate legal P1–P18 y es decisión explícita del usuario, no un despliegue.
+  app.register(complaintsRoutes);
 
   return app;
 }

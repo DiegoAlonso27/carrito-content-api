@@ -57,6 +57,77 @@ const schema = Type.Object({
    * fase pendiente — a diferencia de reclamos (`FEATURE_COMPLAINTS_ENABLED`).
    */
   FEATURE_CONTACT_ENABLED: Type.Boolean({ default: true }),
+  /**
+   * Libro de Reclamaciones (F6). Default **false**: gate de fase, NO
+   * kill-switch. Su activación exige cerrar el gate legal P1–P18 del contrato
+   * heredado (formularios-backend-csharp.md §10) y es una decisión explícita
+   * del usuario, nunca un despliegue (AGENTS.md). Con `false`, el endpoint
+   * responde 503 «no disponible» sin tocar la base (ver ADR-007).
+   */
+  FEATURE_COMPLAINTS_ENABLED: Type.Boolean({ default: false }),
+  /**
+   * Acuse EXPLÍCITO de que el gate legal/operativo P1–P18 está cerrado. El
+   * flag de fase no basta por sí solo: habilitar el Libro exige además poner
+   * esto en `true`, un acto consciente que declara cerrado el contrato legal
+   * (firma, adjuntos, correo, plazo, retención, roles). Con `false`, activar
+   * el Libro detiene el arranque aunque el resto de la config esté completa.
+   * NUNCA se pone en `true` sin autorización explícita del usuario.
+   */
+  COMPLAINTS_LEGAL_GATE_CLEARED: Type.Boolean({ default: false }),
+  /** Rate limit del Libro de Reclamaciones (mismo patrón que contacto). */
+  RATE_LIMIT_COMPLAINTS_MAX: Type.Number({ default: 5, minimum: 1 }),
+  RATE_LIMIT_COMPLAINTS_WINDOW_MINUTES: Type.Number({ default: 10, minimum: 1 }),
+  /**
+   * Snapshot del proveedor persistido en cada reclamo (P8). Nunca sale del
+   * cache público: es configuración propia del backend. Vacío por defecto;
+   * obligatorio solo cuando el Libro está habilitado.
+   */
+  COMPLAINTS_PROVIDER_LEGAL_NAME: Type.String({ default: '' }),
+  COMPLAINTS_PROVIDER_RUC: Type.String({ default: '' }),
+  COMPLAINTS_PROVIDER_ADDRESS: Type.String({ default: '' }),
+  /**
+   * Versión del texto de aceptación/confirmación (P1/P16). Se persiste con
+   * cada reclamo como evidencia de qué texto aceptó el consumidor. Valor
+   * legal a fijar en el MR 1; configurable, nunca asumido en código.
+   */
+  COMPLAINTS_CONFIRMATION_TEXT_VERSION: Type.String({ default: '' }),
+  /**
+   * Plazo de respuesta en días (P1). Se usa para calcular `responseDueAtUtc`.
+   * El valor legal vigente lo confirma el MR 1; no se asume (la página cita 30
+   * días calendario de la Ley 29571, pero hay modificaciones posteriores).
+   * Configurable; obligatorio solo cuando el Libro está habilitado.
+   */
+  COMPLAINTS_RESPONSE_DAYS: Type.Number({ default: 0, minimum: 0 }),
+  /**
+   * Tamaño máximo del PNG de firma (P18). Propuesta del plan: 256 KB; valor
+   * final del MR 1. Configurable.
+   */
+  COMPLAINTS_SIGNATURE_MAX_BYTES: Type.Number({ default: 256 * 1024, minimum: 1 }),
+  /**
+   * Política de adjuntos del consumidor (P14). Recomendación inicial del plan:
+   * PDF/JPEG/PNG, 5 archivos, 10 MB c/u. En Mongo (sin transacciones multi-doc
+   * en standalone) el reclamo se persiste como un ÚNICO documento atómico, así
+   * que el total embebido debe quedar bajo el límite de 16 MB de BSON: el
+   * default total es conservador y validado antes de insertar (ver ADR-007).
+   */
+  COMPLAINTS_ATTACHMENTS_MAX_FILES: Type.Number({ default: 5, minimum: 0 }),
+  COMPLAINTS_ATTACHMENTS_MAX_FILE_BYTES: Type.Number({ default: 4 * 1024 * 1024, minimum: 1 }),
+  COMPLAINTS_ATTACHMENTS_MAX_TOTAL_BYTES: Type.Number({ default: 12 * 1024 * 1024, minimum: 1 }),
+  /** Allowlist de MIME de adjuntos (coma-separada). Firma mágica se valida además en código. */
+  COMPLAINTS_ATTACHMENTS_ALLOWED_TYPES: Type.String({
+    default: 'application/pdf,image/jpeg,image/png',
+  }),
+  /**
+   * SMTP para el correo de constancia (P2). Vacío = transporte no-op (no
+   * envía; el reclamo se persiste igual y el dispatch queda `pendiente`).
+   * Credenciales SOLO por env; obligatorio configurarlas para envío real.
+   */
+  COMPLAINTS_SMTP_HOST: Type.String({ default: '' }),
+  COMPLAINTS_SMTP_PORT: Type.Number({ default: 587, minimum: 1, maximum: 65535 }),
+  COMPLAINTS_SMTP_SECURE: Type.Boolean({ default: false }),
+  COMPLAINTS_SMTP_USER: Type.String({ default: '' }),
+  COMPLAINTS_SMTP_PASSWORD: Type.String({ default: '' }),
+  COMPLAINTS_SMTP_FROM: Type.String({ default: '' }),
 });
 
 export type AppConfig = Static<typeof schema>;
@@ -82,7 +153,79 @@ export function loadConfig(overrides?: Record<string, string>): AppConfig {
   }
 
   assertProductionFormsCredentials(config);
+  assertComplaintsConfig(config);
   return config;
+}
+
+/**
+ * Validaciones de arranque del Libro de Reclamaciones (F6). Solo aplican
+ * cuando el gate está habilitado: con `FEATURE_COMPLAINTS_ENABLED=false`
+ * (default) no se exige ningún valor legal y el endpoint responde 503.
+ *
+ * Estos asserts son una segunda barrera contra la activación accidental o
+ * prematura:
+ *
+ * 1. Habilitar el Libro exige el acuse EXPLÍCITO `COMPLAINTS_LEGAL_GATE_CLEARED`
+ *    (declara cerrado P1–P18): el flag de fase por sí solo no basta.
+ * 2. Exige los valores legales/operativos mínimos (proveedor P8, texto de
+ *    confirmación P1/P16, plazo P1) — no se asumen en código.
+ * 3. En producción, además, la infraestructura de correo de constancia es
+ *    obligatoria (P2: el Libro debe enviar la constancia; no se activa sin
+ *    SMTP) y `carrito_forms` debe usar credenciales propias (ADR-003).
+ *
+ * Sin cerrar estos puntos, activar el flag detiene el arranque en vez de
+ * aceptar reclamos que luego no podrían atenderse conforme a ley.
+ */
+function assertComplaintsConfig(config: AppConfig): void {
+  if (!config.FEATURE_COMPLAINTS_ENABLED) return;
+
+  if (!config.COMPLAINTS_LEGAL_GATE_CLEARED) {
+    throw new Error(
+      'FEATURE_COMPLAINTS_ENABLED=true exige COMPLAINTS_LEGAL_GATE_CLEARED=true: el gate ' +
+        'legal P1–P18 (formularios-backend-csharp.md §10; ADR-007) debe cerrarse de forma ' +
+        'explícita y autorizada por el usuario. El flag de fase por sí solo no habilita el Libro.',
+    );
+  }
+
+  const missing: string[] = [];
+  if (config.COMPLAINTS_PROVIDER_LEGAL_NAME.length === 0)
+    missing.push('COMPLAINTS_PROVIDER_LEGAL_NAME');
+  if (config.COMPLAINTS_PROVIDER_RUC.length === 0) missing.push('COMPLAINTS_PROVIDER_RUC');
+  if (config.COMPLAINTS_PROVIDER_ADDRESS.length === 0) missing.push('COMPLAINTS_PROVIDER_ADDRESS');
+  if (config.COMPLAINTS_CONFIRMATION_TEXT_VERSION.length === 0)
+    missing.push('COMPLAINTS_CONFIRMATION_TEXT_VERSION');
+  if (config.COMPLAINTS_RESPONSE_DAYS <= 0) missing.push('COMPLAINTS_RESPONSE_DAYS');
+
+  if (missing.length > 0) {
+    throw new Error(
+      `FEATURE_COMPLAINTS_ENABLED=true requiere cerrar el gate legal (P1/P8/P16) y ` +
+        `configurar: ${missing.join(', ')} (formularios-backend-csharp.md §10; ADR-007). ` +
+        `Su activación es una decisión explícita, no un despliegue (AGENTS.md).`,
+    );
+  }
+
+  if (config.NODE_ENV !== 'production') return;
+
+  // Correo de constancia obligatorio en producción (P2): el Libro virtual debe
+  // enviar la constancia al consumidor; no se expone sin infraestructura real.
+  if (config.COMPLAINTS_SMTP_HOST.length === 0 || config.COMPLAINTS_SMTP_FROM.length === 0) {
+    throw new Error(
+      'En producción, FEATURE_COMPLAINTS_ENABLED=true exige COMPLAINTS_SMTP_HOST y ' +
+        'COMPLAINTS_SMTP_FROM (correo de constancia obligatorio — P2, §5.6).',
+    );
+  }
+  if (config.MONGO_URI_FORMS.length === 0) {
+    throw new Error(
+      'MONGO_URI_FORMS es obligatorio en producción cuando FEATURE_COMPLAINTS_ENABLED=true ' +
+        '(credenciales propias de carrito_forms; AGENTS.md — datos personales).',
+    );
+  }
+  if (config.MONGO_URI_FORMS === config.MONGO_URI) {
+    throw new Error(
+      'MONGO_URI_FORMS no puede coincidir con MONGO_URI en producción ' +
+        '(AGENTS.md: usuario Mongo propio para formularios).',
+    );
+  }
 }
 
 /**
