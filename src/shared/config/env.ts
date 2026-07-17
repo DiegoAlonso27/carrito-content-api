@@ -22,6 +22,14 @@ const schema = Type.Object({
     { default: 'info' },
   ),
   MONGO_URI: Type.String({ default: 'mongodb://127.0.0.1:27017' }),
+  /**
+   * Credenciales propias de `carrito_forms` (usuario Mongo separado del de
+   * contenido, AGENTS.md — datos personales). Vacío = usa MONGO_URI (solo
+   * conveniencia de desarrollo local con un único mongod); en producción
+   * debe apuntar a un usuario distinto, con permisos mínimos (sin DDL: la
+   * colección/índices los provisiona `scripts/forms/setup-contact.ts`).
+   */
+  MONGO_URI_FORMS: Type.String({ default: '' }),
   MONGO_DB_CONTENT: Type.String({ default: 'carrito_content' }),
   MONGO_DB_FORMS: Type.String({ default: 'carrito_forms' }),
   /**
@@ -37,6 +45,13 @@ const schema = Type.Object({
   CORS_ORIGINS: Type.String({ default: '' }),
   /** Límite de lectura pública por IP y minuto (propuesta pendiente de aprobación: 120). */
   RATE_LIMIT_READ_PER_MINUTE: Type.Number({ default: 120, minimum: 1 }),
+  /**
+   * Rate limit del formulario de contacto (contrato heredado,
+   * formularios-backend-csharp.md §6: "5 envíos / 10 min por formulario,
+   * parametrizable"). Ambos valores son ese default, configurables por env.
+   */
+  RATE_LIMIT_CONTACT_MAX: Type.Number({ default: 5, minimum: 1 }),
+  RATE_LIMIT_CONTACT_WINDOW_MINUTES: Type.Number({ default: 10, minimum: 1 }),
 });
 
 export type AppConfig = Static<typeof schema>;

@@ -12,6 +12,7 @@ import { registerErrorHandling } from './shared/errors/error-handler.js';
 import { healthRoutes } from './modules/health/health.routes.js';
 import { exportRoutes } from './modules/export/export.routes.js';
 import { contentRoutes } from './modules/content/content.routes.js';
+import { contactRoutes } from './modules/contact/contact.routes.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -64,6 +65,7 @@ export function buildApp(config: AppConfig): FastifyInstance {
   app.register(healthRoutes);
   app.register(exportRoutes);
   app.register(contentRoutes);
+  app.register(contactRoutes);
 
   return app;
 }
