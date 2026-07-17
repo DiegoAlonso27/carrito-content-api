@@ -24,6 +24,19 @@ const schema = Type.Object({
   MONGO_URI: Type.String({ default: 'mongodb://127.0.0.1:27017' }),
   MONGO_DB_CONTENT: Type.String({ default: 'carrito_content' }),
   MONGO_DB_FORMS: Type.String({ default: 'carrito_forms' }),
+  /**
+   * Claves del export servidor-a-servidor, separadas por coma (máx. 2 para
+   * rotación sin corte). Vacío = endpoint deshabilitado (todo request → 401).
+   */
+  EXPORT_API_KEYS: Type.String({ default: '' }),
+  /**
+   * Orígenes permitidos por CORS (dominios de carrito-front), separados por
+   * coma. Vacío = sin CORS: el navegador no puede consumir la API desde otro
+   * origen (los endpoints server-a-server no se ven afectados).
+   */
+  CORS_ORIGINS: Type.String({ default: '' }),
+  /** Límite de lectura pública por IP y minuto (propuesta pendiente de aprobación: 120). */
+  RATE_LIMIT_READ_PER_MINUTE: Type.Number({ default: 120, minimum: 1 }),
 });
 
 export type AppConfig = Static<typeof schema>;

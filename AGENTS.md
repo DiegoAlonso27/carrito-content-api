@@ -66,3 +66,16 @@ Reclamaciones (Perú). Monolito modular. Sin panel administrativo en fase 1.
 - Al cerrar un bloque: informar archivos creados/modificados, pruebas
   ejecutadas con resultados, pruebas no ejecutadas con motivo, riesgos y
   decisiones nuevas (registrar ADR en `docs/decisions/` si corresponde).
+
+## Registro de errores y aprendizajes
+
+- Cuando un modelo, agente o persona cometa un error relevante durante el
+  trabajo, añadir aquí una regla breve y accionable para prevenir su
+  repetición.
+- Registrar el aprendizaje, no una transcripción del incidente: incluir qué
+  evitar y la conducta correcta. Omitir culpables, conversaciones, datos
+  personales, secretos, tokens, valores de `.env` y detalles internos.
+- No registrar fallos transitorios ni preferencias aisladas; consolidar solo
+  errores repetibles, de impacto o que revelen una restricción del proyecto.
+- Si el aprendizaje es específico de una decisión arquitectónica, registrarlo
+  también como ADR en `docs/decisions/` cuando corresponda.

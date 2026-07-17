@@ -1,0 +1,3783 @@
+{
+  "generatedAtUtc": "2026-07-13T05:10:49.944Z",
+  "locales": [
+    {
+      "code": "es-PE",
+      "name": "Español (Perú)",
+      "isDefault": true,
+      "isActive": true,
+      "sortOrder": 1
+    }
+  ],
+  "settings": [
+    {
+      "key": "brand.color.accent",
+      "value": "#0ea5e9",
+      "valueType": "color",
+      "description": "main.css:22 (--brand, sin uso) - informativo",
+      "isActive": true,
+      "sortOrder": 40
+    },
+    {
+      "key": "brand.color.primary",
+      "value": "#e13028",
+      "valueType": "color",
+      "description": "main.css:16 (--ui-primary, real)",
+      "isActive": true,
+      "sortOrder": 20
+    },
+    {
+      "key": "brand.color.secondary",
+      "value": "#fea500",
+      "valueType": "color",
+      "description": "main.css:17 (--ui-secondary, real)",
+      "isActive": true,
+      "sortOrder": 30
+    },
+    {
+      "key": "company.address",
+      "value": "Av. Jose Leonardo Ortiz N° 010 Chiclayo",
+      "valueType": "string",
+      "description": "AppFooter.vue:129",
+      "isActive": true,
+      "sortOrder": 130
+    },
+    {
+      "key": "company.address.legal",
+      "value": "Av. JOSE LEONARDO ORTIZ #010, CHICLAYO - LAMBAYEQUE",
+      "valueType": "string",
+      "description": "libro-de-reclamaciones.vue:26 (formato distinto, D8)",
+      "isActive": true,
+      "sortOrder": 160
+    },
+    {
+      "key": "company.email",
+      "value": "atencionalcliente@transporteschiclayo.pe",
+      "valueType": "string",
+      "description": "AppFooter.vue:155",
+      "isActive": true,
+      "sortOrder": 120
+    },
+    {
+      "key": "company.legalName",
+      "value": "EMPRESA TRANSPORTES CHICLAYO S.A.",
+      "valueType": "string",
+      "description": "libro-de-reclamaciones.vue:19-20",
+      "isActive": true,
+      "sortOrder": 140
+    },
+    {
+      "key": "company.ruc",
+      "value": "20103626448",
+      "valueType": "string",
+      "description": "libro-de-reclamaciones.vue:21",
+      "isActive": true,
+      "sortOrder": 150
+    },
+    {
+      "key": "contact.phone.lima",
+      "value": "311-5050",
+      "valueType": "string",
+      "description": "contactanos.vue:41",
+      "isActive": true,
+      "sortOrder": 70
+    },
+    {
+      "key": "contact.phone.provinces",
+      "value": "0801-11111",
+      "valueType": "string",
+      "description": "contactanos.vue:42",
+      "isActive": true,
+      "sortOrder": 80
+    },
+    {
+      "key": "contact.whatsapp.number",
+      "value": "972013941",
+      "valueType": "string",
+      "description": "contactanos.vue:110",
+      "isActive": true,
+      "sortOrder": 90
+    },
+    {
+      "key": "contact.whatsapp.url",
+      "value": "https://wa.link/cn2ito",
+      "valueType": "string",
+      "description": "contactanos.vue:104",
+      "isActive": true,
+      "sortOrder": 100
+    },
+    {
+      "key": "footer.whatsapp.url",
+      "value": "https://web.whatsapp.com",
+      "valueType": "string",
+      "description": "AppFooter.vue:184",
+      "isActive": true,
+      "sortOrder": 110
+    },
+    {
+      "key": "site.titleTemplate",
+      "value": "%s | Transportes Chiclayo",
+      "valueType": "string",
+      "description": "nuxt.config.ts:156",
+      "isActive": true,
+      "sortOrder": 10
+    },
+    {
+      "key": "slider.header.intervalMs",
+      "value": "5000",
+      "valueType": "number",
+      "description": "index.vue:3 (:interval-ms)",
+      "isActive": true,
+      "sortOrder": 50
+    },
+    {
+      "key": "slider.offers.intervalMs",
+      "value": "3500",
+      "valueType": "number",
+      "description": "index.vue:56 (:interval)",
+      "isActive": true,
+      "sortOrder": 60
+    }
+  ],
+  "pages": [
+    {
+      "localeCode": "es-PE",
+      "slug": "contactanos",
+      "route": "/contactanos",
+      "title": "Contáctanos",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 60
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "destinos",
+      "route": "/destinos",
+      "title": "Destinos",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 20
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "encomiendas",
+      "route": "/encomiendas",
+      "title": "Encomiendas",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 40
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "encomiendas-resultados",
+      "route": "/encomiendas/resultados",
+      "title": "Resultados de la búsqueda",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 130
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "home",
+      "route": "/",
+      "title": "Inicio",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 10
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "libro-de-reclamaciones",
+      "route": "/libro-de-reclamaciones",
+      "title": "Libro de Reclamaciones",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 110
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "mi-cuenta",
+      "route": "/mi-cuenta",
+      "title": "Mi Cuenta",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 70
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "politicas-de-privacidad",
+      "route": "/politicas-de-privacidad",
+      "title": "Políticas de privacidad",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 90
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "preguntas-frecuentes",
+      "route": "/preguntas-frecuentes",
+      "title": "Preguntas frecuentes",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 100
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "proceso-venta",
+      "route": "/proceso-venta",
+      "title": "Proceso de venta",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 120
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "promociones",
+      "route": "/promociones",
+      "title": "Promociones",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 50
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "servicios",
+      "route": "/servicios",
+      "title": "Servicios",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 30
+    },
+    {
+      "localeCode": "es-PE",
+      "slug": "terminos-y-condiciones",
+      "route": "/terminos-y-condiciones",
+      "title": "Términos y condiciones",
+      "metaTitle": null,
+      "metaDescription": null,
+      "ogImageSlug": null,
+      "isActive": true,
+      "sortOrder": 80
+    }
+  ],
+  "texts": [
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.heading.preTitle",
+      "value": "Libro de",
+      "isActive": true,
+      "sortOrder": 490
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.heading.title",
+      "value": "Reclamaciones",
+      "isActive": true,
+      "sortOrder": 500
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.intro",
+      "value": "Conforme a lo establecido en el Código de Protección y Defensa del Consumidor esta institución cuenta con un Libro de Reclamaciones a tu disposición.",
+      "isActive": true,
+      "sortOrder": 510
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.law.body",
+      "value": "24.1 Sin perjuicio del derecho de los consumidores de iniciar las acciones correspondientes ante las autoridades competentes, los proveedores están obligados a atender los reclamos presentados por sus consumidores y dar respuesta a los mismos en un plazo no mayor a treinta (30) días calendario. Dicho plazo puede ser extendido por otro igual cuando la naturaleza del reclamo los justifique, situación que es puesta en conocimiento del consumidor antes de la culminación del plazo inicial.",
+      "isActive": true,
+      "sortOrder": 620
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.law.title",
+      "value": "Ley Nº 29571, Artículo 24.- Servicio de atención de reclamos:",
+      "isActive": true,
+      "sortOrder": 610
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.legend.claim.body",
+      "value": "Disconformidad relacionada a los productos o servicios.",
+      "isActive": true,
+      "sortOrder": 580
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.legend.claim.title",
+      "value": "Reclamo:",
+      "isActive": true,
+      "sortOrder": 570
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.legend.complaint.body",
+      "value": "Disconformidad no relacionada a los productos o servicios; o malestar o descontento respecto a la atención al público.",
+      "isActive": true,
+      "sortOrder": 600
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.legend.complaint.title",
+      "value": "Queja:",
+      "isActive": true,
+      "sortOrder": 590
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.section.consumer",
+      "value": "Identificación del consumidor reclamante",
+      "isActive": true,
+      "sortOrder": 530
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.section.detail",
+      "value": "Detalle de la reclamación y pedido del consumidor",
+      "isActive": true,
+      "sortOrder": 550
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.section.provider",
+      "value": "Observaciones y acciones adoptadas por el proveedor",
+      "isActive": true,
+      "sortOrder": 560
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.section.service",
+      "value": "Identificación del servicio contratado",
+      "isActive": true,
+      "sortOrder": 540
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "complaints.sheet.title",
+      "value": "Hoja de reclamación",
+      "isActive": true,
+      "sortOrder": 520
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "contact.hero.note",
+      "value": "Coméntanos en que podemos ayudarte",
+      "isActive": true,
+      "sortOrder": 180
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "contact.hero.preTitle",
+      "value": "Estamos aquí",
+      "isActive": true,
+      "sortOrder": 160
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "contact.hero.title",
+      "value": "Para atenderte",
+      "isActive": true,
+      "sortOrder": 170
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "contact.intro",
+      "value": "Comentanos en que podemos ayudarte, tambien nos puedes contactar a través de nuestro fonobus, llamándonos al 311-5050 en Lima metropolitana y desde provincias al 0801-11111.",
+      "isActive": true,
+      "sortOrder": 190
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "contact.section.preTitle",
+      "value": "Protocolo de Seguridad",
+      "isActive": true,
+      "sortOrder": 370
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "contact.section.title",
+      "value": "Envío y Recepción",
+      "isActive": true,
+      "sortOrder": 380
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "destinations.cta.more",
+      "value": "Ver más destinos",
+      "isActive": true,
+      "sortOrder": 450
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "faq.heading.preTitle",
+      "value": "Preguntas",
+      "isActive": true,
+      "sortOrder": 390
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "faq.heading.title",
+      "value": "Frecuentes",
+      "isActive": true,
+      "sortOrder": 400
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "footer.agencies.title",
+      "value": "Agencias",
+      "isActive": true,
+      "sortOrder": 220
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "footer.company.title",
+      "value": "Empresa",
+      "isActive": true,
+      "sortOrder": 210
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "footer.copyright",
+      "value": "Transportes Chiclayo",
+      "isActive": true,
+      "sortOrder": 240
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "footer.description",
+      "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "isActive": true,
+      "sortOrder": 200
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "footer.pay.title",
+      "value": "Paga con",
+      "isActive": true,
+      "sortOrder": 230
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "home.destinations.preTitle",
+      "value": "La emocion de viajar",
+      "isActive": true,
+      "sortOrder": 280
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "home.destinations.title",
+      "value": "Destinos",
+      "isActive": true,
+      "sortOrder": 290
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "home.hero.covidNote",
+      "value": "Encuentra respuestas a todas tus preguntas sobre viajes relacionadas con la COVID-19 aquí",
+      "isActive": true,
+      "sortOrder": 40
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "home.hero.preTitle",
+      "value": "Viaja por el Perú",
+      "isActive": true,
+      "sortOrder": 10
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "home.hero.subTitle",
+      "value": "Conoce nuestros destinos y ofertas",
+      "isActive": true,
+      "sortOrder": 30
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "home.hero.title",
+      "value": "Con tarifas únicas",
+      "isActive": true,
+      "sortOrder": 20
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "legal.privacy.heading.preTitle",
+      "value": "Nuestras",
+      "isActive": true,
+      "sortOrder": 430
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "legal.privacy.heading.title",
+      "value": "Politicas de privacidad",
+      "isActive": true,
+      "sortOrder": 440
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "legal.terms.heading.preTitle",
+      "value": "Nuestros",
+      "isActive": true,
+      "sortOrder": 410
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "legal.terms.heading.title",
+      "value": "Terminos y Condiciones",
+      "isActive": true,
+      "sortOrder": 420
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "nav.login",
+      "value": "Iniciar sesión",
+      "isActive": true,
+      "sortOrder": 250
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "offers.slider.preTitle",
+      "value": "Principales destinos",
+      "isActive": true,
+      "sortOrder": 260
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "offers.slider.title",
+      "value": "Y promociones",
+      "isActive": true,
+      "sortOrder": 270
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "parcels.hero.note",
+      "value": "GPS: Nuestras unidades son monitoreadas vía GPS las 24 horas.",
+      "isActive": true,
+      "sortOrder": 110
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "parcels.hero.preTitle",
+      "value": "Estamos llevando",
+      "isActive": true,
+      "sortOrder": 90
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "parcels.hero.title",
+      "value": "Tu encomienda",
+      "isActive": true,
+      "sortOrder": 100
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "parcels.protocol.preTitle",
+      "value": "Protocolo de Seguridad",
+      "isActive": true,
+      "sortOrder": 350
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "parcels.protocol.title",
+      "value": "Envío y Recepción",
+      "isActive": true,
+      "sortOrder": 360
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "parcels.section.preTitle",
+      "value": "Servicios",
+      "isActive": true,
+      "sortOrder": 330
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "parcels.section.title",
+      "value": "Encomiendas",
+      "isActive": true,
+      "sortOrder": 340
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "parcels.security.description",
+      "value": "Verificar que los usuarios del servicio de envío y recepción de encomiendas cumplan con la normativa implementada por la empresa para brindar seguridad al servicio ofrecido",
+      "isActive": true,
+      "sortOrder": 150
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "parcels.security.title",
+      "value": "Envío y recepción de encomiendas",
+      "isActive": true,
+      "sortOrder": 140
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "parcels.verify.description",
+      "value": "Ingresa tu número de documento y la clave señaladas en el comprobante que se te entregó al momento de enviar tu encomienda para poder realizar seguimiento de tus envíos.",
+      "isActive": true,
+      "sortOrder": 130
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "parcels.verify.title",
+      "value": "Verificar estado de encomienda",
+      "isActive": true,
+      "sortOrder": 120
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "sales.minor.policy",
+      "value": "Menores de 12 años deben viajar con un adulto, presentar DNI y autorización notarial",
+      "isActive": true,
+      "sortOrder": 480
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "sales.notice.requirements",
+      "value": "Asegúrate de cumplir con los requisitos para viajar a este destino",
+      "isActive": true,
+      "sortOrder": 460
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "sales.support.note",
+      "value": "Nota: Si tiene algún inconveniente con su compra, comuníquese con nosotros al correo postventa@.pe en el horario de 6:30am a 10:30am de Lunes a Domingo.",
+      "isActive": true,
+      "sortOrder": 470
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "services.detail.preTitle",
+      "value": "Servicios",
+      "isActive": true,
+      "sortOrder": 320
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "services.hero.note",
+      "value": "Viaja con la mayor comodidaden los buses más modernos",
+      "isActive": true,
+      "sortOrder": 80
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "services.hero.preTitle",
+      "value": "Experimenta",
+      "isActive": true,
+      "sortOrder": 50
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "services.hero.subTitle",
+      "value": "Conoce nuestros destinos y ofertas",
+      "isActive": true,
+      "sortOrder": 70
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "services.hero.title",
+      "value": "Nuestros Servicios",
+      "isActive": true,
+      "sortOrder": 60
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "services.list.preTitle",
+      "value": "Servicios",
+      "isActive": true,
+      "sortOrder": 300
+    },
+    {
+      "localeCode": "es-PE",
+      "key": "services.list.title",
+      "value": "Te ofrecemos",
+      "isActive": true,
+      "sortOrder": 310
+    }
+  ],
+  "assets": [
+    {
+      "slug": "banner-contactanos",
+      "path": "/cms/img/contactanos_header.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 50
+    },
+    {
+      "slug": "banner-destinos",
+      "path": "/cms/img/destinos_header.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 40
+    },
+    {
+      "slug": "banner-encomiendas",
+      "path": "/cms/img/encomiendas_header.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 30
+    },
+    {
+      "slug": "banner-inicio",
+      "path": "/cms/img/inicio_header.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 10
+    },
+    {
+      "slug": "banner-servicios",
+      "path": "/cms/img/servicios_header.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 20
+    },
+    {
+      "slug": "destino-lima",
+      "path": "/cms/img/lima.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 70
+    },
+    {
+      "slug": "destino-trujillo",
+      "path": "/cms/img/trujillo.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 60
+    },
+    {
+      "slug": "feature-bag",
+      "path": "/cms/img/bag_icon.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 100
+    },
+    {
+      "slug": "feature-message",
+      "path": "/cms/img/message_icon.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 80
+    },
+    {
+      "slug": "feature-package",
+      "path": "/cms/img/package_icon.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 90
+    },
+    {
+      "slug": "gallery-01",
+      "path": "/cms/img/gallery_01.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 170
+    },
+    {
+      "slug": "gallery-02",
+      "path": "/cms/img/gallery_02.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 180
+    },
+    {
+      "slug": "gallery-03",
+      "path": "/cms/img/gallery_03.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 190
+    },
+    {
+      "slug": "gallery-04",
+      "path": "/cms/img/gallery_04.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 200
+    },
+    {
+      "slug": "parcel-embalado",
+      "path": "/cms/img/embalado.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 210
+    },
+    {
+      "slug": "parcel-empresas",
+      "path": "/cms/img/empresas.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 260
+    },
+    {
+      "slug": "parcel-entrega",
+      "path": "/cms/img/entrega.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 240
+    },
+    {
+      "slug": "parcel-giros",
+      "path": "/cms/img/giros.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 250
+    },
+    {
+      "slug": "parcel-recepcion",
+      "path": "/cms/img/recepcion.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 230
+    },
+    {
+      "slug": "parcel-verificacion",
+      "path": "/cms/img/verificacion.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 220
+    },
+    {
+      "slug": "pay-amex",
+      "path": "/cms/img/amex_icon.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 310
+    },
+    {
+      "slug": "pay-diners",
+      "path": "/cms/img/diners_icon.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 320
+    },
+    {
+      "slug": "pay-mastercard",
+      "path": "/cms/img/mastercard_icon.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 290
+    },
+    {
+      "slug": "pay-pagoefectivo",
+      "path": "/cms/img/pagoefectivo_icon.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 300
+    },
+    {
+      "slug": "pay-paypal",
+      "path": "/cms/img/paypal_icon.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 280
+    },
+    {
+      "slug": "pay-safetypay",
+      "path": "/cms/img/safetypay_icon.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 330
+    },
+    {
+      "slug": "pay-visa",
+      "path": "/cms/img/visa_icon.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 270
+    },
+    {
+      "slug": "service-banio",
+      "path": "/cms/img/banio.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 140
+    },
+    {
+      "slug": "service-bus",
+      "path": "/cms/img/item_service.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 110
+    },
+    {
+      "slug": "service-climatizacion",
+      "path": "/cms/img/climatizacion.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 120
+    },
+    {
+      "slug": "service-comodidad",
+      "path": "/cms/img/comodidad.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 150
+    },
+    {
+      "slug": "service-gps",
+      "path": "/cms/img/gps.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 130
+    },
+    {
+      "slug": "service-multimedia",
+      "path": "/cms/img/multimedia.png",
+      "altText": null,
+      "mimeType": "image/png",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 160
+    }
+  ],
+  "collections": [
+    {
+      "slug": "features",
+      "name": "Características",
+      "description": "Bloques editoriales de beneficios y experiencia.",
+      "isActive": true,
+      "sortOrder": 10
+    },
+    {
+      "slug": "offers",
+      "name": "Ofertas",
+      "description": "Ofertas y promociones comerciales.",
+      "isActive": true,
+      "sortOrder": 20
+    },
+    {
+      "slug": "destinations",
+      "name": "Destinos",
+      "description": "Tarjetas y listados editoriales de destinos.",
+      "isActive": true,
+      "sortOrder": 30
+    },
+    {
+      "slug": "destination-guides",
+      "name": "Guías de destino",
+      "description": "Contenido rico para páginas de destino por slug.",
+      "isActive": true,
+      "sortOrder": 40
+    },
+    {
+      "slug": "services",
+      "name": "Servicios",
+      "description": "Servicios editoriales con rutas /servicio/:slug.",
+      "isActive": true,
+      "sortOrder": 50
+    },
+    {
+      "slug": "gallery-services",
+      "name": "Galería de servicios",
+      "description": "Imágenes de apoyo para servicios.",
+      "isActive": true,
+      "sortOrder": 60
+    },
+    {
+      "slug": "parcels",
+      "name": "Encomiendas",
+      "description": "Pasos y contenido editorial de encomiendas.",
+      "isActive": true,
+      "sortOrder": 70
+    },
+    {
+      "slug": "contact-items",
+      "name": "Items de contacto",
+      "description": "Links de ayuda y contacto.",
+      "isActive": true,
+      "sortOrder": 80
+    },
+    {
+      "slug": "payment-methods",
+      "name": "Métodos de pago",
+      "description": "Métodos de pago visibles en la experiencia.",
+      "isActive": true,
+      "sortOrder": 90
+    },
+    {
+      "slug": "faqs",
+      "name": "Preguntas frecuentes",
+      "description": "Preguntas y respuestas editoriales.",
+      "isActive": true,
+      "sortOrder": 100
+    },
+    {
+      "slug": "banners",
+      "name": "Banners",
+      "description": "Banners de cabecera y carruseles.",
+      "isActive": true,
+      "sortOrder": 110
+    },
+    {
+      "slug": "announcements",
+      "name": "Comunicados",
+      "description": "Comunicados con activeFrom/activeTo dentro de DataJson.",
+      "isActive": true,
+      "sortOrder": 120
+    },
+    {
+      "slug": "legal-sections",
+      "name": "Secciones legales",
+      "description": "Textos legales y placeholders aprobados.",
+      "isActive": true,
+      "sortOrder": 130
+    },
+    {
+      "slug": "footer-links",
+      "name": "Enlaces del footer",
+      "description": "Links del pie de página; links rotos se desactivan en Fase 2.",
+      "isActive": true,
+      "sortOrder": 140
+    },
+    {
+      "slug": "nav-links",
+      "name": "Enlaces de navegación",
+      "description": "Links principales de navegación.",
+      "isActive": true,
+      "sortOrder": 150
+    },
+    {
+      "slug": "pages",
+      "name": "Páginas",
+      "description": "Registro auxiliar; los metadatos SEO viven en dbo.Page.",
+      "isActive": true,
+      "sortOrder": 160
+    },
+    {
+      "slug": "settings",
+      "name": "Configuración",
+      "description": "Registro auxiliar; los valores globales viven en dbo.Setting.",
+      "isActive": true,
+      "sortOrder": 170
+    }
+  ],
+  "items": [
+    {
+      "collectionSlug": "announcements",
+      "localeCode": "es-PE",
+      "slug": "covid",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "title": "Comunicado",
+        "body": "Informamos a nuestros pasajeros que según las nuevas medidas del Gobierno (DS-030 2022), los niños mayores de 12 años deberán acreditar segunda dosis de vacuna y los mayores de 18 años haber recibido la tercera dosis contra la COVID-19. Caso contrario, deberán presentar una prueba molecular negativa no mayor a 48 horas, antes de realizar su viaje.",
+        "style": "warning",
+        "activeFrom": null,
+        "activeTo": null
+      },
+      "rowVersionToken": "0x0000000000000884"
+    },
+    {
+      "collectionSlug": "announcements",
+      "localeCode": "es-PE",
+      "slug": "nav-modal",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "title": "Comunicado Importante",
+        "body": "Este es un comunicado importante para nuestros usuarios. Aquí puedes colocar información relevante sobre el servicio.",
+        "style": "info",
+        "dismissKey": "comunicado-closed",
+        "activeFrom": null,
+        "activeTo": null
+      },
+      "rowVersionToken": "0x0000000000000885"
+    },
+    {
+      "collectionSlug": "banners",
+      "localeCode": "es-PE",
+      "slug": "banner-inicio",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "imageAsset": "banner-inicio"
+      },
+      "rowVersionToken": "0x000000000000087F"
+    },
+    {
+      "collectionSlug": "banners",
+      "localeCode": "es-PE",
+      "slug": "banner-servicios",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "imageAsset": "banner-servicios"
+      },
+      "rowVersionToken": "0x0000000000000880"
+    },
+    {
+      "collectionSlug": "banners",
+      "localeCode": "es-PE",
+      "slug": "banner-encomiendas",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "imageAsset": "banner-encomiendas"
+      },
+      "rowVersionToken": "0x0000000000000881"
+    },
+    {
+      "collectionSlug": "banners",
+      "localeCode": "es-PE",
+      "slug": "banner-destinos",
+      "sortOrder": 40,
+      "isActive": true,
+      "data": {
+        "imageAsset": "banner-destinos"
+      },
+      "rowVersionToken": "0x0000000000000882"
+    },
+    {
+      "collectionSlug": "banners",
+      "localeCode": "es-PE",
+      "slug": "banner-contactanos",
+      "sortOrder": 50,
+      "isActive": true,
+      "data": {
+        "imageAsset": "banner-contactanos"
+      },
+      "rowVersionToken": "0x0000000000000883"
+    },
+    {
+      "collectionSlug": "contact-items",
+      "localeCode": "es-PE",
+      "slug": "contact-pasajero-frecuente",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "name": "Pasajero frecuente",
+        "to": "/preguntas-frecuentes",
+        "iconKey": "user"
+      },
+      "rowVersionToken": "0x000000000000086E"
+    },
+    {
+      "collectionSlug": "contact-items",
+      "localeCode": "es-PE",
+      "slug": "contact-restricciones-tarifa",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "name": "Restricciones de tarifa",
+        "to": "/preguntas-frecuentes",
+        "iconKey": "dollar"
+      },
+      "rowVersionToken": "0x000000000000086F"
+    },
+    {
+      "collectionSlug": "contact-items",
+      "localeCode": "es-PE",
+      "slug": "contact-centro-ayuda",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "name": "Centro de ayuda",
+        "to": "/preguntas-frecuentes",
+        "iconKey": "phone"
+      },
+      "rowVersionToken": "0x0000000000000870"
+    },
+    {
+      "collectionSlug": "contact-items",
+      "localeCode": "es-PE",
+      "slug": "contact-terminos",
+      "sortOrder": 40,
+      "isActive": true,
+      "data": {
+        "name": "Términos y condiciones",
+        "to": "/preguntas-frecuentes",
+        "iconKey": "document"
+      },
+      "rowVersionToken": "0x0000000000000871"
+    },
+    {
+      "collectionSlug": "contact-items",
+      "localeCode": "es-PE",
+      "slug": "contact-libro-reclamaciones",
+      "sortOrder": 50,
+      "isActive": true,
+      "data": {
+        "name": "Libro de reclamaciones",
+        "to": "/preguntas-frecuentes",
+        "iconKey": "document"
+      },
+      "rowVersionToken": "0x0000000000000872"
+    },
+    {
+      "collectionSlug": "contact-items",
+      "localeCode": "es-PE",
+      "slug": "contact-proteccion-datos",
+      "sortOrder": 60,
+      "isActive": true,
+      "data": {
+        "name": "Protección de datos",
+        "to": "/preguntas-frecuentes",
+        "iconKey": "document"
+      },
+      "rowVersionToken": "0x0000000000000873"
+    },
+    {
+      "collectionSlug": "contact-items",
+      "localeCode": "es-PE",
+      "slug": "contact-trabaja-con-nosotros",
+      "sortOrder": 70,
+      "isActive": true,
+      "data": {
+        "name": "Trabaja con nosotros",
+        "to": "/preguntas-frecuentes",
+        "iconKey": "user-plus"
+      },
+      "rowVersionToken": "0x0000000000000874"
+    },
+    {
+      "collectionSlug": "destination-guides",
+      "localeCode": "es-PE",
+      "slug": "chiclayo",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "title": "Chiclayo",
+        "region": "Lambayeque",
+        "imageAsset": "banner-inicio",
+        "population": "600K+",
+        "altitude": "27 msnm",
+        "temperature": "24°C",
+        "description": "Chiclayo, conocida como la 'Ciudad de la Amistad', es un destino que combina historia milenaria con modernidad. Capital del departamento de Lambayeque, esta vibrante ciudad es reconocida mundialmente por sus importantes descubrimientos arqueológicos y su exquisita gastronomía norteña.",
+        "history": "Fundada el 15 de abril de 1835, Chiclayo tiene una rica historia que se remonta a las culturas preincas. La región fue hogar de las civilizaciones Mochica, Sicán y Chimú. El descubrimiento del Señor de Sipán en 1987 cambió la historia de la arqueología peruana, revelando uno de los entierros más ricos de América.",
+        "gastronomy": "La comida chiclayana es célebre en todo el Perú. El arroz con pato, el cabrito a la norteña, el espesado, el chiringuito y el delicioso king kong son solo algunos de los platos emblemáticos. Los mercados locales ofrecen una experiencia culinaria única con productos frescos del valle.",
+        "festivities": "La ciudad celebra numerosas festividades durante el año. Destacan la Fiesta de la Virgen de la Paz en enero, la Semana Santa con sus procesiones tradicionales, y el aniversario de la ciudad en abril. Cada celebración combina fervor religioso con alegría popular.",
+        "gallery": [
+          {
+            "imageAsset": "banner-inicio"
+          },
+          {
+            "imageAsset": "destino-trujillo"
+          },
+          {
+            "imageAsset": "destino-lima"
+          },
+          {
+            "imageAsset": "banner-inicio"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Museo Tumbas Reales de Sipán",
+            "description": "Impresionante museo que alberga los tesoros del Señor de Sipán, considerado uno de los descubrimientos arqueológicos más importantes del siglo XX en América. Sus 10 salas exhiben joyas de oro, cerámicas y textiles de la cultura Mochica.",
+            "imageAsset": "banner-inicio",
+            "duration": "2-3 horas",
+            "distance": "30 km"
+          },
+          {
+            "name": "Pirámides de Túcume",
+            "description": "Majestuoso complejo arqueológico conocido como 'El Valle de las Pirámides', con 26 estructuras de adobe que datan de la cultura Lambayeque. El sitio ofrece una vista panorámica impresionante desde el Cerro La Raya.",
+            "imageAsset": "destino-trujillo",
+            "duration": "3-4 horas",
+            "distance": "35 km"
+          },
+          {
+            "name": "Mercado Modelo",
+            "description": "Emblemático mercado donde converge la vida comercial de Chiclayo. Famoso por su sección de medicina tradicional y hierbas, donde los curanderos ofrecen brebajes y amuletos. Ideal para comprar artesanías y probar comida típica.",
+            "imageAsset": "destino-lima",
+            "duration": "1-2 horas",
+            "distance": "Centro"
+          },
+          {
+            "name": "Huaca Rajada - Sipán",
+            "description": "Sitio arqueológico donde se descubrió al Señor de Sipán. Las excavaciones continúan revelando secretos de la nobleza Mochica. El museo de sitio complementa la visita con explicaciones detalladas.",
+            "imageAsset": "banner-inicio",
+            "duration": "2 horas",
+            "distance": "28 km"
+          },
+          {
+            "name": "Reserva Ecológica Chaparrí",
+            "description": "Primera área de conservación privada del Perú, hogar del oso de anteojos. Ofrece avistamiento de fauna silvestre, caminatas guiadas y turismo vivencial con comunidades locales.",
+            "imageAsset": "destino-trujillo",
+            "duration": "Día completo",
+            "distance": "80 km"
+          }
+        ],
+        "bestTime": "Abril a Diciembre",
+        "bestTimeDetail": "Temporada seca con días soleados y noches frescas. Evita enero-marzo por lluvias",
+        "duration": "3-4 días",
+        "durationDetail": "Ideal para explorar la ciudad y principales sitios arqueológicos sin prisas",
+        "howToArrive": "Bus o avión desde Lima",
+        "howToArriveDetail": "Buses nocturnos (12h) o vuelos directos (1.5h). Terminal terrestre conecta con el centro",
+        "tips": [
+          {
+            "icon": "☀️",
+            "title": "Protección Solar",
+            "description": "El sol es intenso todo el año. Lleva bloqueador, sombrero y lentes de sol para tus visitas."
+          },
+          {
+            "icon": "💧",
+            "title": "Hidratación",
+            "description": "Mantente hidratado, especialmente en visitas a sitios arqueológicos sin sombra."
+          },
+          {
+            "icon": "🍽️",
+            "title": "Gastronomía Local",
+            "description": "No te pierdas el arroz con pato y el king kong. Visita el Mercado Modelo temprano."
+          },
+          {
+            "icon": "📱",
+            "title": "Conectividad",
+            "description": "Cobertura móvil excelente en la ciudad. WiFi disponible en hoteles y restaurantes."
+          },
+          {
+            "icon": "💰",
+            "title": "Moneda",
+            "description": "Lleva efectivo en soles. Cajeros ATM disponibles pero algunos sitios solo aceptan efectivo."
+          },
+          {
+            "icon": "🚖",
+            "title": "Transporte",
+            "description": "Taxis y apps de transporte están disponibles. Negocia tarifas antes de subir."
+          }
+        ],
+        "services": [
+          "Terminal terrestre moderno con servicios completos",
+          "Aeropuerto Internacional José Quiñones Gonzales",
+          "Hoteles desde económicos hasta 4 estrellas",
+          "Restaurantes de comida típica e internacional",
+          "Guías turísticos certificados disponibles",
+          "Centros comerciales y tiendas de artesanía",
+          "Servicios médicos y farmacias 24 horas",
+          "Cambio de moneda y cajeros automáticos"
+        ]
+      },
+      "rowVersionToken": "0x000000000000085E"
+    },
+    {
+      "collectionSlug": "destination-guides",
+      "localeCode": "es-PE",
+      "slug": "trujillo",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "title": "Trujillo",
+        "region": "La Libertad",
+        "imageAsset": "destino-trujillo",
+        "population": "950K+",
+        "altitude": "34 msnm",
+        "temperature": "19°C",
+        "description": "Trujillo, la 'Capital de la Primavera', es una hermosa ciudad colonial con un clima privilegiado durante todo el año. Sus elegantes casonas, iglesias coloniales y cercanía a importantes sitios arqueológicos como Chan Chan la convierten en un destino imperdible.",
+        "history": "Fundada en 1534 por Diego de Almagro, Trujillo fue cuna de la independencia peruana y hogar de grandes intelectuales. Antes de la conquista, fue parte del Reino Chimú, cuya capital Chan Chan es la ciudadela de adobe más grande de América.",
+        "gastronomy": "La gastronomía trujillana destaca por platos como el ceviche norteño, el shambar, el cabrito con frijoles y el famoso dulce king kong gigante. Huanchaco ofrece los mejores mariscos frescos servidos en sus tradicionales restaurantes frente al mar.",
+        "festivities": "Trujillo es famosa por sus festivales. El Festival Internacional de la Primavera en septiembre incluye el concurso de marinera, desfiles de carros alegóricos y coronación de reinas. También destacan las celebraciones de Semana Santa y el Festival del Caballo de Paso.",
+        "gallery": [
+          {
+            "imageAsset": "destino-trujillo"
+          },
+          {
+            "imageAsset": "banner-inicio"
+          },
+          {
+            "imageAsset": "destino-lima"
+          },
+          {
+            "imageAsset": "destino-trujillo"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Chan Chan",
+            "description": "La ciudadela de barro más grande del mundo, Patrimonio de la Humanidad por UNESCO. Este complejo arqueológico fue la capital del Reino Chimú y albergó a 60,000 habitantes. Sus muros muestran frisos con diseños de peces y aves marinas.",
+            "imageAsset": "destino-trujillo",
+            "duration": "3-4 horas",
+            "distance": "5 km"
+          },
+          {
+            "name": "Huacas del Sol y la Luna",
+            "description": "Impresionantes templos ceremoniales de la cultura Mochica. La Huaca de la Luna sorprende con sus murales policromados perfectamente conservados que muestran escenas mitológicas y rituales de hace 1,500 años.",
+            "imageAsset": "banner-inicio",
+            "duration": "2-3 horas",
+            "distance": "8 km"
+          },
+          {
+            "name": "Huanchaco",
+            "description": "Tradicional balneario famoso por los caballitos de totora, embarcaciones milenarias aún utilizadas por pescadores. Sus playas son ideales para el surf y ofrece excelentes restaurantes de mariscos con vista al mar.",
+            "imageAsset": "destino-lima",
+            "duration": "Medio día",
+            "distance": "13 km"
+          },
+          {
+            "name": "Centro Histórico",
+            "description": "Conjunto de casonas coloniales y republicanas impecablemente conservadas. Destaca la Casa Urquiaga, Casa Ganoza y la Catedral. Sus coloridas fachadas y balcones de madera son perfectos para fotografías.",
+            "imageAsset": "destino-trujillo",
+            "duration": "2-3 horas",
+            "distance": "Centro"
+          },
+          {
+            "name": "Complejo El Brujo",
+            "description": "Sitio arqueológico donde se descubrió a la Señora de Cao, gobernanta Mochica. El museo exhibe su momia y ajuar funerario, evidenciando el poder de las mujeres en las culturas precolombinas.",
+            "imageAsset": "banner-inicio",
+            "duration": "3 horas",
+            "distance": "60 km"
+          }
+        ],
+        "bestTime": "Todo el año",
+        "bestTimeDetail": "Clima primaveral constante. Septiembre es ideal por el Festival de la Primavera",
+        "duration": "3-4 días",
+        "durationDetail": "Suficiente para explorar sitios arqueológicos, centro histórico y playas",
+        "howToArrive": "Bus o avión desde Lima",
+        "howToArriveDetail": "Buses diurnos/nocturnos (8-9h) o vuelos directos (1h). Aeropuerto cercano al centro",
+        "tips": [
+          {
+            "icon": "🌸",
+            "title": "Festival Primavera",
+            "description": "Si visitas en septiembre, reserva alojamiento con anticipación por el festival."
+          },
+          {
+            "icon": "🏖️",
+            "title": "Playas",
+            "description": "Huanchaco es perfecto para surf. Lleva traje de baño y bloqueador."
+          },
+          {
+            "icon": "🏛️",
+            "title": "Sitios Arqueológicos",
+            "description": "Contrata guía para Chan Chan y Huacas, enriquecerá tu experiencia."
+          },
+          {
+            "icon": "🍤",
+            "title": "Mariscos",
+            "description": "Prueba el ceviche en Huanchaco, es considerado de los mejores del Perú."
+          },
+          {
+            "icon": "💃",
+            "title": "Marinera",
+            "description": "Asiste a una presentación de marinera, la danza típica trujillana."
+          },
+          {
+            "icon": "🚌",
+            "title": "Tours",
+            "description": "Los circuitos arqueológicos son accesibles con tours organizados o taxi."
+          }
+        ],
+        "services": [
+          "Terminal terrestre Cruz del Sur y línea",
+          "Aeropuerto Internacional Capitán FAP Carlos Martínez de Pinillos",
+          "Amplia oferta hotelera de todas las categorías",
+          "Restaurantes gourmet y comida típica",
+          "Agencias de turismo con tours especializados",
+          "Centros comerciales Real Plaza y Mall Aventura",
+          "Clínicas privadas y hospitales",
+          "Bancos y casas de cambio"
+        ]
+      },
+      "rowVersionToken": "0x000000000000085F"
+    },
+    {
+      "collectionSlug": "destination-guides",
+      "localeCode": "es-PE",
+      "slug": "lima",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "title": "Lima",
+        "region": "Lima Metropolitana",
+        "imageAsset": "destino-lima",
+        "population": "10M+",
+        "altitude": "154 msnm",
+        "temperature": "22°C",
+        "description": "Lima, la capital del Perú, es una metrópoli cosmopolita donde convergen la historia colonial, la modernidad y la gastronomía de nivel mundial. Su centro histórico, declarado Patrimonio de la Humanidad, alberga joyas arquitectónicas de la época virreinal.",
+        "history": "Fundada por Francisco Pizarro en 1535, Lima fue la ciudad más importante de Sudamérica durante la colonia. Conocida como 'La Ciudad de los Reyes', conserva impresionantes iglesias, conventos y balcones coloniales que narran 500 años de historia.",
+        "gastronomy": "Lima es considerada la capital gastronómica de América Latina. Cuenta con restaurantes entre los mejores del mundo como Central, Maido y Astrid & Gastón. La cocina peruana fusiona influencias indígenas, españolas, africanas, chinas y japonesas en platos únicos.",
+        "festivities": "Lima celebra su aniversario el 18 de enero con eventos culturales y gastronómicos. Destacan el Señor de los Milagros en octubre, considerada la procesión religiosa más grande de América, y las fiestas patrias del 28-29 de julio con desfiles militares.",
+        "gallery": [
+          {
+            "imageAsset": "destino-lima"
+          },
+          {
+            "imageAsset": "banner-inicio"
+          },
+          {
+            "imageAsset": "destino-trujillo"
+          },
+          {
+            "imageAsset": "destino-lima"
+          }
+        ],
+        "attractions": [
+          {
+            "name": "Centro Histórico",
+            "description": "Patrimonio de la Humanidad con más de 600 monumentos coloniales. La Plaza Mayor, Palacio de Gobierno, Catedral de Lima y el Convento de San Francisco con sus catacumbas son visitas obligadas para entender la historia limeña.",
+            "imageAsset": "destino-lima",
+            "duration": "4-5 horas",
+            "distance": "Centro"
+          },
+          {
+            "name": "Miraflores y Malecón",
+            "description": "Distrito moderno con espectaculares acantilados sobre el Océano Pacífico. El Parque del Amor, el Faro de la Marina y el Larcomar ofrecen vistas panorámicas. Zona de restaurantes, cafés y vida nocturna.",
+            "imageAsset": "banner-inicio",
+            "duration": "Medio día",
+            "distance": "12 km"
+          },
+          {
+            "name": "Museo Larco",
+            "description": "Impresionante colección de arte precolombino en una mansión virreinal del siglo XVIII. Exhibe más de 45,000 piezas arqueológicas, incluyendo la famosa galería erótica de cerámica Mochica. Hermosos jardines y restaurante gourmet.",
+            "imageAsset": "destino-trujillo",
+            "duration": "2-3 horas",
+            "distance": "10 km"
+          },
+          {
+            "name": "Barranco",
+            "description": "Bohemio distrito de artistas y escritores con arquitectura republicana. El Puente de los Suspiros, casonas coloridas, galerías de arte y una vibrante vida nocturna lo convierten en el barrio más romántico de Lima.",
+            "imageAsset": "destino-lima",
+            "duration": "3-4 horas",
+            "distance": "15 km"
+          },
+          {
+            "name": "Huaca Pucllana",
+            "description": "Pirámide ceremonial de la cultura Lima (200-700 d.C.) en el corazón de Miraflores. Las visitas nocturnas iluminadas son especialmente impresionantes. El restaurante adjunto sirve comida gourmet con vista al sitio arqueológico.",
+            "imageAsset": "banner-inicio",
+            "duration": "1.5 horas",
+            "distance": "11 km"
+          }
+        ],
+        "bestTime": "Diciembre a Marzo",
+        "bestTimeDetail": "Verano con días soleados y cálidos. Abril-noviembre: nublado (garúa) pero sin lluvia",
+        "duration": "4-7 días",
+        "durationDetail": "Mínimo 4 días para lo esencial, 7 días para explorar a profundidad",
+        "howToArrive": "Punto de conexión principal",
+        "howToArriveDetail": "Aeropuerto Internacional Jorge Chávez recibe vuelos nacionales e internacionales",
+        "tips": [
+          {
+            "icon": "🍽️",
+            "title": "Reservas Restaurants",
+            "description": "Reserva con anticipación en restaurantes top. Muchos tienen lista de espera de semanas."
+          },
+          {
+            "icon": "🚇",
+            "title": "Metropolitano",
+            "description": "Usa el Metropolitano (BRT) para moverte rápido. Apps de taxi también funcionan bien."
+          },
+          {
+            "icon": "🌊",
+            "title": "Humedad",
+            "description": "De abril a noviembre la garúa (neblina) es común. No llueve pero está nublado."
+          },
+          {
+            "icon": "🎭",
+            "title": "Cultura",
+            "description": "Visita teatros y centros culturales. Lima tiene intensa actividad artística."
+          },
+          {
+            "icon": "🛍️",
+            "title": "Compras",
+            "description": "Larcomar y Jockey Plaza para marcas. Miraflores e Indian Market para artesanía."
+          },
+          {
+            "icon": "⚠️",
+            "title": "Seguridad",
+            "description": "Mantente en zonas turísticas (Miraflores, Barranco, San Isidro). Cuidado con pertenencias."
+          }
+        ],
+        "services": [
+          "Aeropuerto Internacional Jorge Chávez, el más grande del país",
+          "Metro de Lima (Línea 1) y Metropolitano (BRT)",
+          "Hoteles de lujo internacional y opciones económicas",
+          "Restaurantes de clase mundial y comida callejera",
+          "Centros comerciales modernos en todos los distritos",
+          "Clínicas y hospitales de primer nivel",
+          "Sistema bancario completo con cajeros en todas partes",
+          "Museos de primer nivel y centros culturales"
+        ]
+      },
+      "rowVersionToken": "0x0000000000000860"
+    },
+    {
+      "collectionSlug": "destinations",
+      "localeCode": "es-PE",
+      "slug": "destination-01",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "tour": "Turismo",
+        "title": "Machu Picchu es todo un éxito tras su reapertura",
+        "subTitle": "Turismo",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "imageAsset": "banner-inicio"
+      },
+      "rowVersionToken": "0x000000000000085A"
+    },
+    {
+      "collectionSlug": "destinations",
+      "localeCode": "es-PE",
+      "slug": "destination-02",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "tour": "Turismo",
+        "title": "Machu Picchu es todo un éxito tras su reapertura",
+        "subTitle": "Turismo",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "imageAsset": "destino-trujillo"
+      },
+      "rowVersionToken": "0x000000000000085B"
+    },
+    {
+      "collectionSlug": "destinations",
+      "localeCode": "es-PE",
+      "slug": "destination-03",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "tour": "Turismo",
+        "title": "Machu Picchu es todo un éxito tras su reapertura",
+        "subTitle": "Turismo",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "imageAsset": "destino-lima"
+      },
+      "rowVersionToken": "0x000000000000085C"
+    },
+    {
+      "collectionSlug": "destinations",
+      "localeCode": "es-PE",
+      "slug": "destination-04",
+      "sortOrder": 40,
+      "isActive": true,
+      "data": {
+        "tour": "Turismo",
+        "title": "Machu Picchu es todo un éxito tras su reapertura",
+        "subTitle": "Turismo",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "imageAsset": "banner-inicio"
+      },
+      "rowVersionToken": "0x000000000000085D"
+    },
+    {
+      "collectionSlug": "faqs",
+      "localeCode": "es-PE",
+      "slug": "faq-horario-atencion",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "question": "¿Cuál es el horario de atención de Transporte Chiclayo?",
+        "answerHtml": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi vel consectetur cursus, nisl erat dictum enim, nec facilisis enim erat nec urna. Suspendisse potenti. Etiam ac eros euismod, dictum massa at, dictum enim. Mauris euismod, urna eu facilisis cursus, enim erat dictum enim, nec facilisis enim erat nec urna.</p><p>Proin euismod, urna eu facilisis cursus, enim erat dictum enim, nec facilisis enim erat nec urna. Suspendisse potenti. Etiam ac eros euismod, dictum massa at, dictum enim.</p>"
+      },
+      "rowVersionToken": "0x000000000000087C"
+    },
+    {
+      "collectionSlug": "faqs",
+      "localeCode": "es-PE",
+      "slug": "faq-comprar-pasaje",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "question": "¿Cómo puedo comprar un pasaje en línea?",
+        "answerHtml": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi vel consectetur cursus, nisl erat dictum enim, nec facilisis enim erat nec urna. Suspendisse potenti. Etiam ac eros euismod, dictum massa at, dictum enim.</p><p>Mauris euismod, urna eu facilisis cursus, enim erat dictum enim, nec facilisis enim erat nec urna. Proin euismod, urna eu facilisis cursus, enim erat dictum enim, nec facilisis enim erat nec urna.</p>"
+      },
+      "rowVersionToken": "0x000000000000087D"
+    },
+    {
+      "collectionSlug": "faqs",
+      "localeCode": "es-PE",
+      "slug": "faq-documentos-viaje",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "question": "¿Qué documentos necesito para viajar?",
+        "answerHtml": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi vel consectetur cursus, nisl erat dictum enim, nec facilisis enim erat nec urna. Suspendisse potenti. Etiam ac eros euismod, dictum massa at, dictum enim.</p><p>Mauris euismod, urna eu facilisis cursus, enim erat dictum enim, nec facilisis enim erat nec urna. Proin euismod, urna eu facilisis cursus, enim erat dictum enim, nec facilisis enim erat nec urna.</p>"
+      },
+      "rowVersionToken": "0x000000000000087E"
+    },
+    {
+      "collectionSlug": "features",
+      "localeCode": "es-PE",
+      "slug": "feature-message",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "iconAsset": "feature-message",
+        "title": "Experiencia 43 años",
+        "subTitle": "al servicio del transporte",
+        "description": "interprovincial"
+      },
+      "rowVersionToken": "0x000000000000084B"
+    },
+    {
+      "collectionSlug": "features",
+      "localeCode": "es-PE",
+      "slug": "feature-package",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "iconAsset": "feature-package",
+        "title": "Experiencia 43 años",
+        "subTitle": "al servicio del transporte",
+        "description": "interprovincial"
+      },
+      "rowVersionToken": "0x000000000000084C"
+    },
+    {
+      "collectionSlug": "features",
+      "localeCode": "es-PE",
+      "slug": "feature-bag",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "iconAsset": "feature-bag",
+        "title": "Experiencia 43 años",
+        "subTitle": "al servicio del transporte",
+        "description": "interprovincial"
+      },
+      "rowVersionToken": "0x000000000000084D"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-empresa-nosotros",
+      "sortOrder": 10,
+      "isActive": false,
+      "data": {
+        "label": "Nosotros",
+        "to": "/nosotros",
+        "group": "empresa",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x0000000000000888"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-empresa-trabaja",
+      "sortOrder": 20,
+      "isActive": false,
+      "data": {
+        "label": "Trabaja con nosotros",
+        "to": "/trabaja-con-nosotros",
+        "group": "empresa",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x0000000000000889"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-empresa-blog",
+      "sortOrder": 30,
+      "isActive": false,
+      "data": {
+        "label": "Blog",
+        "to": "/blog",
+        "group": "empresa",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x000000000000088A"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-empresa-contacto",
+      "sortOrder": 40,
+      "isActive": false,
+      "data": {
+        "label": "Contacto corporativo",
+        "to": "/contacto-corporativo",
+        "group": "empresa",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x000000000000088B"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-agencias-chiclayo",
+      "sortOrder": 50,
+      "isActive": false,
+      "data": {
+        "label": "Chiclayo",
+        "to": "/agencias/chiclayo",
+        "group": "agencias",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x000000000000088C"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-agencias-lima",
+      "sortOrder": 60,
+      "isActive": false,
+      "data": {
+        "label": "Lima",
+        "to": "/agencias/lima",
+        "group": "agencias",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x000000000000088D"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-agencias-trujillo",
+      "sortOrder": 70,
+      "isActive": false,
+      "data": {
+        "label": "Trujillo",
+        "to": "/agencias/trujillo",
+        "group": "agencias",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x000000000000088E"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-agencias-piura",
+      "sortOrder": 80,
+      "isActive": false,
+      "data": {
+        "label": "Piura",
+        "to": "/agencias/piura",
+        "group": "agencias",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x000000000000088F"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-legal-libro",
+      "sortOrder": 90,
+      "isActive": true,
+      "data": {
+        "label": "Libro de reclamaciones",
+        "to": "/libro-de-reclamaciones",
+        "group": "legal",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x0000000000000890"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-legal-faq",
+      "sortOrder": 100,
+      "isActive": true,
+      "data": {
+        "label": "Preguntas frecuentes",
+        "to": "/preguntas-frecuentes",
+        "group": "legal",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x0000000000000891"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-legal-privacidad",
+      "sortOrder": 110,
+      "isActive": true,
+      "data": {
+        "label": "Políticas de privacidad",
+        "to": "/politicas-de-privacidad",
+        "group": "legal",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x0000000000000892"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-legal-terminos",
+      "sortOrder": 120,
+      "isActive": true,
+      "data": {
+        "label": "Términos de servicio",
+        "to": "/terminos-y-condiciones",
+        "group": "legal",
+        "iconKey": null
+      },
+      "rowVersionToken": "0x0000000000000893"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-social-facebook",
+      "sortOrder": 130,
+      "isActive": false,
+      "data": {
+        "label": "Facebook",
+        "to": "#",
+        "group": "social",
+        "iconKey": "i-bxl-facebook"
+      },
+      "rowVersionToken": "0x0000000000000894"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-social-twitter",
+      "sortOrder": 140,
+      "isActive": false,
+      "data": {
+        "label": "Twitter",
+        "to": "#",
+        "group": "social",
+        "iconKey": "i-bxl-twitter"
+      },
+      "rowVersionToken": "0x0000000000000895"
+    },
+    {
+      "collectionSlug": "footer-links",
+      "localeCode": "es-PE",
+      "slug": "footer-social-youtube",
+      "sortOrder": 150,
+      "isActive": false,
+      "data": {
+        "label": "YouTube",
+        "to": "#",
+        "group": "social",
+        "iconKey": "i-bxl-youtube"
+      },
+      "rowVersionToken": "0x0000000000000896"
+    },
+    {
+      "collectionSlug": "gallery-services",
+      "localeCode": "es-PE",
+      "slug": "gallery-01",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "imageAsset": "gallery-01"
+      },
+      "rowVersionToken": "0x0000000000000864"
+    },
+    {
+      "collectionSlug": "gallery-services",
+      "localeCode": "es-PE",
+      "slug": "gallery-02",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "imageAsset": "gallery-02"
+      },
+      "rowVersionToken": "0x0000000000000865"
+    },
+    {
+      "collectionSlug": "gallery-services",
+      "localeCode": "es-PE",
+      "slug": "gallery-03",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "imageAsset": "gallery-03"
+      },
+      "rowVersionToken": "0x0000000000000866"
+    },
+    {
+      "collectionSlug": "gallery-services",
+      "localeCode": "es-PE",
+      "slug": "gallery-04",
+      "sortOrder": 40,
+      "isActive": true,
+      "data": {
+        "imageAsset": "gallery-04"
+      },
+      "rowVersionToken": "0x0000000000000867"
+    },
+    {
+      "collectionSlug": "legal-sections",
+      "localeCode": "es-PE",
+      "slug": "terminos",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "page": "terminos-y-condiciones",
+        "title": "Terminos y Condiciones",
+        "bodyHtml": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p>"
+      },
+      "rowVersionToken": "0x0000000000000886"
+    },
+    {
+      "collectionSlug": "legal-sections",
+      "localeCode": "es-PE",
+      "slug": "privacidad",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "page": "politicas-de-privacidad",
+        "title": "Politicas de privacidad",
+        "bodyHtml": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi quis commodo odio aenean. Ac felis donec et odio pellentesque. Massa eget egestas purus viverra accumsan in nisl. Sed sed risus pretium quam. Tristique nulla aliquet enim tortor at auctor urna nunc. Pretium viverra suspendisse potenti nullam ac tortor. Scelerisque fermentum dui faucibus in ornare. Volutpat ac tincidunt vitae semper quis lectus nulla at volutpat. Ut diam quam nulla porttitor massa.</p>"
+      },
+      "rowVersionToken": "0x0000000000000887"
+    },
+    {
+      "collectionSlug": "legal-sections",
+      "localeCode": "es-PE",
+      "slug": "terminos-venta",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "title": "Términos y Condiciones",
+        "bodyHtml": "<h4>1. Aceptación de los Términos</h4><p>Al utilizar nuestros servicios de transporte, usted acepta estar sujeto a estos términos y condiciones. Si no está de acuerdo con alguna parte de estos términos, no podrá utilizar nuestros servicios.</p><h4>2. Reservas y Compras</h4><p>Las reservas y compras de boletos están sujetas a disponibilidad. Nos reservamos el derecho de rechazar cualquier reserva o compra por razones operativas o de seguridad.</p><h4>3. Políticas de Pago</h4><p>Los pagos deben realizarse al momento de la compra. Aceptamos tarjetas de crédito, débito y otros métodos de pago especificados en nuestra plataforma. Todos los precios están expresados en soles peruanos (PEN) e incluyen impuestos.</p><h4>4. Cambios y Cancelaciones</h4><p>Las políticas de cambio y cancelación varían según el tipo de boleto adquirido. Los cambios están sujetos a disponibilidad y pueden generar cargos adicionales. Las cancelaciones deben realizarse con al menos 24 horas de anticipación.</p><h4>5. Documentación Requerida</h4><p>Los pasajeros deben presentar un documento de identidad válido al momento del embarque. Es responsabilidad del pasajero cumplir con todos los requisitos de documentación para el viaje.</p><h4>6. Equipaje</h4><p>Cada pasajero tiene derecho a llevar equipaje de mano según las restricciones especificadas. El equipaje adicional puede estar sujeto a cargos extras. No nos hacemos responsables por pérdida o daño de equipaje no declarado.</p><h4>7. Comportamiento del Pasajero</h4><p>Los pasajeros deben comportarse de manera respetuosa y seguir todas las instrucciones del personal. Nos reservamos el derecho de negar el servicio a cualquier pasajero que viole nuestras políticas o que represente un riesgo para la seguridad.</p><h4>8. Responsabilidad</h4><p>Nuestra responsabilidad está limitada según lo establecido por la ley peruana. No seremos responsables por retrasos causados por circunstancias fuera de nuestro control, incluyendo clima, tráfico o emergencias.</p><h4>9. Protección de Datos</h4><p>Nos comprometemos a proteger su información personal de acuerdo con nuestra Política de Privacidad y la Ley de Protección de Datos Personales del Perú. Sus datos serán utilizados únicamente para fines relacionados con nuestros servicios.</p><h4>10. Modificaciones</h4><p>Nos reservamos el derecho de modificar estos términos y condiciones en cualquier momento. Las modificaciones entrarán en vigencia al ser publicadas en nuestra plataforma.</p><h4>11. Ley Aplicable</h4><p>Estos términos se rigen por las leyes de la República del Perú. Cualquier disputa será resuelta en los tribunales competentes de Lima, Perú.</p><p>Al aceptar estos términos, confirma que ha leído, entendido y está de acuerdo con todas las condiciones establecidas anteriormente.</p>"
+      },
+      "rowVersionToken": "0x0000000000004676"
+    },
+    {
+      "collectionSlug": "nav-links",
+      "localeCode": "es-PE",
+      "slug": "nav-inicio",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "label": "Inicio",
+        "to": "/"
+      },
+      "rowVersionToken": "0x0000000000000897"
+    },
+    {
+      "collectionSlug": "nav-links",
+      "localeCode": "es-PE",
+      "slug": "nav-destinos",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "label": "Destinos",
+        "to": "/destinos"
+      },
+      "rowVersionToken": "0x0000000000000898"
+    },
+    {
+      "collectionSlug": "nav-links",
+      "localeCode": "es-PE",
+      "slug": "nav-servicios",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "label": "Servicios",
+        "to": "/servicios"
+      },
+      "rowVersionToken": "0x0000000000000899"
+    },
+    {
+      "collectionSlug": "nav-links",
+      "localeCode": "es-PE",
+      "slug": "nav-encomiendas",
+      "sortOrder": 40,
+      "isActive": true,
+      "data": {
+        "label": "Encomiendas",
+        "to": "/encomiendas"
+      },
+      "rowVersionToken": "0x000000000000089A"
+    },
+    {
+      "collectionSlug": "nav-links",
+      "localeCode": "es-PE",
+      "slug": "nav-promociones",
+      "sortOrder": 50,
+      "isActive": true,
+      "data": {
+        "label": "Promociones",
+        "to": "/promociones"
+      },
+      "rowVersionToken": "0x000000000000089B"
+    },
+    {
+      "collectionSlug": "nav-links",
+      "localeCode": "es-PE",
+      "slug": "nav-contactanos",
+      "sortOrder": 60,
+      "isActive": true,
+      "data": {
+        "label": "Contáctanos",
+        "to": "/contactanos"
+      },
+      "rowVersionToken": "0x000000000000089C"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-01-chiclayo",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "title": "Chiclayo",
+        "subTitle": "Lambayeque",
+        "price": "232",
+        "imageAsset": "banner-inicio"
+      },
+      "rowVersionToken": "0x000000000000084E"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-02-trujillo",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "title": "Trujillo",
+        "subTitle": "La Libertad",
+        "price": "232",
+        "tour": "Chan Chan",
+        "imageAsset": "destino-trujillo"
+      },
+      "rowVersionToken": "0x000000000000084F"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-03-piura",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "title": "Piura",
+        "subTitle": "Piura",
+        "price": "232",
+        "imageAsset": "destino-lima"
+      },
+      "rowVersionToken": "0x0000000000000850"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-04-sullana",
+      "sortOrder": 40,
+      "isActive": true,
+      "data": {
+        "title": "Sullana",
+        "subTitle": "Piura",
+        "price": "232",
+        "imageAsset": "banner-inicio"
+      },
+      "rowVersionToken": "0x0000000000000851"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-05-tumbes",
+      "sortOrder": 50,
+      "isActive": true,
+      "data": {
+        "title": "Tumbes",
+        "subTitle": "Tumbes",
+        "price": "232",
+        "imageAsset": "destino-trujillo"
+      },
+      "rowVersionToken": "0x0000000000000852"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-06-lima",
+      "sortOrder": 60,
+      "isActive": true,
+      "data": {
+        "title": "Lima",
+        "subTitle": "Lima",
+        "price": "232",
+        "imageAsset": "destino-lima"
+      },
+      "rowVersionToken": "0x0000000000000853"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-07-nueva-camarca",
+      "sortOrder": 70,
+      "isActive": true,
+      "data": {
+        "title": "Nueva Camarca",
+        "subTitle": "San Martin",
+        "price": "232",
+        "imageAsset": "banner-inicio"
+      },
+      "rowVersionToken": "0x0000000000000854"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-08-tarapoto",
+      "sortOrder": 80,
+      "isActive": true,
+      "data": {
+        "title": "Tarapoto",
+        "subTitle": "SanMartin",
+        "price": "232",
+        "imageAsset": "destino-trujillo"
+      },
+      "rowVersionToken": "0x0000000000000855"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-09-moyobamba",
+      "sortOrder": 90,
+      "isActive": true,
+      "data": {
+        "title": "Moyobamba",
+        "subTitle": "San Martin",
+        "price": "232",
+        "imageAsset": "destino-lima"
+      },
+      "rowVersionToken": "0x0000000000000856"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-10-rioja",
+      "sortOrder": 100,
+      "isActive": true,
+      "data": {
+        "title": "Rioja",
+        "subTitle": "San Martin",
+        "price": "232",
+        "imageAsset": "banner-inicio"
+      },
+      "rowVersionToken": "0x0000000000000857"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-11-rioja",
+      "sortOrder": 110,
+      "isActive": true,
+      "data": {
+        "title": "Rioja",
+        "subTitle": "San Martin",
+        "price": "232",
+        "imageAsset": "destino-trujillo"
+      },
+      "rowVersionToken": "0x0000000000000858"
+    },
+    {
+      "collectionSlug": "offers",
+      "localeCode": "es-PE",
+      "slug": "offer-12-rioja",
+      "sortOrder": 120,
+      "isActive": true,
+      "data": {
+        "title": "Rioja",
+        "subTitle": "San Martin",
+        "price": "232",
+        "imageAsset": "destino-lima"
+      },
+      "rowVersionToken": "0x0000000000000859"
+    },
+    {
+      "collectionSlug": "parcels",
+      "localeCode": "es-PE",
+      "slug": "parcel-embalado",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "title": "Embalado",
+        "description": "Los envíos de encomiendas deben estar embalados correctamente y rotulados para poder ser aceptados.",
+        "imageAsset": "parcel-embalado"
+      },
+      "rowVersionToken": "0x0000000000000868"
+    },
+    {
+      "collectionSlug": "parcels",
+      "localeCode": "es-PE",
+      "slug": "parcel-verificacion",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "title": "Verificacion",
+        "description": "Los usuarios harán entrega de su encomienda al personal del counter. En dicho acto se revisará, con presencia del usuario el contenido de la encomienda a fin de evitar el transporte de material prohibido.",
+        "imageAsset": "parcel-verificacion"
+      },
+      "rowVersionToken": "0x0000000000000869"
+    },
+    {
+      "collectionSlug": "parcels",
+      "localeCode": "es-PE",
+      "slug": "parcel-recepcion",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "title": "Recepción",
+        "description": "De no encontrarse productos prohibidos, se procederá a recepcionar la encomienda para su envío al destino solicitado.",
+        "imageAsset": "parcel-recepcion"
+      },
+      "rowVersionToken": "0x000000000000086A"
+    },
+    {
+      "collectionSlug": "parcels",
+      "localeCode": "es-PE",
+      "slug": "parcel-entrega",
+      "sortOrder": 40,
+      "isActive": true,
+      "data": {
+        "title": "La entrega",
+        "description": "La entrega de la encomienda es personal, debe presentar su DNI original del consignado + clave de seguridad.",
+        "imageAsset": "parcel-entrega"
+      },
+      "rowVersionToken": "0x000000000000086B"
+    },
+    {
+      "collectionSlug": "parcels",
+      "localeCode": "es-PE",
+      "slug": "parcel-giros",
+      "sortOrder": 50,
+      "isActive": true,
+      "data": {
+        "title": "Giros nacionales",
+        "description": "Para recojo de giros mayores a S/. 200.00 soles debe presentar copia de documento de identidad + clave de seguridad.",
+        "imageAsset": "parcel-giros"
+      },
+      "rowVersionToken": "0x000000000000086C"
+    },
+    {
+      "collectionSlug": "parcels",
+      "localeCode": "es-PE",
+      "slug": "parcel-empresas",
+      "sortOrder": 60,
+      "isActive": true,
+      "data": {
+        "title": "Empresas",
+        "description": "Debe presentar autorización de la empresa para el retiro de las mercaderías correspondientes, solo mercadería a nombre de una empresa + clave de seguridad.",
+        "imageAsset": "parcel-empresas"
+      },
+      "rowVersionToken": "0x000000000000086D"
+    },
+    {
+      "collectionSlug": "payment-methods",
+      "localeCode": "es-PE",
+      "slug": "pay-visa",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "name": "Visa",
+        "iconAsset": "pay-visa"
+      },
+      "rowVersionToken": "0x0000000000000875"
+    },
+    {
+      "collectionSlug": "payment-methods",
+      "localeCode": "es-PE",
+      "slug": "pay-paypal",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "name": "PayPal",
+        "iconAsset": "pay-paypal"
+      },
+      "rowVersionToken": "0x0000000000000876"
+    },
+    {
+      "collectionSlug": "payment-methods",
+      "localeCode": "es-PE",
+      "slug": "pay-mastercard",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "name": "Mastercard",
+        "iconAsset": "pay-mastercard"
+      },
+      "rowVersionToken": "0x0000000000000877"
+    },
+    {
+      "collectionSlug": "payment-methods",
+      "localeCode": "es-PE",
+      "slug": "pay-pagoefectivo",
+      "sortOrder": 40,
+      "isActive": true,
+      "data": {
+        "name": "PagoEfectivo",
+        "iconAsset": "pay-pagoefectivo"
+      },
+      "rowVersionToken": "0x0000000000000878"
+    },
+    {
+      "collectionSlug": "payment-methods",
+      "localeCode": "es-PE",
+      "slug": "pay-amex",
+      "sortOrder": 50,
+      "isActive": true,
+      "data": {
+        "name": "American Express",
+        "iconAsset": "pay-amex"
+      },
+      "rowVersionToken": "0x0000000000000879"
+    },
+    {
+      "collectionSlug": "payment-methods",
+      "localeCode": "es-PE",
+      "slug": "pay-diners",
+      "sortOrder": 60,
+      "isActive": true,
+      "data": {
+        "name": "Diners Club",
+        "iconAsset": "pay-diners"
+      },
+      "rowVersionToken": "0x000000000000087A"
+    },
+    {
+      "collectionSlug": "payment-methods",
+      "localeCode": "es-PE",
+      "slug": "pay-safetypay",
+      "sortOrder": 70,
+      "isActive": true,
+      "data": {
+        "name": "SafetyPay",
+        "iconAsset": "pay-safetypay"
+      },
+      "rowVersionToken": "0x000000000000087B"
+    },
+    {
+      "collectionSlug": "services",
+      "localeCode": "es-PE",
+      "slug": "panoramico",
+      "sortOrder": 10,
+      "isActive": true,
+      "data": {
+        "preTitle": "Servicio",
+        "title": "Panorámico",
+        "description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrs standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book",
+        "imageAsset": "service-bus",
+        "to": "/servicio/panoramico",
+        "options": [
+          {
+            "iconAsset": "service-climatizacion",
+            "name": "Climatización"
+          },
+          {
+            "iconAsset": "service-multimedia",
+            "name": "Multimedia"
+          },
+          {
+            "iconAsset": "service-gps",
+            "name": "GPS 24h"
+          },
+          {
+            "iconAsset": "service-comodidad",
+            "name": "Comodidad"
+          },
+          {
+            "iconAsset": "service-banio",
+            "name": "Baño"
+          }
+        ]
+      },
+      "rowVersionToken": "0x0000000000000861"
+    },
+    {
+      "collectionSlug": "services",
+      "localeCode": "es-PE",
+      "slug": "bus-cama-vip",
+      "sortOrder": 20,
+      "isActive": true,
+      "data": {
+        "preTitle": "Servicio",
+        "title": "Bus Cama VIP",
+        "description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrs standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book",
+        "imageAsset": "service-bus",
+        "to": "/servicio/bus-cama-vip",
+        "options": [
+          {
+            "iconAsset": "service-climatizacion",
+            "name": "Climatización"
+          },
+          {
+            "iconAsset": "service-multimedia",
+            "name": "Multimedia"
+          },
+          {
+            "iconAsset": "service-gps",
+            "name": "GPS 24h"
+          },
+          {
+            "iconAsset": "service-comodidad",
+            "name": "Comodidad"
+          },
+          {
+            "iconAsset": "service-banio",
+            "name": "Baño"
+          }
+        ]
+      },
+      "rowVersionToken": "0x0000000000000862"
+    },
+    {
+      "collectionSlug": "services",
+      "localeCode": "es-PE",
+      "slug": "economico",
+      "sortOrder": 30,
+      "isActive": true,
+      "data": {
+        "preTitle": "Servicio",
+        "title": "Económico",
+        "description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrs standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book",
+        "imageAsset": "service-bus",
+        "to": "/servicio/economico",
+        "options": [
+          {
+            "iconAsset": "service-climatizacion",
+            "name": "Climatización"
+          },
+          {
+            "iconAsset": "service-multimedia",
+            "name": "Multimedia"
+          },
+          {
+            "iconAsset": "service-gps",
+            "name": "GPS 24h"
+          },
+          {
+            "iconAsset": "service-comodidad",
+            "name": "Comodidad"
+          },
+          {
+            "iconAsset": "service-banio",
+            "name": "Baño"
+          }
+        ]
+      },
+      "rowVersionToken": "0x0000000000000863"
+    }
+  ],
+  "versionTokens": [
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "banner-contactanos",
+      "rowVersionToken": "0x00000000000007F9"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "banner-destinos",
+      "rowVersionToken": "0x00000000000007F8"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "banner-encomiendas",
+      "rowVersionToken": "0x00000000000007F7"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "banner-inicio",
+      "rowVersionToken": "0x00000000000007F5"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "banner-servicios",
+      "rowVersionToken": "0x00000000000007F6"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "destino-lima",
+      "rowVersionToken": "0x00000000000007FB"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "destino-trujillo",
+      "rowVersionToken": "0x00000000000007FA"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "feature-bag",
+      "rowVersionToken": "0x00000000000007FE"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "feature-message",
+      "rowVersionToken": "0x00000000000007FC"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "feature-package",
+      "rowVersionToken": "0x00000000000007FD"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "gallery-01",
+      "rowVersionToken": "0x0000000000000806"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "gallery-02",
+      "rowVersionToken": "0x0000000000000807"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "gallery-03",
+      "rowVersionToken": "0x0000000000000808"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "gallery-04",
+      "rowVersionToken": "0x0000000000000809"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "parcel-embalado",
+      "rowVersionToken": "0x000000000000080A"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "parcel-empresas",
+      "rowVersionToken": "0x000000000000080F"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "parcel-entrega",
+      "rowVersionToken": "0x000000000000080D"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "parcel-giros",
+      "rowVersionToken": "0x000000000000080E"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "parcel-recepcion",
+      "rowVersionToken": "0x000000000000080C"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "parcel-verificacion",
+      "rowVersionToken": "0x000000000000080B"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "pay-amex",
+      "rowVersionToken": "0x0000000000000814"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "pay-diners",
+      "rowVersionToken": "0x0000000000000815"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "pay-mastercard",
+      "rowVersionToken": "0x0000000000000812"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "pay-pagoefectivo",
+      "rowVersionToken": "0x0000000000000813"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "pay-paypal",
+      "rowVersionToken": "0x0000000000000811"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "pay-safetypay",
+      "rowVersionToken": "0x0000000000000816"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "pay-visa",
+      "rowVersionToken": "0x0000000000000810"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "service-banio",
+      "rowVersionToken": "0x0000000000000803"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "service-bus",
+      "rowVersionToken": "0x00000000000007FF"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "service-climatizacion",
+      "rowVersionToken": "0x0000000000000801"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "service-comodidad",
+      "rowVersionToken": "0x0000000000000804"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "service-gps",
+      "rowVersionToken": "0x0000000000000802"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "service-multimedia",
+      "rowVersionToken": "0x0000000000000805"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "announcements",
+      "rowVersionToken": "0x00000000000007EF"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "banners",
+      "rowVersionToken": "0x00000000000007EE"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "contact-items",
+      "rowVersionToken": "0x00000000000007EB"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "destination-guides",
+      "rowVersionToken": "0x00000000000007E7"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "destinations",
+      "rowVersionToken": "0x00000000000007E6"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "faqs",
+      "rowVersionToken": "0x00000000000007ED"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "features",
+      "rowVersionToken": "0x00000000000007E4"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "footer-links",
+      "rowVersionToken": "0x00000000000007F1"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "gallery-services",
+      "rowVersionToken": "0x00000000000007E9"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "legal-sections",
+      "rowVersionToken": "0x00000000000007F0"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "nav-links",
+      "rowVersionToken": "0x00000000000007F2"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "offers",
+      "rowVersionToken": "0x00000000000007E5"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "pages",
+      "rowVersionToken": "0x00000000000007F3"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "parcels",
+      "rowVersionToken": "0x00000000000007EA"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "payment-methods",
+      "rowVersionToken": "0x00000000000007EC"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "services",
+      "rowVersionToken": "0x00000000000007E8"
+    },
+    {
+      "sourceTable": "ContentCollection",
+      "sourceKey": "settings",
+      "rowVersionToken": "0x00000000000007F4"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "announcements/es-PE/covid",
+      "rowVersionToken": "0x0000000000000884"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "announcements/es-PE/nav-modal",
+      "rowVersionToken": "0x0000000000000885"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "banners/es-PE/banner-contactanos",
+      "rowVersionToken": "0x0000000000000883"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "banners/es-PE/banner-destinos",
+      "rowVersionToken": "0x0000000000000882"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "banners/es-PE/banner-encomiendas",
+      "rowVersionToken": "0x0000000000000881"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "banners/es-PE/banner-inicio",
+      "rowVersionToken": "0x000000000000087F"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "banners/es-PE/banner-servicios",
+      "rowVersionToken": "0x0000000000000880"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "contact-items/es-PE/contact-centro-ayuda",
+      "rowVersionToken": "0x0000000000000870"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "contact-items/es-PE/contact-libro-reclamaciones",
+      "rowVersionToken": "0x0000000000000872"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "contact-items/es-PE/contact-pasajero-frecuente",
+      "rowVersionToken": "0x000000000000086E"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "contact-items/es-PE/contact-proteccion-datos",
+      "rowVersionToken": "0x0000000000000873"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "contact-items/es-PE/contact-restricciones-tarifa",
+      "rowVersionToken": "0x000000000000086F"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "contact-items/es-PE/contact-terminos",
+      "rowVersionToken": "0x0000000000000871"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "contact-items/es-PE/contact-trabaja-con-nosotros",
+      "rowVersionToken": "0x0000000000000874"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "destination-guides/es-PE/chiclayo",
+      "rowVersionToken": "0x000000000000085E"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "destination-guides/es-PE/lima",
+      "rowVersionToken": "0x0000000000000860"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "destination-guides/es-PE/trujillo",
+      "rowVersionToken": "0x000000000000085F"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "destinations/es-PE/destination-01",
+      "rowVersionToken": "0x000000000000085A"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "destinations/es-PE/destination-02",
+      "rowVersionToken": "0x000000000000085B"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "destinations/es-PE/destination-03",
+      "rowVersionToken": "0x000000000000085C"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "destinations/es-PE/destination-04",
+      "rowVersionToken": "0x000000000000085D"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "faqs/es-PE/faq-comprar-pasaje",
+      "rowVersionToken": "0x000000000000087D"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "faqs/es-PE/faq-documentos-viaje",
+      "rowVersionToken": "0x000000000000087E"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "faqs/es-PE/faq-horario-atencion",
+      "rowVersionToken": "0x000000000000087C"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "features/es-PE/feature-bag",
+      "rowVersionToken": "0x000000000000084D"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "features/es-PE/feature-message",
+      "rowVersionToken": "0x000000000000084B"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "features/es-PE/feature-package",
+      "rowVersionToken": "0x000000000000084C"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-agencias-chiclayo",
+      "rowVersionToken": "0x000000000000088C"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-agencias-lima",
+      "rowVersionToken": "0x000000000000088D"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-agencias-piura",
+      "rowVersionToken": "0x000000000000088F"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-agencias-trujillo",
+      "rowVersionToken": "0x000000000000088E"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-empresa-blog",
+      "rowVersionToken": "0x000000000000088A"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-empresa-contacto",
+      "rowVersionToken": "0x000000000000088B"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-empresa-nosotros",
+      "rowVersionToken": "0x0000000000000888"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-empresa-trabaja",
+      "rowVersionToken": "0x0000000000000889"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-legal-faq",
+      "rowVersionToken": "0x0000000000000891"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-legal-libro",
+      "rowVersionToken": "0x0000000000000890"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-legal-privacidad",
+      "rowVersionToken": "0x0000000000000892"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-legal-terminos",
+      "rowVersionToken": "0x0000000000000893"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-social-facebook",
+      "rowVersionToken": "0x0000000000000894"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-social-twitter",
+      "rowVersionToken": "0x0000000000000895"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "footer-links/es-PE/footer-social-youtube",
+      "rowVersionToken": "0x0000000000000896"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "gallery-services/es-PE/gallery-01",
+      "rowVersionToken": "0x0000000000000864"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "gallery-services/es-PE/gallery-02",
+      "rowVersionToken": "0x0000000000000865"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "gallery-services/es-PE/gallery-03",
+      "rowVersionToken": "0x0000000000000866"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "gallery-services/es-PE/gallery-04",
+      "rowVersionToken": "0x0000000000000867"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "legal-sections/es-PE/privacidad",
+      "rowVersionToken": "0x0000000000000887"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "legal-sections/es-PE/terminos",
+      "rowVersionToken": "0x0000000000000886"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "legal-sections/es-PE/terminos-venta",
+      "rowVersionToken": "0x0000000000004676"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "nav-links/es-PE/nav-contactanos",
+      "rowVersionToken": "0x000000000000089C"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "nav-links/es-PE/nav-destinos",
+      "rowVersionToken": "0x0000000000000898"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "nav-links/es-PE/nav-encomiendas",
+      "rowVersionToken": "0x000000000000089A"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "nav-links/es-PE/nav-inicio",
+      "rowVersionToken": "0x0000000000000897"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "nav-links/es-PE/nav-promociones",
+      "rowVersionToken": "0x000000000000089B"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "nav-links/es-PE/nav-servicios",
+      "rowVersionToken": "0x0000000000000899"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-01-chiclayo",
+      "rowVersionToken": "0x000000000000084E"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-02-trujillo",
+      "rowVersionToken": "0x000000000000084F"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-03-piura",
+      "rowVersionToken": "0x0000000000000850"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-04-sullana",
+      "rowVersionToken": "0x0000000000000851"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-05-tumbes",
+      "rowVersionToken": "0x0000000000000852"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-06-lima",
+      "rowVersionToken": "0x0000000000000853"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-07-nueva-camarca",
+      "rowVersionToken": "0x0000000000000854"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-08-tarapoto",
+      "rowVersionToken": "0x0000000000000855"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-09-moyobamba",
+      "rowVersionToken": "0x0000000000000856"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-10-rioja",
+      "rowVersionToken": "0x0000000000000857"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-11-rioja",
+      "rowVersionToken": "0x0000000000000858"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "offers/es-PE/offer-12-rioja",
+      "rowVersionToken": "0x0000000000000859"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "parcels/es-PE/parcel-embalado",
+      "rowVersionToken": "0x0000000000000868"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "parcels/es-PE/parcel-empresas",
+      "rowVersionToken": "0x000000000000086D"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "parcels/es-PE/parcel-entrega",
+      "rowVersionToken": "0x000000000000086B"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "parcels/es-PE/parcel-giros",
+      "rowVersionToken": "0x000000000000086C"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "parcels/es-PE/parcel-recepcion",
+      "rowVersionToken": "0x000000000000086A"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "parcels/es-PE/parcel-verificacion",
+      "rowVersionToken": "0x0000000000000869"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "payment-methods/es-PE/pay-amex",
+      "rowVersionToken": "0x0000000000000879"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "payment-methods/es-PE/pay-diners",
+      "rowVersionToken": "0x000000000000087A"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "payment-methods/es-PE/pay-mastercard",
+      "rowVersionToken": "0x0000000000000877"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "payment-methods/es-PE/pay-pagoefectivo",
+      "rowVersionToken": "0x0000000000000878"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "payment-methods/es-PE/pay-paypal",
+      "rowVersionToken": "0x0000000000000876"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "payment-methods/es-PE/pay-safetypay",
+      "rowVersionToken": "0x000000000000087B"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "payment-methods/es-PE/pay-visa",
+      "rowVersionToken": "0x0000000000000875"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "services/es-PE/bus-cama-vip",
+      "rowVersionToken": "0x0000000000000862"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "services/es-PE/economico",
+      "rowVersionToken": "0x0000000000000863"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "services/es-PE/panoramico",
+      "rowVersionToken": "0x0000000000000861"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.heading.preTitle",
+      "rowVersionToken": "0x0000000000004651"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.heading.title",
+      "rowVersionToken": "0x0000000000004652"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.intro",
+      "rowVersionToken": "0x0000000000004653"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.law.body",
+      "rowVersionToken": "0x0000000000004654"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.law.title",
+      "rowVersionToken": "0x0000000000004655"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.legend.claim.body",
+      "rowVersionToken": "0x0000000000004656"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.legend.claim.title",
+      "rowVersionToken": "0x0000000000004657"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.legend.complaint.body",
+      "rowVersionToken": "0x0000000000004658"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.legend.complaint.title",
+      "rowVersionToken": "0x0000000000004659"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.section.consumer",
+      "rowVersionToken": "0x000000000000465A"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.section.detail",
+      "rowVersionToken": "0x000000000000465B"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.section.provider",
+      "rowVersionToken": "0x000000000000465C"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.section.service",
+      "rowVersionToken": "0x000000000000465D"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/complaints.sheet.title",
+      "rowVersionToken": "0x000000000000465E"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/contact.hero.note",
+      "rowVersionToken": "0x0000000000000843"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/contact.hero.preTitle",
+      "rowVersionToken": "0x0000000000000841"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/contact.hero.title",
+      "rowVersionToken": "0x0000000000000842"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/contact.intro",
+      "rowVersionToken": "0x0000000000000844"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/contact.section.preTitle",
+      "rowVersionToken": "0x000000000000465F"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/contact.section.title",
+      "rowVersionToken": "0x0000000000004660"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/destinations.cta.more",
+      "rowVersionToken": "0x0000000000004661"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/faq.heading.preTitle",
+      "rowVersionToken": "0x0000000000004662"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/faq.heading.title",
+      "rowVersionToken": "0x0000000000004663"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/footer.agencies.title",
+      "rowVersionToken": "0x0000000000000847"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/footer.company.title",
+      "rowVersionToken": "0x0000000000000846"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/footer.copyright",
+      "rowVersionToken": "0x0000000000000849"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/footer.description",
+      "rowVersionToken": "0x0000000000000845"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/footer.pay.title",
+      "rowVersionToken": "0x0000000000000848"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/home.destinations.preTitle",
+      "rowVersionToken": "0x0000000000004664"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/home.destinations.title",
+      "rowVersionToken": "0x0000000000004665"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/home.hero.covidNote",
+      "rowVersionToken": "0x0000000000000835"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/home.hero.preTitle",
+      "rowVersionToken": "0x0000000000000832"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/home.hero.subTitle",
+      "rowVersionToken": "0x0000000000000834"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/home.hero.title",
+      "rowVersionToken": "0x0000000000000833"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/legal.privacy.heading.preTitle",
+      "rowVersionToken": "0x0000000000004666"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/legal.privacy.heading.title",
+      "rowVersionToken": "0x0000000000004667"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/legal.terms.heading.preTitle",
+      "rowVersionToken": "0x0000000000004668"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/legal.terms.heading.title",
+      "rowVersionToken": "0x0000000000004669"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/nav.login",
+      "rowVersionToken": "0x000000000000084A"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/offers.slider.preTitle",
+      "rowVersionToken": "0x000000000000466A"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/offers.slider.title",
+      "rowVersionToken": "0x000000000000466B"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/parcels.hero.note",
+      "rowVersionToken": "0x000000000000083C"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/parcels.hero.preTitle",
+      "rowVersionToken": "0x000000000000083A"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/parcels.hero.title",
+      "rowVersionToken": "0x000000000000083B"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/parcels.protocol.preTitle",
+      "rowVersionToken": "0x000000000000466C"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/parcels.protocol.title",
+      "rowVersionToken": "0x000000000000466D"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/parcels.section.preTitle",
+      "rowVersionToken": "0x000000000000466E"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/parcels.section.title",
+      "rowVersionToken": "0x000000000000466F"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/parcels.security.description",
+      "rowVersionToken": "0x0000000000000840"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/parcels.security.title",
+      "rowVersionToken": "0x000000000000083F"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/parcels.verify.description",
+      "rowVersionToken": "0x000000000000083E"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/parcels.verify.title",
+      "rowVersionToken": "0x000000000000083D"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/sales.minor.policy",
+      "rowVersionToken": "0x0000000000004670"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/sales.notice.requirements",
+      "rowVersionToken": "0x0000000000004671"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/sales.support.note",
+      "rowVersionToken": "0x0000000000004672"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/services.detail.preTitle",
+      "rowVersionToken": "0x0000000000004673"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/services.hero.note",
+      "rowVersionToken": "0x0000000000000839"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/services.hero.preTitle",
+      "rowVersionToken": "0x0000000000000836"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/services.hero.subTitle",
+      "rowVersionToken": "0x0000000000000838"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/services.hero.title",
+      "rowVersionToken": "0x0000000000000837"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/services.list.preTitle",
+      "rowVersionToken": "0x0000000000004674"
+    },
+    {
+      "sourceTable": "ContentText",
+      "sourceKey": "es-PE/services.list.title",
+      "rowVersionToken": "0x0000000000004675"
+    },
+    {
+      "sourceTable": "Locale",
+      "sourceKey": "es-PE",
+      "rowVersionToken": "0x00000000000007E3"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/contactanos",
+      "rowVersionToken": "0x000000000000082C"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/destinos",
+      "rowVersionToken": "0x0000000000000828"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/encomiendas",
+      "rowVersionToken": "0x000000000000082A"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/encomiendas-resultados",
+      "rowVersionToken": "0x0000000000004677"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/home",
+      "rowVersionToken": "0x0000000000000827"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/libro-de-reclamaciones",
+      "rowVersionToken": "0x0000000000000831"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/mi-cuenta",
+      "rowVersionToken": "0x000000000000082D"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/politicas-de-privacidad",
+      "rowVersionToken": "0x000000000000082F"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/preguntas-frecuentes",
+      "rowVersionToken": "0x0000000000000830"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/proceso-venta",
+      "rowVersionToken": "0x0000000000004678"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/promociones",
+      "rowVersionToken": "0x000000000000082B"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/servicios",
+      "rowVersionToken": "0x0000000000000829"
+    },
+    {
+      "sourceTable": "Page",
+      "sourceKey": "es-PE/terminos-y-condiciones",
+      "rowVersionToken": "0x000000000000082E"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "brand.color.accent",
+      "rowVersionToken": "0x000000000000081A"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "brand.color.primary",
+      "rowVersionToken": "0x0000000000000818"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "brand.color.secondary",
+      "rowVersionToken": "0x0000000000000819"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "company.address",
+      "rowVersionToken": "0x0000000000000823"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "company.address.legal",
+      "rowVersionToken": "0x0000000000000826"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "company.email",
+      "rowVersionToken": "0x0000000000000822"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "company.legalName",
+      "rowVersionToken": "0x0000000000000824"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "company.ruc",
+      "rowVersionToken": "0x0000000000000825"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "contact.phone.lima",
+      "rowVersionToken": "0x000000000000081D"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "contact.phone.provinces",
+      "rowVersionToken": "0x000000000000081E"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "contact.whatsapp.number",
+      "rowVersionToken": "0x000000000000081F"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "contact.whatsapp.url",
+      "rowVersionToken": "0x0000000000000820"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "footer.whatsapp.url",
+      "rowVersionToken": "0x0000000000000821"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "site.titleTemplate",
+      "rowVersionToken": "0x0000000000000817"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "slider.header.intervalMs",
+      "rowVersionToken": "0x000000000000081B"
+    },
+    {
+      "sourceTable": "Setting",
+      "sourceKey": "slider.offers.intervalMs",
+      "rowVersionToken": "0x000000000000081C"
+    }
+  ]
+}

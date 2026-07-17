@@ -72,6 +72,20 @@ export function registerErrorHandling(app: FastifyInstance): void {
       return;
     }
 
+    if (err.statusCode === 429) {
+      // @fastify/rate-limit ya agregó Retry-After a la respuesta.
+      void reply
+        .status(429)
+        .send(
+          buildBody(
+            req,
+            ErrorCodes.rateLimited,
+            'Demasiadas solicitudes. Intenta nuevamente más tarde.',
+          ),
+        );
+      return;
+    }
+
     const statusCode = err.statusCode !== undefined && err.statusCode >= 400 ? err.statusCode : 500;
 
     if (statusCode >= 500) {

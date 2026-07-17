@@ -1,12 +1,17 @@
 import Fastify from 'fastify';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import type { AppConfig } from './shared/config/env.js';
 import type { MongoContext } from './shared/db/mongo.js';
 import { createMongoContext, closeMongo } from './shared/db/mongo.js';
 import { buildLoggerOptions } from './shared/logging/logger.js';
 import { registerErrorHandling } from './shared/errors/error-handler.js';
 import { healthRoutes } from './modules/health/health.routes.js';
+import { exportRoutes } from './modules/export/export.routes.js';
+import { contentRoutes } from './modules/content/content.routes.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -38,8 +43,27 @@ export function buildApp(config: AppConfig): FastifyInstance {
     done();
   });
 
+  // CORS cerrado por defecto: solo los dominios configurados del front.
+  const corsOrigins = config.CORS_ORIGINS.split(',')
+    .map((o) => o.trim())
+    .filter((o) => o.length > 0);
+  void app.register(cors, { origin: corsOrigins.length > 0 ? corsOrigins : false });
+
+  void app.register(helmet);
+
+  // Rate limit por ruta (global: false): las rutas públicas declaran su
+  // límite en config.rateLimit; health y export no comparten ese presupuesto.
+  // El 429 sale con la envolvente estándar vía el error handler central
+  // (FST_ERR_RATE_LIMITED); el plugin agrega el header Retry-After.
+  void app.register(rateLimit, {
+    global: false,
+    keyGenerator: (req: FastifyRequest) => req.ip,
+  });
+
   registerErrorHandling(app);
   app.register(healthRoutes);
+  app.register(exportRoutes);
+  app.register(contentRoutes);
 
   return app;
 }
