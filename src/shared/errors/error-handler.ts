@@ -1,5 +1,6 @@
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { AppError, ErrorCodes } from './app-error.js';
+import { safeErrorLog } from '../logging/logger.js';
 
 interface ErrorBody {
   error: {
@@ -89,7 +90,10 @@ export function registerErrorHandling(app: FastifyInstance): void {
     const statusCode = err.statusCode !== undefined && err.statusCode >= 400 ? err.statusCode : 500;
 
     if (statusCode >= 500) {
-      req.log.error({ err }, 'error no controlado');
+      req.log.error(
+        { error: safeErrorLog(err, { includeStackFrames: true }) },
+        'error no controlado',
+      );
       void reply
         .status(statusCode)
         .send(buildBody(req, ErrorCodes.internal, 'Error interno del servidor.'));
@@ -98,7 +102,7 @@ export function registerErrorHandling(app: FastifyInstance): void {
 
     // 4xx de Fastify/plugins: código HTTP conservado, mensaje público estable
     // (el mensaje técnico queda solo en el log sanitizado).
-    req.log.info({ err: { message: err.message, code: err.code } }, 'error de cliente');
+    req.log.info({ error: safeErrorLog(err) }, 'error de cliente');
     const { code, message } = publicClientError(statusCode, err.code);
     void reply.status(statusCode).send(buildBody(req, code, message));
   });

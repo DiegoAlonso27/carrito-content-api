@@ -56,5 +56,9 @@ export async function pingMongo(ctx: MongoContext): Promise<void> {
 }
 
 export async function closeMongo(ctx: MongoContext): Promise<void> {
-  await Promise.all([ctx.contentClient.close(), ctx.formsClient.close()]);
+  const results = await Promise.allSettled([ctx.contentClient.close(), ctx.formsClient.close()]);
+  const failedCount = results.filter((result) => result.status === 'rejected').length;
+  if (failedCount > 0) {
+    throw new Error(`No se pudieron cerrar todos los clientes MongoDB (${String(failedCount)}).`);
+  }
 }

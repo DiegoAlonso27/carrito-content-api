@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { contactBodySchema, contactResponseSchema } from './contact.schemas.js';
 import { ContactRepo } from './contact.repo.js';
 import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
+import { errorEnvelopeSchema } from '../../shared/errors/error-schema.js';
 import type { ContactMessageDto, ContactSubmissionInput } from './contact.types.js';
 
 /**
@@ -78,7 +79,11 @@ export function contactRoutes(app: FastifyInstance): void {
       config: { rateLimit },
       schema: {
         body: contactBodySchema,
-        response: { 200: contactResponseSchema, 201: contactResponseSchema },
+        response: {
+          200: contactResponseSchema,
+          201: contactResponseSchema,
+          default: errorEnvelopeSchema,
+        },
       },
       preValidation: (req, _reply, done) => {
         trimTextFields(req.body as Record<string, unknown>);

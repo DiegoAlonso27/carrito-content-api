@@ -4,6 +4,7 @@ import { parseExportKeys, requireExportKey } from '../../shared/security/export-
 import { contentCacheSchema } from '../content/content.schemas.js';
 import type { ContentCache } from '../content/content.types.js';
 import { ExportService } from './export.service.js';
+import { errorEnvelopeSchema } from '../../shared/errors/error-schema.js';
 
 /**
  * Export servidor-a-servidor para el build de carrito-front.
@@ -22,21 +23,6 @@ const exportHeadersSchema = Type.Object({
   'if-none-match': Type.Optional(Type.String()),
 });
 
-const errorEnvelopeSchema = Type.Object(
-  {
-    error: Type.Object(
-      {
-        code: Type.String(),
-        message: Type.String(),
-        requestId: Type.String(),
-        details: Type.Optional(Type.Record(Type.String(), Type.Array(Type.String()))),
-      },
-      { additionalProperties: false },
-    ),
-  },
-  { additionalProperties: false },
-);
-
 export function exportRoutes(app: FastifyInstance): void {
   const service = new ExportService(app.mongo.contentDb);
   const keys = parseExportKeys(app.config.EXPORT_API_KEYS);
@@ -49,7 +35,7 @@ export function exportRoutes(app: FastifyInstance): void {
         response: {
           200: contentCacheSchema,
           304: Type.Null(),
-          401: errorEnvelopeSchema,
+          default: errorEnvelopeSchema,
         },
       },
     },

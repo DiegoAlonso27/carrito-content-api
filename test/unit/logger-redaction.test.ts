@@ -1,5 +1,7 @@
+import Fastify from 'fastify';
 import { describe, expect, it } from 'vitest';
 import { buildLoggerOptions } from '../../src/shared/logging/logger.js';
+import { safeErrorLog } from '../../src/shared/logging/logger.js';
 import { makeTestConfig } from '../helpers/test-config.js';
 
 /**
@@ -62,13 +64,59 @@ describe('buildLoggerOptions — serializador de request sin IP', () => {
     expect(serialized?.['url']).toBe('/health/ready');
   });
 
-  it('la lista de redacción cubre headers sensibles', () => {
-    const options = buildLoggerOptions(makeTestConfig());
+  it('la salida real no contiene headers, IP, query ni datos de un error', async () => {
+    const options = buildLoggerOptions(makeTestConfig({ LOG_LEVEL: 'info' }));
     if (typeof options === 'boolean') throw new Error('logger options no es objeto');
 
-    const redact = options.redact;
-    const paths = Array.isArray(redact) ? redact : (redact?.paths ?? []);
-    expect(paths).toContain('req.headers.authorization');
-    expect(paths).toContain('req.headers.cookie');
+    const lines: string[] = [];
+    const app = Fastify({
+      logger: {
+        ...options,
+        stream: { write: (line: string) => lines.push(line) },
+      },
+    });
+    try {
+      app.log.info(
+        {
+          req: {
+            id: 'req-real-1',
+            method: 'GET',
+            url: '/v1/export/content-cache?token=query-secreto',
+            headers: {
+              authorization: 'Bearer auth-secreto',
+              cookie: 'session=cookie-secreta',
+              'x-export-key': 'export-key-secreta',
+            },
+            ip: '198.51.100.9',
+            socket: { remoteAddress: '198.51.100.9', remotePort: 54321 },
+          },
+          error: safeErrorLog(new Error('Nombre Personal En Error'), {
+            includeStackFrames: true,
+          }),
+        },
+        'prueba de privacidad',
+      );
+    } finally {
+      await app.close();
+    }
+
+    const output = lines.join('');
+    expect(output).toContain('prueba de privacidad');
+    expect(output).toContain('/v1/export/content-cache');
+    expect(output).toContain('logger-redaction.test');
+    for (const forbidden of [
+      'query-secreto',
+      'auth-secreto',
+      'cookie-secreta',
+      'export-key-secreta',
+      '198.51.100.9',
+      '54321',
+      'Nombre Personal En Error',
+      'session=',
+      'authorization',
+      'x-export-key',
+    ]) {
+      expect(output).not.toContain(forbidden);
+    }
   });
 });

@@ -2,14 +2,24 @@ import { existsSync } from 'node:fs';
 import { envSchema } from 'env-schema';
 import { Type } from '@sinclair/typebox';
 import type { Static } from '@sinclair/typebox';
+import { parseExportKeys } from '../security/export-key.js';
+
+const MONGODB_URI_PATTERN = '^mongodb(?:\\+srv)?://';
+const SUPPORTED_COMPLAINT_ATTACHMENT_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+]);
+// Reserva 1 MiB del límite BSON para hoja, metadatos y sobre del documento.
+const MAX_COMPLAINT_BINARY_BYTES = 15 * 1024 * 1024;
 
 const schema = Type.Object({
   NODE_ENV: Type.Union(
     [Type.Literal('development'), Type.Literal('production'), Type.Literal('test')],
     { default: 'development' },
   ),
-  HOST: Type.String({ default: '127.0.0.1' }),
-  PORT: Type.Number({ default: 3000, minimum: 1, maximum: 65535 }),
+  HOST: Type.String({ default: '127.0.0.1', minLength: 1 }),
+  PORT: Type.Integer({ default: 3000, minimum: 1, maximum: 65535 }),
   LOG_LEVEL: Type.Union(
     [
       Type.Literal('fatal'),
@@ -21,7 +31,7 @@ const schema = Type.Object({
     ],
     { default: 'info' },
   ),
-  MONGO_URI: Type.String({ default: 'mongodb://127.0.0.1:27017' }),
+  MONGO_URI: Type.String({ default: 'mongodb://127.0.0.1:27017', pattern: MONGODB_URI_PATTERN }),
   /**
    * Credenciales propias de `carrito_forms` (usuario Mongo separado del de
    * contenido, AGENTS.md — datos personales). Vacío = usa MONGO_URI (solo
@@ -29,8 +39,8 @@ const schema = Type.Object({
    * (ADR-003); permisos mínimos sin DDL (`scripts/forms/setup-contact.ts`).
    */
   MONGO_URI_FORMS: Type.String({ default: '' }),
-  MONGO_DB_CONTENT: Type.String({ default: 'carrito_content' }),
-  MONGO_DB_FORMS: Type.String({ default: 'carrito_forms' }),
+  MONGO_DB_CONTENT: Type.String({ default: 'carrito_content', minLength: 1 }),
+  MONGO_DB_FORMS: Type.String({ default: 'carrito_forms', minLength: 1 }),
   /**
    * Claves del export servidor-a-servidor, separadas por coma (máx. 2;
    * cada una ≥ 32 caracteres). Vacío = endpoint deshabilitado (→ 401).
@@ -43,14 +53,14 @@ const schema = Type.Object({
    */
   CORS_ORIGINS: Type.String({ default: '' }),
   /** Límite de lectura pública por IP y minuto (propuesta pendiente de aprobación: 120). */
-  RATE_LIMIT_READ_PER_MINUTE: Type.Number({ default: 120, minimum: 1 }),
+  RATE_LIMIT_READ_PER_MINUTE: Type.Integer({ default: 120, minimum: 1 }),
   /**
    * Rate limit del formulario de contacto (contrato heredado,
    * formularios-backend-csharp.md §6: "5 envíos / 10 min por formulario,
    * parametrizable"). Ambos valores son ese default, configurables por env.
    */
-  RATE_LIMIT_CONTACT_MAX: Type.Number({ default: 5, minimum: 1 }),
-  RATE_LIMIT_CONTACT_WINDOW_MINUTES: Type.Number({ default: 10, minimum: 1 }),
+  RATE_LIMIT_CONTACT_MAX: Type.Integer({ default: 5, minimum: 1 }),
+  RATE_LIMIT_CONTACT_WINDOW_MINUTES: Type.Integer({ default: 10, minimum: 1 }),
   /**
    * Formulario de contacto (F5, cerrado). Default `true`: forma parte de la
    * línea base. `false` es kill-switch operativo (ADR-006), no un gate de
@@ -75,8 +85,8 @@ const schema = Type.Object({
    */
   COMPLAINTS_LEGAL_GATE_CLEARED: Type.Boolean({ default: false }),
   /** Rate limit del Libro de Reclamaciones (mismo patrón que contacto). */
-  RATE_LIMIT_COMPLAINTS_MAX: Type.Number({ default: 5, minimum: 1 }),
-  RATE_LIMIT_COMPLAINTS_WINDOW_MINUTES: Type.Number({ default: 10, minimum: 1 }),
+  RATE_LIMIT_COMPLAINTS_MAX: Type.Integer({ default: 5, minimum: 1 }),
+  RATE_LIMIT_COMPLAINTS_WINDOW_MINUTES: Type.Integer({ default: 10, minimum: 1 }),
   /**
    * Snapshot del proveedor persistido en cada reclamo (P8). Nunca sale del
    * cache público: es configuración propia del backend. Vacío por defecto;
@@ -97,12 +107,12 @@ const schema = Type.Object({
    * días calendario de la Ley 29571, pero hay modificaciones posteriores).
    * Configurable; obligatorio solo cuando el Libro está habilitado.
    */
-  COMPLAINTS_RESPONSE_DAYS: Type.Number({ default: 0, minimum: 0 }),
+  COMPLAINTS_RESPONSE_DAYS: Type.Integer({ default: 0, minimum: 0 }),
   /**
    * Tamaño máximo del PNG de firma (P18). Propuesta del plan: 256 KB; valor
    * final del MR 1. Configurable.
    */
-  COMPLAINTS_SIGNATURE_MAX_BYTES: Type.Number({ default: 256 * 1024, minimum: 1 }),
+  COMPLAINTS_SIGNATURE_MAX_BYTES: Type.Integer({ default: 256 * 1024, minimum: 1 }),
   /**
    * Política de adjuntos del consumidor (P14). Recomendación inicial del plan:
    * PDF/JPEG/PNG, 5 archivos, 10 MB c/u. En Mongo (sin transacciones multi-doc
@@ -110,9 +120,15 @@ const schema = Type.Object({
    * que el total embebido debe quedar bajo el límite de 16 MB de BSON: el
    * default total es conservador y validado antes de insertar (ver ADR-007).
    */
-  COMPLAINTS_ATTACHMENTS_MAX_FILES: Type.Number({ default: 5, minimum: 0 }),
-  COMPLAINTS_ATTACHMENTS_MAX_FILE_BYTES: Type.Number({ default: 4 * 1024 * 1024, minimum: 1 }),
-  COMPLAINTS_ATTACHMENTS_MAX_TOTAL_BYTES: Type.Number({ default: 12 * 1024 * 1024, minimum: 1 }),
+  COMPLAINTS_ATTACHMENTS_MAX_FILES: Type.Integer({ default: 5, minimum: 0 }),
+  COMPLAINTS_ATTACHMENTS_MAX_FILE_BYTES: Type.Integer({
+    default: 4 * 1024 * 1024,
+    minimum: 1,
+  }),
+  COMPLAINTS_ATTACHMENTS_MAX_TOTAL_BYTES: Type.Integer({
+    default: 12 * 1024 * 1024,
+    minimum: 1,
+  }),
   /** Allowlist de MIME de adjuntos (coma-separada). Firma mágica se valida además en código. */
   COMPLAINTS_ATTACHMENTS_ALLOWED_TYPES: Type.String({
     default: 'application/pdf,image/jpeg,image/png',
@@ -123,14 +139,19 @@ const schema = Type.Object({
    * Credenciales SOLO por env; obligatorio configurarlas para envío real.
    */
   COMPLAINTS_SMTP_HOST: Type.String({ default: '' }),
-  COMPLAINTS_SMTP_PORT: Type.Number({ default: 587, minimum: 1, maximum: 65535 }),
+  COMPLAINTS_SMTP_PORT: Type.Integer({ default: 587, minimum: 1, maximum: 65535 }),
   COMPLAINTS_SMTP_SECURE: Type.Boolean({ default: false }),
   COMPLAINTS_SMTP_USER: Type.String({ default: '' }),
   COMPLAINTS_SMTP_PASSWORD: Type.String({ default: '' }),
   COMPLAINTS_SMTP_FROM: Type.String({ default: '' }),
 });
 
-export type AppConfig = Static<typeof schema>;
+type EnvironmentConfig = Static<typeof schema>;
+
+export type AppConfig = EnvironmentConfig & {
+  /** Lista CORS ya normalizada y validada; única fuente para registrar el plugin. */
+  CORS_ORIGINS_LIST: readonly string[];
+};
 
 /**
  * Carga y valida la configuración al arrancar (fail-fast: un .env inválido
@@ -140,21 +161,132 @@ export type AppConfig = Static<typeof schema>;
  * su ruta mediante CARRITO_ENV_FILE (ver plan F7).
  */
 export function loadConfig(overrides?: Record<string, string>): AppConfig {
-  let config: AppConfig;
+  let config: EnvironmentConfig;
   if (overrides) {
-    config = envSchema<AppConfig>({ schema, data: overrides, dotenv: false });
+    config = envSchema<EnvironmentConfig>({ schema, data: overrides, dotenv: false });
   } else {
-    const envFile = process.env['CARRITO_ENV_FILE'] ?? '.env';
-    config = envSchema<AppConfig>({
+    const configuredEnvFile = process.env['CARRITO_ENV_FILE'];
+    if (configuredEnvFile !== undefined && !existsSync(configuredEnvFile)) {
+      throw new Error(`CARRITO_ENV_FILE no existe: ${configuredEnvFile}`);
+    }
+    const envFile = configuredEnvFile ?? '.env';
+    config = envSchema<EnvironmentConfig>({
       schema,
       // Sin archivo .env se usan process.env y los defaults del esquema.
       dotenv: existsSync(envFile) ? { path: envFile } : false,
     });
   }
 
+  const corsOrigins = assertBaseConfig(config);
+  assertComplaintLimits(config);
+  assertSmtpConfig(config);
   assertProductionFormsCredentials(config);
   assertComplaintsConfig(config);
-  return config;
+  return { ...config, CORS_ORIGINS_LIST: corsOrigins };
+}
+
+function assertBaseConfig(config: EnvironmentConfig): readonly string[] {
+  for (const [name, value] of [
+    ['HOST', config.HOST],
+    ['MONGO_URI', config.MONGO_URI],
+    ['MONGO_DB_CONTENT', config.MONGO_DB_CONTENT],
+    ['MONGO_DB_FORMS', config.MONGO_DB_FORMS],
+  ] as const) {
+    if (value.trim().length === 0) throw new Error(`${name} no puede estar vacío.`);
+  }
+
+  if (
+    config.MONGO_URI_FORMS.length > 0 &&
+    !/^mongodb(?:\+srv)?:\/\//.test(config.MONGO_URI_FORMS)
+  ) {
+    throw new Error('MONGO_URI_FORMS debe ser una URI mongodb:// o mongodb+srv:// válida.');
+  }
+  if (config.MONGO_DB_CONTENT === config.MONGO_DB_FORMS) {
+    throw new Error('MONGO_DB_CONTENT y MONGO_DB_FORMS no pueden ser la misma base de datos.');
+  }
+
+  parseExportKeys(config.EXPORT_API_KEYS);
+  return parseCorsOrigins(config.CORS_ORIGINS);
+}
+
+function parseCorsOrigins(raw: string): readonly string[] {
+  const origins = raw
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+
+  for (const origin of origins) {
+    if (origin === '*')
+      throw new Error('CORS_ORIGINS no admite el wildcard *; usa orígenes explícitos.');
+    let parsed: URL;
+    try {
+      parsed = new URL(origin);
+    } catch {
+      throw new Error(`CORS_ORIGINS contiene un origen inválido: ${origin}`);
+    }
+    if (
+      (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') ||
+      parsed.username.length > 0 ||
+      parsed.password.length > 0 ||
+      origin !== parsed.origin
+    ) {
+      throw new Error(
+        `CORS_ORIGINS solo admite orígenes http(s) exactos, sin credenciales, ruta, query ni fragmento: ${origin}`,
+      );
+    }
+  }
+  return origins;
+}
+
+function assertComplaintLimits(config: EnvironmentConfig): void {
+  if (
+    config.COMPLAINTS_ATTACHMENTS_MAX_FILES > 0 &&
+    config.COMPLAINTS_ATTACHMENTS_MAX_FILE_BYTES > config.COMPLAINTS_ATTACHMENTS_MAX_TOTAL_BYTES
+  ) {
+    throw new Error(
+      'COMPLAINTS_ATTACHMENTS_MAX_FILE_BYTES no puede superar COMPLAINTS_ATTACHMENTS_MAX_TOTAL_BYTES.',
+    );
+  }
+
+  const binaryBudget =
+    config.COMPLAINTS_SIGNATURE_MAX_BYTES + config.COMPLAINTS_ATTACHMENTS_MAX_TOTAL_BYTES;
+  if (binaryBudget > MAX_COMPLAINT_BINARY_BYTES) {
+    throw new Error(
+      'COMPLAINTS_SIGNATURE_MAX_BYTES + COMPLAINTS_ATTACHMENTS_MAX_TOTAL_BYTES ' +
+        'debe ser como máximo 15 MiB para reservar espacio dentro del límite BSON.',
+    );
+  }
+
+  const allowedTypes = config.COMPLAINTS_ATTACHMENTS_ALLOWED_TYPES.split(',')
+    .map((type) => type.trim())
+    .filter((type) => type.length > 0);
+  const unsupported = allowedTypes.filter(
+    (type) => !SUPPORTED_COMPLAINT_ATTACHMENT_TYPES.has(type),
+  );
+  if (unsupported.length > 0) {
+    throw new Error(
+      `COMPLAINTS_ATTACHMENTS_ALLOWED_TYPES contiene tipos no soportados: ${unsupported.join(', ')}.`,
+    );
+  }
+  if (config.COMPLAINTS_ATTACHMENTS_MAX_FILES > 0 && allowedTypes.length === 0) {
+    throw new Error(
+      'COMPLAINTS_ATTACHMENTS_ALLOWED_TYPES no puede estar vacío si se permiten adjuntos.',
+    );
+  }
+}
+
+function assertSmtpConfig(config: EnvironmentConfig): void {
+  const hasHost = config.COMPLAINTS_SMTP_HOST.length > 0;
+  const hasFrom = config.COMPLAINTS_SMTP_FROM.length > 0;
+  if (hasHost !== hasFrom) {
+    throw new Error('COMPLAINTS_SMTP_HOST y COMPLAINTS_SMTP_FROM deben configurarse juntos.');
+  }
+
+  const hasUser = config.COMPLAINTS_SMTP_USER.length > 0;
+  const hasPassword = config.COMPLAINTS_SMTP_PASSWORD.length > 0;
+  if (hasUser !== hasPassword) {
+    throw new Error('COMPLAINTS_SMTP_USER y COMPLAINTS_SMTP_PASSWORD deben configurarse juntos.');
+  }
 }
 
 /**
@@ -176,7 +308,7 @@ export function loadConfig(overrides?: Record<string, string>): AppConfig {
  * Sin cerrar estos puntos, activar el flag detiene el arranque en vez de
  * aceptar reclamos que luego no podrían atenderse conforme a ley.
  */
-function assertComplaintsConfig(config: AppConfig): void {
+function assertComplaintsConfig(config: EnvironmentConfig): void {
   if (!config.FEATURE_COMPLAINTS_ENABLED) return;
 
   if (!config.COMPLAINTS_LEGAL_GATE_CLEARED) {
@@ -233,7 +365,7 @@ function assertComplaintsConfig(config: AppConfig): void {
  * credenciales propias y distintas de contenido (AGENTS.md / ADR-003).
  * Con F5 desactivado no se exige MONGO_URI_FORMS (línea base F0–F4).
  */
-function assertProductionFormsCredentials(config: AppConfig): void {
+function assertProductionFormsCredentials(config: EnvironmentConfig): void {
   if (config.NODE_ENV !== 'production') return;
   if (!config.FEATURE_CONTACT_ENABLED) return;
 

@@ -1,6 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { ObjectId } from 'mongodb';
-import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 import multipart from '@fastify/multipart';
 import { complaintPayloadSchema, complaintReceiptSchema } from './complaints.schemas.js';
@@ -11,6 +10,7 @@ import { buildCanonicalSheet, sha256Hex, validateSignaturePng } from './complain
 import { generateComplaintCode } from './complaints.code.js';
 import { createNotificationSender } from './complaints.email.js';
 import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
+import { errorEnvelopeSchema } from '../../shared/errors/error-schema.js';
 import type {
   ComplaintAttachment,
   ComplaintDoc,
@@ -36,21 +36,6 @@ import type {
  * el response schema como barrera anti-fuga (nunca binarios ni `_id`).
  */
 
-const errorResponseSchema = Type.Object(
-  {
-    error: Type.Object(
-      {
-        code: Type.String(),
-        message: Type.String(),
-        requestId: Type.String(),
-        details: Type.Optional(Type.Record(Type.String(), Type.Array(Type.String()))),
-      },
-      { additionalProperties: false },
-    ),
-  },
-  { additionalProperties: false },
-);
-
 export function complaintsRoutes(app: FastifyInstance): void {
   if (!app.config.FEATURE_COMPLAINTS_ENABLED) {
     registerDisabledGate(app);
@@ -68,7 +53,7 @@ export function complaintsRoutes(app: FastifyInstance): void {
 function registerDisabledGate(app: FastifyInstance): void {
   app.post(
     '/v1/complaints',
-    { schema: { response: { 415: errorResponseSchema, 503: errorResponseSchema } } },
+    { schema: { response: { default: errorEnvelopeSchema } } },
     (req, reply) =>
       reply.code(503).send({
         error: {
@@ -118,17 +103,11 @@ function registerEnabledRoutes(app: FastifyInstance): void {
     {
       config: { rateLimit },
       schema: {
-        // Todos los códigos posibles llevan schema: la barrera anti-fuga de
-        // Fastify se aplica también a 400/413/429/500, no solo al éxito.
+        // `default` aplica la barrera anti-fuga a cualquier código de error.
         response: {
           200: complaintReceiptSchema,
           201: complaintReceiptSchema,
-          400: errorResponseSchema,
-          413: errorResponseSchema,
-          415: errorResponseSchema,
-          429: errorResponseSchema,
-          500: errorResponseSchema,
-          503: errorResponseSchema,
+          default: errorEnvelopeSchema,
         },
       },
     },

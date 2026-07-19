@@ -11,6 +11,7 @@ import {
 } from './content.schemas.js';
 import { ContentReader } from './content-read.js';
 import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
+import { errorEnvelopeSchema } from '../../shared/errors/error-schema.js';
 
 /**
  * Endpoints públicos de contenido (runtime, consumidos por el navegador).
@@ -80,7 +81,7 @@ export function contentRoutes(app: FastifyInstance): void {
     '/v1/locales',
     {
       config: { rateLimit },
-      schema: { response: { 200: localesSchema, 304: Type.Null() } },
+      schema: { response: { 200: localesSchema, 304: Type.Null(), default: errorEnvelopeSchema } },
     },
     async (req, reply) => {
       const { contentVersion, locales } = await reader.getLocales();
@@ -95,7 +96,10 @@ export function contentRoutes(app: FastifyInstance): void {
     '/v1/content/:locale',
     {
       config: { rateLimit },
-      schema: { params: localeParam, response: { 200: bundleSchema, 304: Type.Null() } },
+      schema: {
+        params: localeParam,
+        response: { 200: bundleSchema, 304: Type.Null(), default: errorEnvelopeSchema },
+      },
     },
     async (req, reply) => {
       const { locale } = req.params as { locale: string };
@@ -114,7 +118,10 @@ export function contentRoutes(app: FastifyInstance): void {
     '/v1/content/:locale/collections/:slug/items',
     {
       config: { rateLimit },
-      schema: { params: collectionParams, response: { 200: itemsSchema, 304: Type.Null() } },
+      schema: {
+        params: collectionParams,
+        response: { 200: itemsSchema, 304: Type.Null(), default: errorEnvelopeSchema },
+      },
     },
     async (req, reply) => {
       const { locale, slug } = req.params as { locale: string; slug: string };

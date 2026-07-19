@@ -15,7 +15,11 @@
     "lint": "eslint .",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "setup:contact": "tsx scripts/forms/setup-contact.ts",
+    "setup:complaints": "tsx scripts/forms/setup-complaints.ts",
+    "migrate:cache": "tsx scripts/migrate/import-cache.ts",
+    "indexes:obsolete": "tsx scripts/db/report-obsolete-indexes.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",

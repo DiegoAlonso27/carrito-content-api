@@ -1,7 +1,7 @@
 /**
  * Aprovisiona la colección `complaints` en `carrito_forms`: validador
  * $jsonSchema, índices únicos de idempotencia (`submissionId`) y de código
- * (`complaintCode`), e índice por fecha. Idempotente.
+ * (`complaintCode`). Idempotente.
  *
  * Uso:
  *   npx tsx scripts/forms/setup-complaints.ts
@@ -17,7 +17,10 @@
  */
 import { MongoClient } from 'mongodb';
 import { loadConfig } from '../../src/shared/config/env.js';
-import { ensureComplaintsSetup } from '../../src/modules/complaints/complaints.repo.js';
+import {
+  ensureComplaintsSetup,
+  findObsoleteComplaintsIndexes,
+} from '../../src/modules/complaints/complaints.repo.js';
 
 const config = loadConfig();
 const uri = config.MONGO_URI_FORMS.length > 0 ? config.MONGO_URI_FORMS : config.MONGO_URI;
@@ -27,6 +30,10 @@ try {
   const db = client.db(config.MONGO_DB_FORMS);
   await ensureComplaintsSetup(db);
   console.log(`OK: ${config.MONGO_DB_FORMS}.complaints listo (validador e índices aplicados).`);
+  const obsolete = await findObsoleteComplaintsIndexes(db);
+  for (const name of obsolete) {
+    console.warn(`ÍNDICE OBSOLETO NO ELIMINADO: complaints.${name}`);
+  }
 } finally {
   await client.close();
 }

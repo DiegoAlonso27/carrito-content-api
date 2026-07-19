@@ -17,6 +17,11 @@ import type { AppConfig } from '../config/env.js';
  * Además se descarta la query string: puede transportar datos personales o
  * secretos (tokens, correos, documentos) y no aporta a la correlación. Solo
  * se registra la ruta.
+ *
+ * La barrera efectiva para headers, IP y query es este serializador: Pino lo
+ * ejecuta antes de `redact`, por lo que los paths de headers no encuentran
+ * campos en la salida actual. `redact` queda como defensa secundaria ante un
+ * cambio futuro del serializador, no como fundamento de privacidad.
  */
 export function buildLoggerOptions(config: AppConfig): NonNullable<FastifyServerOptions['logger']> {
   return {
@@ -35,6 +40,52 @@ export function buildLoggerOptions(config: AppConfig): NonNullable<FastifyServer
       env: config.NODE_ENV,
     },
   };
+}
+
+export interface SafeErrorLogOptions {
+  /** Solo para fallos internos: conserva frames de código, nunca la línea con message. */
+  includeStackFrames?: boolean;
+}
+
+/** Metadatos operativos sin message; opcionalmente incluye solo frames del stack. */
+export function safeErrorLog(
+  err: unknown,
+  options: SafeErrorLogOptions = {},
+): {
+  type: string;
+  code?: string;
+  statusCode?: number;
+  stack?: string;
+} {
+  if (typeof err !== 'object' || err === null) return { type: typeof err };
+
+  const type = err instanceof Error ? err.name : 'ErrorLike';
+  const code = 'code' in err && typeof err.code === 'string' ? err.code : undefined;
+  const statusCode =
+    'statusCode' in err && typeof err.statusCode === 'number' ? err.statusCode : undefined;
+  const stack =
+    options.includeStackFrames === true && err instanceof Error
+      ? sanitizedStackFrames(err.stack)
+      : undefined;
+  return {
+    type,
+    ...(code !== undefined ? { code } : {}),
+    ...(statusCode !== undefined ? { statusCode } : {}),
+    ...(stack !== undefined ? { stack } : {}),
+  };
+}
+
+/** Elimina la primera línea (`Error: message`) y conserva hasta 20 frames. */
+function sanitizedStackFrames(stack: string | undefined): string | undefined {
+  if (stack === undefined) return undefined;
+  const frames = stack
+    .split(/\r?\n/)
+    .slice(1)
+    .filter((line) => /^\s*at\s/.test(line))
+    .slice(0, 20)
+    .join('\n')
+    .slice(0, 4096);
+  return frames.length > 0 ? frames : undefined;
 }
 
 /** Ruta sin query string (la query puede llevar datos personales o secretos). */

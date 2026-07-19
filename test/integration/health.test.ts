@@ -30,6 +30,20 @@ describe('humo con MongoDB real (memoria)', () => {
     expect(res.statusCode).toBe(200);
   });
 
+  it('readiness responde 503 si forms no responde aunque content esté disponible', async () => {
+    const formsDown = buildApp(
+      makeTestConfig({ MONGO_URI: mongod.getUri(), MONGO_URI_FORMS: 'mongodb://127.0.0.1:1' }),
+    );
+    try {
+      await formsDown.ready();
+      const res = await formsDown.inject({ method: 'GET', url: '/health/ready' });
+      expect(res.statusCode).toBe(503);
+      expect(res.json<{ error: { code: string } }>().error.code).toBe('SERVICE_NOT_READY');
+    } finally {
+      await formsDown.close();
+    }
+  });
+
   it('con FEATURE_CONTACT_ENABLED=false el endpoint de contacto no está registrado (kill-switch)', async () => {
     const disabled = buildApp(
       makeTestConfig({ MONGO_URI: mongod.getUri(), FEATURE_CONTACT_ENABLED: 'false' }),

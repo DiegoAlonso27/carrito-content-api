@@ -541,17 +541,15 @@ describe('POST /v1/complaints — límites de adjuntos', () => {
   });
 
   it('413 cuando la suma de adjuntos excede el máximo total', async () => {
-    // Cada PDF pasa el límite individual, pero juntos superan el total.
+    const pdf = makePdf();
+    // Cada PDF alcanza el límite individual; juntos superan el total por 1 byte.
     await withConfig(
       {
-        COMPLAINTS_ATTACHMENTS_MAX_FILE_BYTES: '1000',
-        COMPLAINTS_ATTACHMENTS_MAX_TOTAL_BYTES: '50',
+        COMPLAINTS_ATTACHMENTS_MAX_FILE_BYTES: String(pdf.length),
+        COMPLAINTS_ATTACHMENTS_MAX_TOTAL_BYTES: String(pdf.length * 2 - 1),
       },
       async (instance) => {
-        const res = await post(
-          instance,
-          complaintRequest(validPayload(), { files: [makePdf(), makePdf()] }),
-        );
+        const res = await post(instance, complaintRequest(validPayload(), { files: [pdf, pdf] }));
         expect(res.statusCode).toBe(413);
         expect(res.json<{ error: { code: string } }>().error.code).toBe('PAYLOAD_TOO_LARGE');
       },

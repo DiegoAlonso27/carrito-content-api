@@ -4,6 +4,7 @@ import {
   contentCollectionIndexes,
   contentCollections,
   contentCollectionValidators,
+  obsoleteContentIndexes,
 } from './content.collections.js';
 import type {
   AssetDoc,
@@ -12,6 +13,7 @@ import type {
   EditorialStatus,
   LocaleDoc,
 } from './content.types.js';
+import { listedIndexNames } from '../../shared/db/indexes.js';
 
 /** Documento editorial mínimo almacenado en MongoDB. */
 export interface EditorialStoredDoc extends Document {
@@ -31,6 +33,11 @@ export interface ImportUpsertOutcome {
   updated: number;
   unchanged: number;
   total: number;
+}
+
+export interface ObsoleteIndex {
+  collection: string;
+  name: string;
 }
 
 /**
@@ -78,6 +85,22 @@ export class ContentRepo {
         .collection(spec.collection)
         .createIndex(spec.keys, { name: spec.name, unique: spec.unique });
     }
+  }
+
+  /** Detecta índices obsoletos conocidos sin eliminarlos ni modificar DDL. */
+  async findObsoleteIndexes(): Promise<ObsoleteIndex[]> {
+    const found: ObsoleteIndex[] = [];
+    for (const obsolete of obsoleteContentIndexes) {
+      const exists = await this.db
+        .listCollections({ name: obsolete.collection }, { nameOnly: true })
+        .hasNext();
+      if (!exists) continue;
+      const names = listedIndexNames(
+        await this.db.collection(obsolete.collection).listIndexes().toArray(),
+      );
+      if (names.has(obsolete.name)) found.push(obsolete);
+    }
+    return found;
   }
 
   // ── Meta ──────────────────────────────────────────────────────────────────

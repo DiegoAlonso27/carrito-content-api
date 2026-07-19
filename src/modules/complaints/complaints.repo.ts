@@ -1,5 +1,6 @@
 import type { Db, Document, WithId } from 'mongodb';
 import { MongoServerError } from 'mongodb';
+import { listedIndexNames } from '../../shared/db/indexes.js';
 import type {
   ComplaintDoc,
   ComplaintMetadataDoc,
@@ -26,6 +27,8 @@ import type {
 export const complaintsCollections = {
   complaints: 'complaints',
 } as const;
+
+export const obsoleteComplaintsIndexNames = ['ix_complaints_created_at'] as const;
 
 const complaintsValidator: Document = {
   $jsonSchema: {
@@ -90,7 +93,18 @@ export async function ensureComplaintsSetup(db: Db): Promise<void> {
   const col = db.collection(complaintsCollections.complaints);
   await col.createIndex({ submissionId: 1 }, { name: 'ux_complaints_submission_id', unique: true });
   await col.createIndex({ complaintCode: 1 }, { name: 'ux_complaints_code', unique: true });
-  await col.createIndex({ createdAtUtc: -1 }, { name: 'ix_complaints_created_at' });
+}
+
+/** Detecta índices obsoletos conocidos sin ejecutar dropIndex. */
+export async function findObsoleteComplaintsIndexes(db: Db): Promise<string[]> {
+  const exists = await db
+    .listCollections({ name: complaintsCollections.complaints }, { nameOnly: true })
+    .hasNext();
+  if (!exists) return [];
+  const names = listedIndexNames(
+    await db.collection(complaintsCollections.complaints).listIndexes().toArray(),
+  );
+  return obsoleteComplaintsIndexNames.filter((name) => names.has(name));
 }
 
 function isDuplicateKeyError(err: unknown): boolean {

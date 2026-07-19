@@ -1,5 +1,6 @@
 import type { Db, Document, WithId } from 'mongodb';
 import { MongoServerError } from 'mongodb';
+import { listedIndexNames } from '../../shared/db/indexes.js';
 import type {
   ContactMessageDoc,
   ContactMessageDto,
@@ -24,6 +25,8 @@ import type {
 export const contactCollections = {
   messages: 'contact_messages',
 } as const;
+
+export const obsoleteContactIndexNames = ['ix_contact_messages_created_at'] as const;
 
 const messagesValidator: Document = {
   $jsonSchema: {
@@ -84,7 +87,18 @@ export async function ensureContactSetup(db: Db): Promise<void> {
     { submissionId: 1 },
     { name: 'ux_contact_messages_submission_id', unique: true },
   );
-  await col.createIndex({ createdAtUtc: -1 }, { name: 'ix_contact_messages_created_at' });
+}
+
+/** Detecta índices obsoletos conocidos sin ejecutar dropIndex. */
+export async function findObsoleteContactIndexes(db: Db): Promise<string[]> {
+  const exists = await db
+    .listCollections({ name: contactCollections.messages }, { nameOnly: true })
+    .hasNext();
+  if (!exists) return [];
+  const names = listedIndexNames(
+    await db.collection(contactCollections.messages).listIndexes().toArray(),
+  );
+  return obsoleteContactIndexNames.filter((name) => names.has(name));
 }
 
 function isDuplicateKeyError(err: unknown): boolean {

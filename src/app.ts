@@ -46,10 +46,9 @@ export function buildApp(config: AppConfig): FastifyInstance {
   });
 
   // CORS cerrado por defecto: solo los dominios configurados del front.
-  const corsOrigins = config.CORS_ORIGINS.split(',')
-    .map((o) => o.trim())
-    .filter((o) => o.length > 0);
-  void app.register(cors, { origin: corsOrigins.length > 0 ? corsOrigins : false });
+  void app.register(cors, {
+    origin: config.CORS_ORIGINS_LIST.length > 0 ? [...config.CORS_ORIGINS_LIST] : false,
+  });
 
   void app.register(helmet);
 

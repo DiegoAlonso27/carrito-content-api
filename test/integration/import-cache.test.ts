@@ -157,7 +157,8 @@ describe('importación', () => {
     const names = itemIndexes.map((i) => i.name);
 
     expect(names).toContain('ux_items_col_locale_slug');
-    expect(names).toContain('ix_items_col_locale_status_sort');
+    expect(names).toContain('ix_items_locale_status');
+    expect(names).not.toContain('ix_items_col_locale_status_sort');
     expect(itemIndexes.find((i) => i.name === 'ux_items_col_locale_slug')?.unique).toBe(true);
 
     expect((await db.collection(contentCollections.texts).indexes()).map((i) => i.name)).toContain(

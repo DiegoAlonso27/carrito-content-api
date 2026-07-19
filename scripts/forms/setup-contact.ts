@@ -1,7 +1,7 @@
 /**
  * Aprovisiona la colección `contact_messages` en `carrito_forms`:
- * validador $jsonSchema, índice único de idempotencia (`submissionId`) e
- * índice por fecha. Idempotente: correrlo varias veces no duplica nada.
+ * validador $jsonSchema e índice único de idempotencia (`submissionId`).
+ * Idempotente: correrlo varias veces no duplica nada.
  *
  * Uso:
  *   npx tsx scripts/forms/setup-contact.ts
@@ -14,7 +14,10 @@
  */
 import { MongoClient } from 'mongodb';
 import { loadConfig } from '../../src/shared/config/env.js';
-import { ensureContactSetup } from '../../src/modules/contact/contact.repo.js';
+import {
+  ensureContactSetup,
+  findObsoleteContactIndexes,
+} from '../../src/modules/contact/contact.repo.js';
 
 const config = loadConfig();
 const uri = config.MONGO_URI_FORMS.length > 0 ? config.MONGO_URI_FORMS : config.MONGO_URI;
@@ -26,6 +29,10 @@ try {
   console.log(
     `OK: ${config.MONGO_DB_FORMS}.contact_messages listo (validador e índices aplicados).`,
   );
+  const obsolete = await findObsoleteContactIndexes(db);
+  for (const name of obsolete) {
+    console.warn(`ÍNDICE OBSOLETO NO ELIMINADO: contact_messages.${name}`);
+  }
 } finally {
   await client.close();
 }

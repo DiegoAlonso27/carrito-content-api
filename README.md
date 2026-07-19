@@ -19,7 +19,7 @@ Decisiones y plan por fases: `docs/decisions/` (ADRs, desde F1).
 ```bash
 npm install
 copy .env.example .env   # ajustar valores locales
-npx tsx scripts/forms/setup-contact.ts   # una vez: colección contact_messages
+npm run setup:contact     # una vez: colección contact_messages
 npm run dev              # servidor con recarga
 ```
 
@@ -40,13 +40,16 @@ curl http://127.0.0.1:3000/health/ready   # 200 solo si MongoDB responde
 
 ## Scripts
 
-| Comando                           | Descripción                                                        |
-| --------------------------------- | ------------------------------------------------------------------ |
-| `npm run dev`                     | desarrollo con recarga (tsx watch)                                 |
-| `npm test`                        | pruebas (vitest; la primera corrida descarga el binario de mongod) |
-| `npm run typecheck`               | verificación de tipos estricta                                     |
-| `npm run lint` / `npm run format` | linting y formato                                                  |
-| `npm run build` / `npm start`     | build a `dist/` y arranque de producción                           |
+| Comando                              | Descripción                                                        |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| `npm run dev`                        | desarrollo con recarga (tsx watch)                                 |
+| `npm test`                           | pruebas (vitest; la primera corrida descarga el binario de mongod) |
+| `npm run typecheck`                  | verificación de tipos estricta                                     |
+| `npm run lint` / `npm run format`    | linting y formato                                                  |
+| `npm run build` / `npm start`        | build a `dist/` y arranque de producción                           |
+| `npm run setup:contact`              | aprovisiona contacto con una cuenta Mongo de migración             |
+| `npm run setup:complaints`           | aprovisiona reclamos; no activa el gate legal                      |
+| `npm run migrate:cache -- --dry-run` | valida la migración inicial sin escribir                           |
 
 ## Seguridad
 
@@ -54,3 +57,6 @@ curl http://127.0.0.1:3000/health/ready   # 200 solo si MongoDB responde
 - MongoDB solo escucha en `127.0.0.1` y nunca se expone a Internet.
 - Los datos personales (contacto/reclamos) viven en una base separada del
   contenido editorial, con credenciales propias.
+
+Operación, despliegue, health checks, permisos y cierre ordenado:
+[`docs/runbook.md`](docs/runbook.md).

@@ -90,8 +90,8 @@ interface IndexSpec {
 
 /**
  * Índices: los únicos son la idempotencia de migración/edición (clave
- * natural); los ix_ cubren la consulta pública "publicados por locale
- * (y colección) en orden".
+ * natural); los ix_ cubren las consultas públicas reales por locale + status.
+ * El orden se aplica en memoria para preservar exactamente el contrato F2.
  */
 export const contentCollectionIndexes: IndexSpec[] = [
   {
@@ -150,8 +150,13 @@ export const contentCollectionIndexes: IndexSpec[] = [
   },
   {
     collection: contentCollections.items,
-    name: 'ix_items_col_locale_status_sort',
-    keys: { collectionSlug: 1, localeCode: 1, status: 1, sortOrder: 1 },
+    name: 'ix_items_locale_status',
+    keys: { localeCode: 1, status: 1 },
     unique: false,
   },
 ];
+
+/** Índices gestionados en fases previas que F7 solo reporta; nunca elimina. */
+export const obsoleteContentIndexes = [
+  { collection: contentCollections.items, name: 'ix_items_col_locale_status_sort' },
+] as const;

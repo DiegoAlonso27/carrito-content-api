@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createMongoContext, closeMongo } from '../../src/shared/db/mongo.js';
 import { makeTestConfig } from '../helpers/test-config.js';
 
@@ -14,6 +14,22 @@ describe('separación dura de credenciales/bases (AGENTS.md)', () => {
   it('crea clientes Mongo independientes para contenido y formularios', async () => {
     const ctx = createMongoContext(makeTestConfig());
     expect(ctx.contentClient).not.toBe(ctx.formsClient);
+    await closeMongo(ctx);
+  });
+
+  it('espera el cierre de ambos clientes aunque uno falle', async () => {
+    const ctx = createMongoContext(makeTestConfig());
+    const contentClose = vi
+      .spyOn(ctx.contentClient, 'close')
+      .mockRejectedValueOnce(new Error('fallo controlado'));
+    const formsClose = vi.spyOn(ctx.formsClient, 'close').mockResolvedValueOnce();
+
+    await expect(closeMongo(ctx)).rejects.toThrow(/todos los clientes MongoDB/);
+    expect(contentClose).toHaveBeenCalledOnce();
+    expect(formsClose).toHaveBeenCalledOnce();
+
+    contentClose.mockRestore();
+    formsClose.mockRestore();
     await closeMongo(ctx);
   });
 
