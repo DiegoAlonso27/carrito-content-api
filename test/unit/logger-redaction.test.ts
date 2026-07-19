@@ -31,6 +31,37 @@ describe('buildLoggerOptions — serializador de request sin IP', () => {
     expect(serialized).toEqual({ id: 'req-1', method: 'POST', url: '/v1/complaints' });
   });
 
+  it('descarta la query string (puede llevar datos personales o secretos)', () => {
+    const options = buildLoggerOptions(makeTestConfig());
+    if (typeof options === 'boolean') throw new Error('logger options no es objeto');
+
+    const reqSerializer = options.serializers?.['req'] as
+      ((r: unknown) => Record<string, unknown>) | undefined;
+
+    const serialized = reqSerializer?.({
+      id: 'req-2',
+      method: 'GET',
+      url: '/v1/complaints?email=ana.perez@example.test&token=secreto',
+    });
+
+    expect(serialized?.['url']).toBe('/v1/complaints');
+    const asJson = JSON.stringify(serialized);
+    expect(asJson).not.toContain('ana.perez@example.test');
+    expect(asJson).not.toContain('secreto');
+    expect(asJson).not.toContain('?');
+  });
+
+  it('conserva la ruta cuando no hay query string', () => {
+    const options = buildLoggerOptions(makeTestConfig());
+    if (typeof options === 'boolean') throw new Error('logger options no es objeto');
+
+    const reqSerializer = options.serializers?.['req'] as
+      ((r: unknown) => Record<string, unknown>) | undefined;
+
+    const serialized = reqSerializer?.({ id: 'req-3', method: 'GET', url: '/health/ready' });
+    expect(serialized?.['url']).toBe('/health/ready');
+  });
+
   it('la lista de redacción cubre headers sensibles', () => {
     const options = buildLoggerOptions(makeTestConfig());
     if (typeof options === 'boolean') throw new Error('logger options no es objeto');

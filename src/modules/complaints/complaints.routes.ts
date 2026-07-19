@@ -59,16 +59,24 @@ export function complaintsRoutes(app: FastifyInstance): void {
   registerEnabledRoutes(app);
 }
 
-/** Responde 503 «no disponible» sin dependencias: prueba de que el gate bloquea. */
+/**
+ * Responde 503 «no disponible» sin dependencias: prueba de que el gate bloquea.
+ * Declara también 415: con el gate cerrado no se registra el parser multipart,
+ * así que un cuerpo multipart lo rechaza Fastify por media type antes del
+ * handler — esa salida también debe llevar la envolvente estándar.
+ */
 function registerDisabledGate(app: FastifyInstance): void {
-  app.post('/v1/complaints', { schema: { response: { 503: errorResponseSchema } } }, (req, reply) =>
-    reply.code(503).send({
-      error: {
-        code: 'COMPLAINTS_DISABLED',
-        message: 'El Libro de Reclamaciones no está disponible.',
-        requestId: req.id,
-      },
-    }),
+  app.post(
+    '/v1/complaints',
+    { schema: { response: { 415: errorResponseSchema, 503: errorResponseSchema } } },
+    (req, reply) =>
+      reply.code(503).send({
+        error: {
+          code: 'COMPLAINTS_DISABLED',
+          message: 'El Libro de Reclamaciones no está disponible.',
+          requestId: req.id,
+        },
+      }),
   );
 }
 
@@ -117,6 +125,7 @@ function registerEnabledRoutes(app: FastifyInstance): void {
           201: complaintReceiptSchema,
           400: errorResponseSchema,
           413: errorResponseSchema,
+          415: errorResponseSchema,
           429: errorResponseSchema,
           500: errorResponseSchema,
           503: errorResponseSchema,

@@ -157,6 +157,19 @@ export interface ComplaintDoc {
   responseDueAtUtc: Date;
 }
 
+/**
+ * Vista del reclamo SIN binarios: es lo que devuelven las lecturas del repo
+ * (proyección `signature.content` / `attachments[].content` excluidos). Tipar
+ * la proyección impide que una lectura de runtime toque el PNG de firma o el
+ * contenido de un adjunto por accidente: el compilador ya no ofrece esos
+ * campos (§5.1/§5.8, P18). El único punto donde existen los binarios es la
+ * escritura (`ComplaintDoc`), que los recibe del request.
+ */
+export type ComplaintMetadataDoc = Omit<ComplaintDoc, 'signature' | 'attachments'> & {
+  signature: Omit<ConsumerSignature, 'content'>;
+  attachments: Omit<ComplaintAttachment, 'content'>[];
+};
+
 /** Metadatos de firma expuestos en la constancia — NUNCA el PNG (§5.4). */
 export interface SignatureDto {
   type: 'CONSUMIDOR';

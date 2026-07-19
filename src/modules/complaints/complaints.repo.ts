@@ -1,6 +1,11 @@
 import type { Db, Document, WithId } from 'mongodb';
 import { MongoServerError } from 'mongodb';
-import type { ComplaintDoc, ComplaintReceiptDto, DispatchStatus } from './complaints.types.js';
+import type {
+  ComplaintDoc,
+  ComplaintMetadataDoc,
+  ComplaintReceiptDto,
+  DispatchStatus,
+} from './complaints.types.js';
 
 /**
  * Persistencia del Libro de Reclamaciones (F6) — única vía de lectura/escritura
@@ -92,8 +97,12 @@ function isDuplicateKeyError(err: unknown): boolean {
   return err instanceof MongoServerError && err.code === 11000;
 }
 
-/** DTO de constancia: nunca binarios de firma/adjuntos, nunca `_id`. */
-export function toReceiptDto(doc: WithId<ComplaintDoc>): ComplaintReceiptDto {
+/**
+ * DTO de constancia: nunca binarios de firma/adjuntos, nunca `_id`. Acepta la
+ * vista SIN binarios, así que ni siquiera tiene acceso al PNG ni al contenido
+ * de los adjuntos (el tipo lo impide, no solo la convención).
+ */
+export function toReceiptDto(doc: WithId<ComplaintMetadataDoc>): ComplaintReceiptDto {
   return {
     code: doc.complaintCode,
     receivedAtUtc: doc.createdAtUtc.toISOString(),
@@ -152,10 +161,10 @@ export class ComplaintRepo {
   constructor(private readonly db: Db) {}
 
   /** Lectura sin binarios: solo metadatos (para la constancia idempotente). */
-  async findBySubmissionId(submissionId: string): Promise<WithId<ComplaintDoc> | null> {
+  async findBySubmissionId(submissionId: string): Promise<WithId<ComplaintMetadataDoc> | null> {
     return this.db
       .collection<ComplaintDoc>(complaintsCollections.complaints)
-      .findOne({ submissionId }, { projection: METADATA_PROJECTION });
+      .findOne<WithId<ComplaintMetadataDoc>>({ submissionId }, { projection: METADATA_PROJECTION });
   }
 
   /**
@@ -169,7 +178,7 @@ export class ComplaintRepo {
   async submit(doc: ComplaintDoc): Promise<ComplaintSubmitResult> {
     const col = this.db.collection<ComplaintDoc>(complaintsCollections.complaints);
 
-    const existing = await col.findOne(
+    const existing = await col.findOne<WithId<ComplaintMetadataDoc>>(
       { submissionId: doc.submissionId },
       { projection: METADATA_PROJECTION },
     );
@@ -182,7 +191,7 @@ export class ComplaintRepo {
       return { dto: toReceiptDto({ ...doc, _id: insertedId }), created: true, insertedId };
     } catch (err) {
       if (isDuplicateKeyError(err)) {
-        const winner = await col.findOne(
+        const winner = await col.findOne<WithId<ComplaintMetadataDoc>>(
           { submissionId: doc.submissionId },
           { projection: METADATA_PROJECTION },
         );

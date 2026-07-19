@@ -90,9 +90,19 @@ aprobado por el usuario, nunca un despliegue.
   persistencia del estado deja el reclamo válido y responde 201, nunca 500.
 - **Honeypot en ambos sitios.** Se detecta `website` tanto en el JSON `payload`
   (contrato heredado) como en la parte multipart.
-- **Schemas de error.** La ruta declara schema de respuesta para 400/413/429/
-  500/503, no solo para el éxito: la barrera anti-fuga de Fastify cubre todas
-  las salidas.
+- **Schemas de error.** Ambas rutas (habilitada y deshabilitada) declaran schema
+  de respuesta para todos los códigos posibles — 400/413/415/429/500/503 —, no
+  solo para el éxito: la barrera anti-fuga de Fastify cubre todas las salidas.
+  El 415 importa en la ruta deshabilitada: sin parser multipart, Fastify rechaza
+  ese media type antes del handler.
+- **Query string fuera de logs.** El serializador `req` registra solo la ruta:
+  la query puede transportar datos personales o secretos (correos, documentos,
+  tokens) y no aporta a la correlación.
+- **Proyecciones tipadas.** `ComplaintMetadataDoc` (vista sin binarios) es el
+  tipo de retorno de las lecturas del repo y el parámetro de `toReceiptDto`: el
+  compilador ya no ofrece `signature.content` ni `attachments[].content`, de modo
+  que una lectura de runtime no puede tocar el PNG ni los adjuntos por descuido.
+  Los binarios solo existen en la escritura (`ComplaintDoc`).
 
 ## Consecuencias
 

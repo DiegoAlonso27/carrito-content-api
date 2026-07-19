@@ -5,6 +5,7 @@ import { PNG } from 'pngjs';
 import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../../src/app.js';
 import {
+  ComplaintRepo,
   complaintsCollections,
   ensureComplaintsSetup,
 } from '../../src/modules/complaints/complaints.repo.js';
@@ -486,6 +487,100 @@ describe('POST /v1/complaints — el correo no puede invalidar el alta', () => {
       await withSmtp.close();
     }
   }, 15_000);
+});
+
+describe('POST /v1/complaints — fallo al persistir el estado del dispatch', () => {
+  it('updateDispatch() que falla NO invalida el alta: responde 201 y el reclamo queda persistido', async () => {
+    const spy = vi
+      .spyOn(ComplaintRepo.prototype, 'updateDispatch')
+      .mockRejectedValue(new Error('fallo de persistencia del dispatch'));
+    try {
+      const payload = validPayload();
+      const res = await post(app, complaintRequest(payload));
+
+      // El correo/dispatch es accesorio: el reclamo ya está persistido.
+      expect(res.statusCode).toBe(201);
+      expect(spy).toHaveBeenCalled();
+
+      const stored = await app.mongo.formsDb
+        .collection<ComplaintDoc>(complaintsCollections.complaints)
+        .findOne({ submissionId: payload['submissionId'] as string });
+      expect(stored).not.toBeNull();
+      expect(stored?.complaintCode).toBe(res.json<ComplaintReceiptDto>().code);
+      // El estado no pudo persistirse: queda como nació (reproceso operativo).
+      expect(stored?.emailDispatch.status).toBe('pendiente');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});
+
+describe('POST /v1/complaints — límites de adjuntos', () => {
+  async function withConfig(
+    overrides: Record<string, string>,
+    run: (instance: FastifyInstance) => Promise<void>,
+  ): Promise<void> {
+    const instance = buildApp(
+      makeTestConfig(enabledConfig({ MONGO_URI: mongod.getUri(), ...overrides })),
+    );
+    try {
+      await instance.ready();
+      await ensureComplaintsSetup(instance.mongo.formsDb);
+      await run(instance);
+    } finally {
+      await instance.close();
+    }
+  }
+
+  it('413 cuando un adjunto individual excede el máximo por archivo', async () => {
+    await withConfig({ COMPLAINTS_ATTACHMENTS_MAX_FILE_BYTES: '10' }, async (instance) => {
+      const res = await post(instance, complaintRequest(validPayload(), { files: [makePdf()] }));
+      expect(res.statusCode).toBe(413);
+      expect(res.json<{ error: { code: string } }>().error.code).toBe('PAYLOAD_TOO_LARGE');
+    });
+  });
+
+  it('413 cuando la suma de adjuntos excede el máximo total', async () => {
+    // Cada PDF pasa el límite individual, pero juntos superan el total.
+    await withConfig(
+      {
+        COMPLAINTS_ATTACHMENTS_MAX_FILE_BYTES: '1000',
+        COMPLAINTS_ATTACHMENTS_MAX_TOTAL_BYTES: '50',
+      },
+      async (instance) => {
+        const res = await post(
+          instance,
+          complaintRequest(validPayload(), { files: [makePdf(), makePdf()] }),
+        );
+        expect(res.statusCode).toBe(413);
+        expect(res.json<{ error: { code: string } }>().error.code).toBe('PAYLOAD_TOO_LARGE');
+      },
+    );
+  });
+
+  it('400 cuando se supera la cantidad máxima de adjuntos', async () => {
+    await withConfig({ COMPLAINTS_ATTACHMENTS_MAX_FILES: '1' }, async (instance) => {
+      const res = await post(
+        instance,
+        complaintRequest(validPayload(), { files: [makePdf(), makePdf()] }),
+      );
+      expect(res.statusCode).toBe(400);
+      const body = res.json<{ error: { code: string; details: Record<string, string[]> } }>();
+      expect(body.error.code).toBe('VALIDATION_ERROR');
+      expect(body.error.details['files']).toBeDefined();
+    });
+  });
+
+  it('acepta el máximo permitido de adjuntos (frontera inferior del límite)', async () => {
+    await withConfig({ COMPLAINTS_ATTACHMENTS_MAX_FILES: '2' }, async (instance) => {
+      const res = await post(
+        instance,
+        complaintRequest(validPayload(), { files: [makePdf(), makePdf()] }),
+      );
+      expect(res.statusCode).toBe(201);
+      expect(res.json<ComplaintReceiptDto>().attachments).toHaveLength(2);
+    });
+  });
 });
 
 describe('POST /v1/complaints — límites de tamaño (413)', () => {

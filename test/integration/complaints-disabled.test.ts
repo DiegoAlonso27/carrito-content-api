@@ -49,7 +49,11 @@ describe('POST /v1/complaints — gate deshabilitado (flag false)', () => {
     // Sin el gate no hay parser multipart: Fastify rechaza el media type (415)
     // antes de cualquier lógica. Sigue siendo «no procesado», nunca un alta.
     expect(res.statusCode).toBe(415);
-    expect(res.statusCode).not.toBe(201);
+    // El 415 también sale con la envolvente estándar (schema declarado).
+    const body = res.json<{ error: { code: string; message: string; requestId: string } }>();
+    expect(body.error.code).toBe('UNSUPPORTED_MEDIA_TYPE');
+    expect(body.error.requestId).toBeTruthy();
+    expect(Object.keys(body)).toEqual(['error']);
   });
 
   it('el flag por defecto es false (no se activa por error)', () => {

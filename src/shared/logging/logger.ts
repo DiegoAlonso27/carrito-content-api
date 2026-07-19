@@ -13,6 +13,10 @@ import type { AppConfig } from '../config/env.js';
  * «logs sin datos personales», «no persistir IP»). Se reemplaza por uno que
  * solo emite método, ruta e id de solicitud — suficiente para correlacionar,
  * sin IP. Aplica a TODA la API (contacto F5 y reclamos F6 incluidos).
+ *
+ * Además se descarta la query string: puede transportar datos personales o
+ * secretos (tokens, correos, documentos) y no aporta a la correlación. Solo
+ * se registra la ruta.
  */
 export function buildLoggerOptions(config: AppConfig): NonNullable<FastifyServerOptions['logger']> {
   return {
@@ -23,7 +27,7 @@ export function buildLoggerOptions(config: AppConfig): NonNullable<FastifyServer
     },
     serializers: {
       req(request: FastifyRequest) {
-        return { id: request.id, method: request.method, url: request.url };
+        return { id: request.id, method: request.method, url: pathWithoutQuery(request.url) };
       },
     },
     base: {
@@ -31,4 +35,10 @@ export function buildLoggerOptions(config: AppConfig): NonNullable<FastifyServer
       env: config.NODE_ENV,
     },
   };
+}
+
+/** Ruta sin query string (la query puede llevar datos personales o secretos). */
+function pathWithoutQuery(url: string): string {
+  const queryStart = url.indexOf('?');
+  return queryStart === -1 ? url : url.slice(0, queryStart);
 }
