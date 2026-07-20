@@ -26,5 +26,7 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run format
+      # Gate central F2 visible por separado; npm test vuelve a incluirlo dentro de la suite.
+      - run: npm run test:golden
       - run: npm test
       - run: npm run build

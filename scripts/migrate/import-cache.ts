@@ -12,7 +12,9 @@
  * - --verify (default): tras importar, compara MongoDB contra el archivo.
  *   Usa --no-verify solo en escenarios operativos excepcionales.
  *
- * Rollback documentado (plan F1): drop de carrito_content + re-import.
+ * Rollback operativo: detener publicación, conservar la evidencia del export
+ * y corregir la fuente/configuración antes de reejecutar esta importación
+ * idempotente. Nunca elimina bases, colecciones ni el golden.
  */
 import { parseArgs } from 'node:util';
 import { readFile } from 'node:fs/promises';

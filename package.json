@@ -16,9 +16,14 @@
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "test": "vitest run",
+    "test:golden": "vitest run test/contract/export-contract.test.ts",
     "setup:contact": "tsx scripts/forms/setup-contact.ts",
     "setup:complaints": "tsx scripts/forms/setup-complaints.ts",
     "migrate:cache": "tsx scripts/migrate/import-cache.ts",
+    "content:status": "tsx scripts/content/content-status.ts",
+    "content:set": "tsx scripts/content/content-set.ts",
+    "content:publish": "tsx scripts/content/content-publish.ts",
+    "content:export": "tsx scripts/content/content-export.ts",
     "indexes:obsolete": "tsx scripts/db/report-obsolete-indexes.ts"
   },
   "dependencies": {

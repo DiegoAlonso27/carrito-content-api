@@ -1,62 +1,82 @@
 # carrito-content-api
 
-API independiente (Fastify + TypeScript + MongoDB) que entrega el contenido editorial
-publicado a `carrito-front`, expone el export compatible con `content-cache.json`
-para el build del front, y recibe los formularios de contacto y el Libro de
-Reclamaciones (este último se activa solo tras la validación legal).
+API independiente de contenido editorial y formularios para `carrito-front`,
+construida con Fastify 5, TypeScript estricto, MongoDB y Node.js 22. El Libro
+de Reclamaciones está implementado, pero permanece bloqueado hasta cerrar el
+gate legal P1–P18.
 
-Reglas del proyecto para personas y agentes: ver [AGENTS.md](AGENTS.md).
-Decisiones y plan por fases: `docs/decisions/` (ADRs, desde F1).
+Reglas vinculantes: [AGENTS.md](AGENTS.md). Contratos y operación:
+
+- [Contrato HTTP](docs/api-contract.md)
+- [Runbook operativo](docs/runbook.md)
+- [Integración con carrito-front](docs/carrito-front-integration.md)
+- [Cierre y backlog de F8](docs/f8-closure.md)
+- [Decisiones arquitectónicas](docs/decisions/)
+
+`content-cache.json` es la fuente de la migración inicial y el golden canónico
+del export. No debe editarse, reformatearse ni usarse como destino de un CLI.
 
 ## Requisitos
 
-- Node.js >= 22 (LTS)
-- MongoDB local para desarrollo con datos reales (las pruebas usan
-  `mongodb-memory-server` y no requieren instalación)
+- Node.js 22 o posterior.
+- npm con instalación reproducible mediante `npm ci`.
+- MongoDB accesible para operación real. Importación, lectura y export toleran
+  standalone; las mutaciones editoriales requieren replica set.
+- Las pruebas usan MongoDB efímero mediante `mongodb-memory-server`.
 
-## Puesta en marcha
+## Arranque local
 
-```bash
-npm install
-copy .env.example .env   # ajustar valores locales
-npm run setup:contact     # una vez: colección contact_messages
-npm run dev              # servidor con recarga
+```powershell
+npm ci
+Copy-Item .env.example .env
+npm run setup:contact
+npm run migrate:cache -- --dry-run
+npm run migrate:cache
+npm run dev
 ```
 
-Verificación rápida:
+Antes de ejecutar una importación real, revisar las URI y nombres de base del
+`.env`. La importación escribe en `MONGO_DB_CONTENT`; no debe apuntarse a una
+base poblada sin revisión operativa.
 
-```bash
-curl http://127.0.0.1:3000/health/live    # 200 siempre que el proceso viva
-curl http://127.0.0.1:3000/health/ready   # 200 solo si MongoDB responde
+Verificación rápida, en otra terminal:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:3000/health/live
+Invoke-RestMethod http://127.0.0.1:3000/health/ready
 ```
 
-## Formulario de contacto (F5)
+`/health/ready` comprueba tanto `carrito_content` como `carrito_forms`, incluso
+si contacto y reclamos están desactivados.
 
-- `POST /v1/contact` — activo por defecto (`FEATURE_CONTACT_ENABLED=true`).
-- Kill-switch: `FEATURE_CONTACT_ENABLED=false`.
-- En producción hace falta `MONGO_URI_FORMS` distinto de `MONGO_URI` (ADR-003).
-- Aprovisionar índices/validador con `npx tsx scripts/forms/setup-contact.ts`
-  (cuenta con DDL; el runtime no crea la colección).
+## Comandos
 
-## Scripts
+| Comando                              | Uso                                                   |
+| ------------------------------------ | ----------------------------------------------------- |
+| `npm run dev`                        | Servidor local con recarga.                           |
+| `npm run build` / `npm start`        | Compilar y ejecutar el artefacto de producción.       |
+| `npm run typecheck`                  | TypeScript estricto sin emitir archivos.              |
+| `npm run lint`                       | Reglas ESLint del proyecto.                           |
+| `npm run format`                     | Comprobar formato sin escribir.                       |
+| `npm test`                           | Suite completa de Vitest.                             |
+| `npm run test:golden`                | Gate F2 del export contra el golden.                  |
+| `npm run setup:contact`              | Validador e índices de `contact_messages`.            |
+| `npm run setup:complaints`           | Aprovisiona reclamos sin habilitar el endpoint.       |
+| `npm run migrate:cache -- --dry-run` | Preflight del golden sin escribir.                    |
+| `npm run migrate:cache`              | Importación inicial idempotente con verificación.     |
+| `npm run content:status`             | Resumen o listado del estado editorial.               |
+| `npm run content:set`                | Crear o editar contenido; nuevo contenido nace draft. |
+| `npm run content:publish`            | Cambiar entre draft, published y archived.            |
+| `npm run content:export`             | Export local a una ruta distinta de los golden.       |
+| `npm run indexes:obsolete`           | Reporte de solo lectura; nunca elimina índices.       |
 
-| Comando                              | Descripción                                                        |
-| ------------------------------------ | ------------------------------------------------------------------ |
-| `npm run dev`                        | desarrollo con recarga (tsx watch)                                 |
-| `npm test`                           | pruebas (vitest; la primera corrida descarga el binario de mongod) |
-| `npm run typecheck`                  | verificación de tipos estricta                                     |
-| `npm run lint` / `npm run format`    | linting y formato                                                  |
-| `npm run build` / `npm start`        | build a `dist/` y arranque de producción                           |
-| `npm run setup:contact`              | aprovisiona contacto con una cuenta Mongo de migración             |
-| `npm run setup:complaints`           | aprovisiona reclamos; no activa el gate legal                      |
-| `npm run migrate:cache -- --dry-run` | valida la migración inicial sin escribir                           |
+## Límites de seguridad
 
-## Seguridad
-
-- `.env` nunca se versiona; en producción vive fuera del repo (`CARRITO_ENV_FILE`).
-- MongoDB solo escucha en `127.0.0.1` y nunca se expone a Internet.
-- Los datos personales (contacto/reclamos) viven en una base separada del
-  contenido editorial, con credenciales propias.
-
-Operación, despliegue, health checks, permisos y cierre ordenado:
-[`docs/runbook.md`](docs/runbook.md).
+- El export de build usa `X-Export-Key` solo servidor-a-servidor. La clave
+  jamás se expone al navegador ni se guarda en una variable `NUXT_PUBLIC_*`.
+- En producción, contenido y formularios usan credenciales Mongo distintas.
+- Los logs no contienen bodies, IP, User-Agent, headers sensibles ni datos
+  personales de los formularios.
+- `FEATURE_COMPLAINTS_ENABLED=false` y
+  `COMPLAINTS_LEGAL_GATE_CLEARED=false` permanecen sin cambios hasta una
+  autorización expresa posterior al cierre P1–P18.
