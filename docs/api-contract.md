@@ -8,6 +8,15 @@ declarados.
 Todas las respuestas incluyen el header `x-request-id` para correlación. Las
 fechas se expresan en ISO 8601 UTC.
 
+Este documento es el contrato narrativo: reglas de negocio, decisiones y
+matices operativos. La API además publica un **OpenAPI 3.1 generado desde los
+mismos schemas TypeBox** que validan y serializan en runtime, explorable con
+Swagger UI en `/docs` (spec en `/docs/json` y `/docs/yaml`). Está habilitado
+solo en `development` salvo que `DOCS_ENABLED=true` lo fuerce; en producción,
+además, `/docs*` exige una IP permitida (ver runbook y ADR-009).
+Ante una discrepancia, el spec refleja el comportamiento real y este documento
+explica el porqué.
+
 ## Superficies y acceso
 
 | Método y ruta                                     | Acceso                            | Éxito        | Uso                                      |

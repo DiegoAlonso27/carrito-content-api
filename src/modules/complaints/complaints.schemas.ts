@@ -117,6 +117,81 @@ export const complaintPayloadSchema = Type.Object(
 
 export type ComplaintPayloadStatic = Static<typeof complaintPayloadSchema>;
 
+/**
+ * Forma DOCUMENTAL de la parte `payload`, publicada como componente OpenAPI.
+ *
+ * Difiere a propósito de `complaintPayloadSchema`: el contrato heredado ubica el
+ * honeypot `website` DENTRO del JSON, y la ruta lo extrae (`extractHoneypot`)
+ * antes de `Value.Clean`. Es decir, la API acepta un campo que el schema
+ * validable no declara —tiene `additionalProperties: false` porque `website`
+ * jamás debe llegar al documento persistido—.
+ *
+ * Publicar el schema validable como contrato de request haría que un cliente
+ * generado desde OpenAPI rechazara u omitiera un campo que la API sí admite. Por
+ * eso el componente documenta la entrada real y el schema validable sigue
+ * gobernando qué se persiste: son dos contratos distintos y ambos verdaderos.
+ */
+export const complaintPayloadDocSchema = Type.Object(
+  {
+    ...complaintPayloadSchema.properties,
+    website: Type.Optional(
+      Type.String({
+        description:
+          'Honeypot opcional. Con contenido, la API responde éxito sin persistir ni ' +
+          'registrar el envío. Se descarta antes de construir la hoja: nunca se guarda.',
+      }),
+    ),
+  },
+  { additionalProperties: false },
+);
+
+/**
+ * Descripción OpenAPI del cuerpo `multipart/form-data` del alta (§4).
+ *
+ * SOLO documenta. La ruta parsea el multipart a mano (`req.parts()`), así que
+ * este schema NUNCA se instala como `schema.body` de Fastify: hacerlo pondría a
+ * Ajv a validar un `req.body` inexistente y convertiría altas válidas en 400.
+ * Se inyecta en el spec desde `src/docs/openapi.ts` con la opción `transform`
+ * de @fastify/swagger, que solo interviene al generar el documento.
+ *
+ * La forma real de la parte `payload` es `complaintPayloadSchema`, publicada
+ * como componente `ComplaintPayload` y referenciada aquí con `contentSchema`
+ * (JSON Schema 2020-12, válido en OpenAPI 3.1).
+ */
+export const complaintMultipartDocSchema = Type.Object(
+  {
+    payload: Type.String({
+      description:
+        'JSON de la hoja del reclamo (ver componente `ComplaintPayload`). ' +
+        'Los strings se recortan antes de validar.',
+      contentMediaType: 'application/json',
+      contentSchema: { $ref: '#/components/schemas/ComplaintPayload' },
+    }),
+    consumerSignaturePng: Type.String({
+      format: 'binary',
+      description:
+        'Firma manuscrita del consumidor en PNG. Obligatoria; se valida por ' +
+        'firma mágica y tamaño (`COMPLAINTS_SIGNATURE_MAX_BYTES`). Nunca se ' +
+        'devuelve en la constancia ni aparece en logs o correo.',
+    }),
+    files: Type.Optional(
+      Type.Array(Type.String({ format: 'binary' }), {
+        description:
+          'Adjuntos del consumidor. Cantidad, tamaño por archivo, tamaño total ' +
+          'y tipos permitidos salen de la configuración `COMPLAINTS_ATTACHMENTS_*`.',
+      }),
+    ),
+    website: Type.Optional(
+      Type.String({
+        description:
+          'Honeypot opcional; también admitido dentro de `payload`. Con contenido, ' +
+          'la API responde éxito sin persistir ni registrar el envío.',
+      }),
+    ),
+  },
+  { additionalProperties: false },
+);
+
 // --- Response (constancia) — barrera anti-fuga de Fastify ---
 
 const providerSchema = Type.Object(

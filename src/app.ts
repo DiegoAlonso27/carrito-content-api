@@ -9,6 +9,7 @@ import type { MongoContext } from './shared/db/mongo.js';
 import { createMongoContext, closeMongo } from './shared/db/mongo.js';
 import { buildLoggerOptions } from './shared/logging/logger.js';
 import { registerErrorHandling } from './shared/errors/error-handler.js';
+import { registerOpenApiDocs } from './docs/openapi.js';
 import { healthRoutes } from './modules/health/health.routes.js';
 import { exportRoutes } from './modules/export/export.routes.js';
 import { contentRoutes } from './modules/content/content.routes.js';
@@ -62,6 +63,20 @@ export function buildApp(config: AppConfig): FastifyInstance {
   });
 
   registerErrorHandling(app);
+
+  // Docs apagadas por defecto fuera de development (DOCS_ENABLED). Se registran
+  // antes que las rutas para que el spec recorra todas las que vengan después.
+  if (config.DOCS_UI_ENABLED) {
+    if (config.NODE_ENV === 'production') {
+      app.log.warn(
+        { docsPrefix: '/docs' },
+        'DOCS_ENABLED=true en producción: la documentación OpenAPI queda expuesta; ' +
+          'restringir el acceso en la capa HTTP (IIS/ARR) si no es intencional',
+      );
+    }
+    registerOpenApiDocs(app, config);
+  }
+
   app.register(healthRoutes);
   app.register(exportRoutes);
   app.register(contentRoutes);

@@ -50,10 +50,33 @@ existe, la aplicación falla antes de escuchar tráfico.
 | `MONGO_DB_CONTENT`, `MONGO_DB_FORMS` | Nombres no vacíos y siempre distintos.                                                                                 |
 | `CORS_ORIGINS`                       | Orígenes exactos del front. Vacío mantiene CORS cerrado; `*` es inválido.                                              |
 | `EXPORT_API_KEYS`                    | Cero, una o dos claves de al menos 32 caracteres. Vacío deshabilita el export con `401`.                               |
+| `DOCS_ENABLED`                       | `auto` (default: solo `development`), `true` o `false`. Gobierna la superficie `/docs*`.                               |
+| `DOCS_ALLOWED_IPS`                   | IPs que pueden leer `/docs` en producción, separadas por coma. Vacío = solo loopback. No aplica fuera de producción.   |
 
 `X-Export-Key` es una credencial servidor-a-servidor exclusiva del build. No
 se guarda en el repositorio, no se entrega al navegador y nunca se publica como
 `NUXT_PUBLIC_*`.
+
+### Documentación OpenAPI
+
+La superficie es `/docs` (UI), `/docs/json`, `/docs/yaml` y los assets de la UI
+bajo `/docs/static/*`.
+
+Con `DOCS_ENABLED=auto` (default) la documentación solo existe en
+`development`. En producción todas esas rutas responden `404` como cualquier
+ruta inexistente: no hay superficie que proteger.
+
+Ponerlo en `true` describe la API completa a quien alcance el puerto; el
+arranque lo advierte en el log. **En producción el flag no basta por sí solo:**
+las rutas `/docs*` exigen además que la IP del cliente esté permitida.
+`DOCS_ALLOWED_IPS` vacío admite solo loopback; declarar IPs explícitas sustituye
+ese default (loopback deja de estar permitido salvo que se incluya). Un cliente
+no autorizado recibe `404`, no `403`: para él la documentación no existe.
+
+Esa allowlist no reemplaza la restricción en IIS/ARR, la respalda: es la parte
+verificable desde este repositorio. «Try it out» de la UI queda deshabilitado
+fuera de `development`, porque ejecuta llamadas reales y `POST /v1/contact`
+persiste datos personales. Ver ADR-009.
 
 ### Feature flags
 

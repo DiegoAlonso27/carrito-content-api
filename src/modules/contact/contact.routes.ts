@@ -4,6 +4,7 @@ import { contactBodySchema, contactResponseSchema } from './contact.schemas.js';
 import { ContactRepo } from './contact.repo.js';
 import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
 import { errorEnvelopeSchema } from '../../shared/errors/error-schema.js';
+import { describeResponse } from '../../shared/docs/openapi-annotations.js';
 import type { ContactMessageDto, ContactSubmissionInput } from './contact.types.js';
 
 /**
@@ -78,11 +79,36 @@ export function contactRoutes(app: FastifyInstance): void {
       bodyLimit: 32 * 1024,
       config: { rateLimit },
       schema: {
+        tags: ['contact'],
+        operationId: 'submitContactMessage',
+        summary: 'Alta idempotente de mensaje de contacto',
+        description:
+          'Registra un mensaje del formulario público de contacto.\n\n' +
+          '- `201`: alta nueva.\n' +
+          '- `200`: reintento del mismo `submissionId`; devuelve el mismo registro ' +
+          '(idempotencia).\n\n' +
+          'Los strings se recortan antes de validar. `telefono` admite separadores ' +
+          'visuales en la entrada pero se persiste normalizado a 6–15 dígitos: fuera ' +
+          'de ese rango devuelve `400 VALIDATION_ERROR`.\n\n' +
+          'La respuesta contiene únicamente `id`, `receivedAtUtc` e `isViewed`: nunca ' +
+          'devuelve el contenido enviado. La API no persiste IP ni User-Agent, y el ' +
+          'log de éxito solo lleva el identificador.\n\n' +
+          'Cuerpo máximo 32 KiB. Rate limit por IP según `RATE_LIMIT_CONTACT_MAX` y ' +
+          '`RATE_LIMIT_CONTACT_WINDOW_MINUTES`. Disponible solo con ' +
+          '`FEATURE_CONTACT_ENABLED=true`; con el kill-switch en `false` la ruta no se ' +
+          'registra y responde `404 NOT_FOUND`.',
         body: contactBodySchema,
         response: {
-          200: contactResponseSchema,
-          201: contactResponseSchema,
-          default: errorEnvelopeSchema,
+          200: describeResponse(
+            contactResponseSchema,
+            'Reintento del mismo `submissionId`: devuelve el registro ya existente.',
+          ),
+          201: describeResponse(contactResponseSchema, 'Mensaje registrado (alta nueva).'),
+          default: describeResponse(
+            errorEnvelopeSchema,
+            '`400 VALIDATION_ERROR` con `details` por campo; `429 RATE_LIMITED` al agotar el ' +
+              'presupuesto de la ruta.',
+          ),
         },
       },
       preValidation: (req, _reply, done) => {

@@ -12,6 +12,7 @@ import {
 import { ContentReader } from './content-read.js';
 import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
 import { errorEnvelopeSchema } from '../../shared/errors/error-schema.js';
+import { cacheHeaders, describeResponse } from '../../shared/docs/openapi-annotations.js';
 
 /**
  * Endpoints públicos de contenido (runtime, consumidos por el navegador).
@@ -51,11 +52,42 @@ const itemsSchema = Type.Object(
   { additionalProperties: false },
 );
 
-const localeParam = Type.Object({ locale: Type.String({ minLength: 2, maxLength: 10 }) });
-const collectionParams = Type.Object({
-  locale: Type.String({ minLength: 2, maxLength: 10 }),
-  slug: Type.String({ minLength: 1, maxLength: 100 }),
+const localeParam = Type.Object({
+  locale: Type.String({
+    minLength: 2,
+    maxLength: 10,
+    description: 'Código de locale publicado (p. ej. `es`).',
+  }),
 });
+const collectionParams = Type.Object({
+  locale: Type.String({
+    minLength: 2,
+    maxLength: 10,
+    description: 'Código de locale publicado (p. ej. `es`).',
+  }),
+  slug: Type.String({
+    minLength: 1,
+    maxLength: 100,
+    description: 'Slug de la colección (p. ej. `faqs`).',
+  }),
+});
+
+/** Lectura condicional: `If-None-Match` con el ETag vigente devuelve `304`. */
+const conditionalReadHeaders = Type.Object({
+  'if-none-match': Type.Optional(
+    Type.String({ description: 'ETag recibido en una respuesta previa.' }),
+  ),
+});
+
+const notModifiedResponse = describeResponse(
+  Type.Null(),
+  'El ETag enviado sigue vigente; sin cuerpo.',
+  cacheHeaders,
+);
+const errorResponse = describeResponse(
+  errorEnvelopeSchema,
+  'Error con la envolvente estándar (`404 NOT_FOUND` si el recurso no existe).',
+);
 
 const CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600';
 
@@ -81,7 +113,20 @@ export function contentRoutes(app: FastifyInstance): void {
     '/v1/locales',
     {
       config: { rateLimit },
-      schema: { response: { 200: localesSchema, 304: Type.Null(), default: errorEnvelopeSchema } },
+      schema: {
+        tags: ['content'],
+        operationId: 'listLocales',
+        summary: 'Locales publicados',
+        description:
+          'Lista únicamente los locales en estado `published`, con `code`, `name`, ' +
+          '`isDefault`, `isActive` y `sortOrder`.',
+        headers: conditionalReadHeaders,
+        response: {
+          200: describeResponse(localesSchema, 'Locales publicados.', cacheHeaders),
+          304: notModifiedResponse,
+          default: errorResponse,
+        },
+      },
     },
     async (req, reply) => {
       const { contentVersion, locales } = await reader.getLocales();
@@ -97,8 +142,24 @@ export function contentRoutes(app: FastifyInstance): void {
     {
       config: { rateLimit },
       schema: {
+        tags: ['content'],
+        operationId: 'getContentBundle',
+        summary: 'Bundle runtime por locale',
+        description:
+          'Devuelve el contenido publicado del locale: `settings`, `assets`, ' +
+          '`collections`, `pages`, `texts` e `items`. Los items **no** incluyen ' +
+          '`rowVersionToken` (es token editorial interno).\n\n' +
+          'Para un locale distinto del default, la API completa las claves ausentes ' +
+          'con el documento del locale default y conserva en cada documento el ' +
+          '`localeCode` de su origen.\n\n' +
+          'Un locale inexistente o no atendible devuelve `404 NOT_FOUND`.',
         params: localeParam,
-        response: { 200: bundleSchema, 304: Type.Null(), default: errorEnvelopeSchema },
+        headers: conditionalReadHeaders,
+        response: {
+          200: describeResponse(bundleSchema, 'Bundle publicado del locale.', cacheHeaders),
+          304: notModifiedResponse,
+          default: errorResponse,
+        },
       },
     },
     async (req, reply) => {
@@ -119,8 +180,20 @@ export function contentRoutes(app: FastifyInstance): void {
     {
       config: { rateLimit },
       schema: {
+        tags: ['content'],
+        operationId: 'listCollectionItems',
+        summary: 'Items publicados de una colección',
+        description:
+          'Devuelve los items publicados de la colección en el locale indicado, ' +
+          'sin `rowVersionToken`. Locale o colección inexistentes devuelven ' +
+          '`404 NOT_FOUND`.',
         params: collectionParams,
-        response: { 200: itemsSchema, 304: Type.Null(), default: errorEnvelopeSchema },
+        headers: conditionalReadHeaders,
+        response: {
+          200: describeResponse(itemsSchema, 'Items publicados de la colección.', cacheHeaders),
+          304: notModifiedResponse,
+          default: errorResponse,
+        },
       },
     },
     async (req, reply) => {

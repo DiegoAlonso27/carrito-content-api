@@ -11,6 +11,7 @@ import { generateComplaintCode } from './complaints.code.js';
 import { createNotificationSender } from './complaints.email.js';
 import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
 import { errorEnvelopeSchema } from '../../shared/errors/error-schema.js';
+import { describeResponse } from '../../shared/docs/openapi-annotations.js';
 import type {
   ComplaintAttachment,
   ComplaintDoc,
@@ -53,7 +54,39 @@ export function complaintsRoutes(app: FastifyInstance): void {
 function registerDisabledGate(app: FastifyInstance): void {
   app.post(
     '/v1/complaints',
-    { schema: { response: { default: errorEnvelopeSchema } } },
+    {
+      schema: {
+        tags: ['complaints'],
+        operationId: 'submitComplaint',
+        summary: 'Alta de reclamo — BLOQUEADA por gate de fase',
+        description:
+          '**Actualmente deshabilitado.** Con `FEATURE_COMPLAINTS_ENABLED=false` ' +
+          '(valor por defecto) esta ruta responde `503 COMPLAINTS_DISABLED` sin tocar ' +
+          'MongoDB. Un request `multipart/form-data` puede ser rechazado antes con ' +
+          '`415 UNSUPPORTED_MEDIA_TYPE`, porque el parser multipart no se registra ' +
+          'mientras el gate está apagado.\n\n' +
+          'La activación exige cerrar el gate legal P1–P18 del contrato heredado y es ' +
+          'una decisión explícita y autorizada del usuario, nunca un despliegue. Con ' +
+          'el gate cerrado no deben enviarse reclamos ni probarse el contrato desde ' +
+          'una UI pública.\n\n' +
+          'El contrato reservado para una activación futura (multipart con `payload`, ' +
+          '`consumerSignaturePng`, `files` y honeypot `website`) está descrito en ' +
+          '`docs/api-contract.md`; el componente `ComplaintPayload` de este documento ' +
+          'refleja la forma de la hoja.',
+        response: {
+          503: describeResponse(
+            errorEnvelopeSchema,
+            '`COMPLAINTS_DISABLED`: el Libro está cerrado por el gate de fase. ' +
+              'No se toca MongoDB.',
+          ),
+          default: describeResponse(
+            errorEnvelopeSchema,
+            '`415 UNSUPPORTED_MEDIA_TYPE` si se envía multipart: con el gate cerrado el parser ' +
+              'no está registrado.',
+          ),
+        },
+      },
+    },
     (req, reply) =>
       reply.code(503).send({
         error: {
@@ -103,11 +136,36 @@ function registerEnabledRoutes(app: FastifyInstance): void {
     {
       config: { rateLimit },
       schema: {
+        tags: ['complaints'],
+        operationId: 'submitComplaint',
+        summary: 'Alta de reclamo o queja (Libro de Reclamaciones)',
+        description:
+          'Registra un reclamo o queja como documento único y atómico.\n\n' +
+          'El cuerpo es `multipart/form-data`: parte `payload` (JSON de la hoja), ' +
+          '`consumerSignaturePng` (firma manuscrita obligatoria) y `files` (adjuntos ' +
+          'del consumidor). El multipart se parsea y valida en la ruta, no con ' +
+          '`schema.body`, así que el cuerpo documentado aquí es descriptivo.\n\n' +
+          '- `201`: alta nueva.\n' +
+          '- `200`: reintento del mismo `submissionId`; devuelve la constancia previa.\n\n' +
+          'La constancia **no** contiene `_id`, binarios de firma o adjuntos, ni ' +
+          'detalles internos: solo hashes. La firma y los adjuntos jamás aparecen en ' +
+          'logs, DTOs ni correo, y no se persiste IP ni User-Agent. Como la constancia ' +
+          'refleja datos de la hoja, el consumidor no debe registrarla en consola ni ' +
+          'en telemetría cliente.\n\n' +
+          'El envío de la constancia por correo es best-effort e inline: un fallo de ' +
+          'SMTP no invalida el alta, se refleja en `emailReceipt.status`.',
         // `default` aplica la barrera anti-fuga a cualquier código de error.
         response: {
-          200: complaintReceiptSchema,
-          201: complaintReceiptSchema,
-          default: errorEnvelopeSchema,
+          200: describeResponse(
+            complaintReceiptSchema,
+            'Reintento del mismo `submissionId`: devuelve la constancia ya emitida.',
+          ),
+          201: describeResponse(complaintReceiptSchema, 'Reclamo registrado; constancia emitida.'),
+          default: describeResponse(
+            errorEnvelopeSchema,
+            '`400 VALIDATION_ERROR` (forma o regla de negocio), `413 PAYLOAD_TOO_LARGE` (firma o ' +
+              'adjuntos), `429 RATE_LIMITED`.',
+          ),
         },
       },
     },

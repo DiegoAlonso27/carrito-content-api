@@ -52,6 +52,31 @@ const schema = Type.Object({
    * origen (los endpoints server-a-server no se ven afectados).
    */
   CORS_ORIGINS: Type.String({ default: '' }),
+  /**
+   * Exposición de la documentación OpenAPI (`/docs` + `/docs/json`).
+   *
+   * - `auto` (default): habilitada solo con NODE_ENV=development.
+   * - `true`: forzada (staging con acceso restringido); el arranque lo advierte
+   *   en producción.
+   * - `false`: apagada siempre.
+   *
+   * Default seguro: la UI es de solo lectura y no expone secretos, pero
+   * describe la superficie completa de la API. Abrirla fuera de desarrollo es
+   * una decisión operativa explícita, no un efecto colateral del despliegue.
+   */
+  DOCS_ENABLED: Type.Union([Type.Literal('auto'), Type.Literal('true'), Type.Literal('false')], {
+    default: 'auto',
+  }),
+  /**
+   * Allowlist de IPs que pueden leer `/docs` **en producción**, separada por
+   * coma. Vacío (default) = solo loopback. Fuera de producción no se aplica.
+   *
+   * Barrera propia de la aplicación: forzar `DOCS_ENABLED=true` en producción no
+   * basta para publicar la superficie de la API a cualquiera que alcance el
+   * puerto. No sustituye a la restricción en IIS/ARR, la respalda: el repositorio
+   * no puede verificar la configuración del proxy, pero sí la suya.
+   */
+  DOCS_ALLOWED_IPS: Type.String({ default: '' }),
   /** Límite de lectura pública por IP y minuto (propuesta pendiente de aprobación: 120). */
   RATE_LIMIT_READ_PER_MINUTE: Type.Integer({ default: 120, minimum: 1 }),
   /**
@@ -151,6 +176,13 @@ type EnvironmentConfig = Static<typeof schema>;
 export type AppConfig = EnvironmentConfig & {
   /** Lista CORS ya normalizada y validada; única fuente para registrar el plugin. */
   CORS_ORIGINS_LIST: readonly string[];
+  /**
+   * `DOCS_ENABLED` ya resuelto contra NODE_ENV; única fuente para registrar
+   * `/docs` (evita repetir la regla `auto` en el bootstrap y en las pruebas).
+   */
+  DOCS_UI_ENABLED: boolean;
+  /** Allowlist de `/docs` ya normalizada; vacía = solo loopback. */
+  DOCS_ALLOWED_IPS_LIST: readonly string[];
 };
 
 /**
@@ -182,7 +214,21 @@ export function loadConfig(overrides?: Record<string, string>): AppConfig {
   assertSmtpConfig(config);
   assertProductionFormsCredentials(config);
   assertComplaintsConfig(config);
-  return { ...config, CORS_ORIGINS_LIST: corsOrigins };
+  return {
+    ...config,
+    CORS_ORIGINS_LIST: corsOrigins,
+    DOCS_UI_ENABLED: resolveDocsEnabled(config),
+    DOCS_ALLOWED_IPS_LIST: config.DOCS_ALLOWED_IPS.split(',')
+      .map((ip) => ip.trim())
+      .filter((ip) => ip.length > 0),
+  };
+}
+
+/** `auto` = solo development; los valores explícitos mandan sobre NODE_ENV. */
+function resolveDocsEnabled(config: EnvironmentConfig): boolean {
+  if (config.DOCS_ENABLED === 'true') return true;
+  if (config.DOCS_ENABLED === 'false') return false;
+  return config.NODE_ENV === 'development';
 }
 
 function assertBaseConfig(config: EnvironmentConfig): readonly string[] {
