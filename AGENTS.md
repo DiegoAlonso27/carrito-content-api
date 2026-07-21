@@ -67,6 +67,28 @@ Reclamaciones (Perú). Monolito modular. Sin panel administrativo en fase 1.
   ejecutadas con resultados, pruebas no ejecutadas con motivo, riesgos y
   decisiones nuevas (registrar ADR en `docs/decisions/` si corresponde).
 
+## Codebase Memory
+
+Este proyecto usa `codebase-memory-mcp`. El artefacto compartido vive en
+`.codebase-memory/` (`graph.db.zst` + `artifact.json`). Si el grafo está
+disponible, preferirlo al grep plano para descubrir código:
+
+1. `search_graph`
+2. `trace_path`
+3. `get_code_snippet`
+4. `query_graph`
+5. `get_architecture`
+
+Usar búsqueda de texto solo para literales, configs, no-código, o cuando el
+grafo no esté disponible o sea insuficiente. Si una consulta al grafo
+contradice el archivo real, **manda el archivo real**.
+
+Para refrescar el artefacto tras cambios estructurales:
+
+```powershell
+codebase-memory-mcp cli index_repository --repo-path "d:\PROYECTOS\transportes-chiclayo\carrito-content-api" --mode fast --persistence true
+```
+
 ## Registro de errores y aprendizajes
 
 - Cuando un modelo, agente o persona cometa un error relevante durante el
