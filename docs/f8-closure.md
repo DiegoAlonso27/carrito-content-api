@@ -44,20 +44,23 @@
 
 ## Backlog de carrito-front
 
-Estos hallazgos se documentan solamente. Su corrección requiere autorización
-expresa y una fase propia en `carrito-front`.
+**Actualización 2026-07-21:** los cinco hallazgos FRONT-F8-01..05 se
+**resolvieron en `carrito-front`** (rama `docs/forms-backend-plan`; integración
+de contacto en el commit front `a33c6dc`, más la limpieza posterior del CMS).
 
-| ID          | Severidad                                                 | Hallazgo                                                                                                                                                 | Riesgo / criterio de salida                                                                                                                                                                     |
-| ----------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FRONT-F8-01 | **ALTA — bloqueante de preproducción**                    | Contacto y reclamos ejecutan `console.log` con el payload/formulario, que contiene datos personales.                                                     | Exposición en consola, soporte remoto o telemetría del navegador. Eliminar esos logs y verificar que errores/constancias tampoco registren datos personales antes de conectar la API.           |
-| FRONT-F8-02 | **MEDIA — bloqueante de integración de contacto**         | La página de contacto no genera ni envía `submissionId`.                                                                                                 | El contrato exige UUID v4 para idempotencia; sin él cada envío será inválido. Generarlo y conservarlo durante reintentos del mismo envío.                                                       |
-| FRONT-F8-03 | **MEDIA — incompatibilidad de tipos**                     | `LegalSectionData.page` está marcado obligatorio, pero el item `legal-sections/terminos-venta` del golden no contiene `page`.                            | El tipo promete un campo ausente en datos válidos. Hacerlo opcional o modelar las variantes sin cambiar el golden.                                                                              |
-| FRONT-F8-04 | **ALTA — riesgo de fuga de credencial**                   | El plugin `$api` puede adjuntar el bearer del sistema de ventas. Reutilizarlo para esta API podría enviar ese token a un servicio que no debe recibirlo. | Crear un cliente dedicado sin bearer de ventas. El export debe seguir siendo servidor-a-servidor y usar solo `X-Export-Key` en build seguro.                                                    |
-| FRONT-F8-05 | **ALTA — RIESGO DE RELEASE, bloqueante de preproducción** | El build del front no falla cuando falta `app/data/generated/content-cache.json`; `useContent` continúa con contenido vacío/fallback.                    | Puede publicarse una release funcionalmente vacía. El pipeline debe exigir existencia, JSON válido, secciones requeridas y build con cache antes de publicar. No tratar como advertencia menor. |
+| ID          | Estado   | Evidencia en carrito-front                                                                                                            |
+| ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| FRONT-F8-01 | Resuelto | Sin `console.*` con payload/PII en `app/services/contentApi.ts`, `app/pages/contactanos.vue` ni `app/pages/libro-de-reclamaciones.vue`. |
+| FRONT-F8-02 | Resuelto | El contacto genera y reutiliza un `submissionId` UUID v4 (`crypto.randomUUID`) durante los reintentos del mismo envío.                |
+| FRONT-F8-03 | Resuelto | `LegalSectionData.page` es opcional (`page?`) en `app/types/content.ts`.                                                              |
+| FRONT-F8-04 | Resuelto | Cliente dedicado `app/services/contentApi.ts`, sin el bearer de ventas; el export sigue siendo servidor-a-servidor con `X-Export-Key`. |
+| FRONT-F8-05 | Resuelto | `npm run build` y `build:ci` corren `content:verify`, que falla si el cache falta o no pasa el contrato (V5–V8 + gate E1).            |
 
-Además, `sync-content.mjs` sigue leyendo SQL Server y los formularios no llaman
-a esta API. Es integración pendiente, no un defecto que F8 pueda corregir sin
-modificar el front.
+`sync-content.mjs` fue **retirado** en `carrito-front`: el cache editorial se
+genera únicamente con `npm run content:fetch` desde esta API, y el contacto ya
+llama a `POST /v1/contact`. **Único ítem abierto:** el Libro de Reclamaciones
+sigue fuera de servicio hasta cerrar el gate legal **P1–P18**
+(`FEATURE_COMPLAINTS_ENABLED=false`).
 
 ## Evidencia de compatibilidad observada
 
@@ -116,7 +119,8 @@ directorio temporal al finalizar.
 
 ## Decisiones pendientes antes de producción
 
-- Resolver los cinco bloqueos del front anteriores en una fase autorizada.
+- Los cinco bloqueos del front (FRONT-F8-01..05) ya fueron resueltos (ver
+  «Backlog de carrito-front»).
 - Confirmar la rama/release real de `carrito-front` contra la que se integrará.
 - Provisionar usuarios Mongo mínimos y distintos para contenido/formularios.
 - Configurar CORS, reverse proxy, servicio y secretos en el entorno real.
