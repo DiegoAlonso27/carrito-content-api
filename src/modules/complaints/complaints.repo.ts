@@ -5,6 +5,8 @@ import type {
   ComplaintDoc,
   ComplaintMetadataDoc,
   ComplaintReceiptDto,
+  ConsumerInput,
+  ConsumerPersisted,
   DispatchStatus,
 } from './complaints.types.js';
 
@@ -52,7 +54,19 @@ const complaintsValidator: Document = {
       submissionId: { bsonType: 'string' },
       complaintCode: { bsonType: 'string' },
       provider: { bsonType: 'object' },
-      consumer: { bsonType: 'object' },
+      consumer: {
+        bsonType: 'object',
+        // Solo se declaran las piezas del teléfono (ADR-010): dígitos
+        // nacionales + ISO2 del país + snapshot del prefijo. El resto de la
+        // hoja lo gobierna TypeBox en el borde; aquí basta con impedir que un
+        // consumidor entre sin la terna que sostiene el contrato.
+        required: ['phone', 'phoneCountry', 'phoneDialCode'],
+        properties: {
+          phone: { bsonType: 'string' },
+          phoneCountry: { bsonType: 'string' },
+          phoneDialCode: { bsonType: 'string' },
+        },
+      },
       guardian: { bsonType: ['object', 'null'] },
       service: { bsonType: 'object' },
       detail: { bsonType: 'object' },
@@ -112,6 +126,17 @@ function isDuplicateKeyError(err: unknown): boolean {
 }
 
 /**
+ * Quita `phoneDialCode` de la hoja devuelta: el snapshot del prefijo es
+ * interno (entra a la hoja canónica firmada, no a la constancia). El response
+ * schema tampoco lo declara — dos barreras, no una convención (ADR-010 §4).
+ */
+function toConsumerDto(consumer: ConsumerPersisted): ConsumerInput {
+  const { phoneDialCode: _dialCode, ...dto } = consumer;
+  void _dialCode;
+  return dto;
+}
+
+/**
  * DTO de constancia: nunca binarios de firma/adjuntos, nunca `_id`. Acepta la
  * vista SIN binarios, así que ni siquiera tiene acceso al PNG ni al contenido
  * de los adjuntos (el tipo lo impide, no solo la convención).
@@ -124,7 +149,7 @@ export function toReceiptDto(doc: WithId<ComplaintMetadataDoc>): ComplaintReceip
     responseDueAtUtc: doc.responseDueAtUtc.toISOString(),
     provider: doc.provider,
     sheet: {
-      consumer: doc.consumer,
+      consumer: toConsumerDto(doc.consumer),
       guardian: doc.guardian,
       service: doc.service,
       detail: doc.detail,

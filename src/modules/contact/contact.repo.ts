@@ -36,6 +36,8 @@ const messagesValidator: Document = {
       'nombreApellidos',
       'correo',
       'telefono',
+      'telefonoPais',
+      'telefonoPrefijo',
       'dni',
       'mensaje',
       'aceptaTerminos',
@@ -47,6 +49,11 @@ const messagesValidator: Document = {
       nombreApellidos: { bsonType: 'string' },
       correo: { bsonType: 'string' },
       telefono: { bsonType: 'string' },
+      // Teléfono en tres piezas (ADR-010): dígitos nacionales, ISO2 del país y
+      // snapshot del prefijo. `validationLevel: 'moderate'` deja intactos los
+      // registros históricos con la forma anterior (no se migran).
+      telefonoPais: { bsonType: 'string' },
+      telefonoPrefijo: { bsonType: 'string' },
       dni: { bsonType: 'string' },
       mensaje: { bsonType: 'string' },
       aceptaTerminos: { bsonType: 'bool' },

@@ -100,6 +100,7 @@ function validPayload(overrides: PayloadOverrides = {}): Record<string, unknown>
       lastNameMaternal: 'Díaz',
       address: 'Av. Principal 123, Chiclayo',
       phone: '987654321',
+      phoneCountry: 'PE',
       email: 'ana.perez@example.test',
       birthDate: '1990-05-20',
       gender: 'F',
@@ -241,13 +242,24 @@ describe('POST /v1/complaints — alta válida y constancia', () => {
     expect(stored).not.toHaveProperty('userAgent');
   });
 
-  it('normaliza el teléfono a solo dígitos', async () => {
-    const payload = validPayload({ consumer: { phone: '+51 (987) 654-321' } });
+  it('normaliza el teléfono a solo dígitos y persiste país + snapshot del prefijo', async () => {
+    const payload = validPayload({ consumer: { phone: ' (987) 654-321 ' } });
     await post(app, complaintRequest(payload));
     const stored = await app.mongo.formsDb
       .collection<ComplaintDoc>(complaintsCollections.complaints)
       .findOne({ submissionId: payload['submissionId'] as string });
-    expect(stored?.consumer.phone).toBe('51987654321');
+    expect(stored?.consumer.phone).toBe('987654321');
+    expect(stored?.consumer.phoneCountry).toBe('PE');
+    expect(stored?.consumer.phoneDialCode).toBe('+51');
+  });
+
+  it('la constancia expone phoneCountry pero NUNCA phoneDialCode (barrera anti-fuga)', async () => {
+    const res = await post(app, complaintRequest(validPayload()));
+    expect(res.statusCode).toBe(201);
+    const body = res.json<ComplaintReceiptDto>();
+    expect(body.sheet.consumer.phoneCountry).toBe('PE');
+    expect(res.body).not.toContain('phoneDialCode');
+    expect(res.body).not.toContain('+51');
   });
 });
 
@@ -388,6 +400,198 @@ describe('POST /v1/complaints — validación de entrada', () => {
       .collection(complaintsCollections.complaints)
       .findOne({ submissionId });
     expect(stored).toBeNull();
+  });
+});
+
+/** Envía y devuelve estado + `details` del 400 (vacío si no hubo error). */
+async function submit(
+  payload: Record<string, unknown>,
+): Promise<{
+  status: number;
+  details: Record<string, string[]>;
+  body: ComplaintReceiptDto | null;
+}> {
+  const res = await post(app, complaintRequest(payload));
+  if (res.statusCode === 400) {
+    return {
+      status: 400,
+      details: res.json<{ error: { details: Record<string, string[]> } }>().error.details,
+      body: null,
+    };
+  }
+  return { status: res.statusCode, details: {}, body: res.json<ComplaintReceiptDto>() };
+}
+
+describe('POST /v1/complaints — G1 escala del monto reclamado', () => {
+  it('400 cuando el monto trae más de 2 decimales (la hoja canónica firma toFixed(2))', async () => {
+    const { status, details } = await submit(validPayload({ service: { claimedAmount: 55.999 } }));
+    expect(status).toBe(400);
+    expect(details['service.claimedAmount']).toBeDefined();
+  });
+
+  it('acepta 0, 1 y 2 decimales (55, 55.9, 55.99)', async () => {
+    for (const claimedAmount of [55, 55.9, 55.99]) {
+      const { status } = await submit(validPayload({ service: { claimedAmount } }));
+      expect(status).toBe(201);
+    }
+  });
+});
+
+describe('POST /v1/complaints — G2 comprobante obligatorio en reclamo', () => {
+  it('400 por campo cuando voucherType es null', async () => {
+    const { status, details } = await submit(validPayload({ detail: { voucherType: null } }));
+    expect(status).toBe(400);
+    expect(details['detail.voucherType']).toBeDefined();
+  });
+
+  it('400 por campo cuando voucherSeries es null', async () => {
+    const { status, details } = await submit(validPayload({ detail: { voucherSeries: null } }));
+    expect(status).toBe(400);
+    expect(details['detail.voucherSeries']).toBeDefined();
+  });
+
+  it('400 por campo cuando voucherNumber es null', async () => {
+    const { status, details } = await submit(validPayload({ detail: { voucherNumber: null } }));
+    expect(status).toBe(400);
+    expect(details['detail.voucherNumber']).toBeDefined();
+  });
+});
+
+describe('POST /v1/complaints — G3 formato SUNAT del comprobante', () => {
+  it('400 cuando la serie no empieza por F, B, C o E', async () => {
+    const { status, details } = await submit(validPayload({ detail: { voucherSeries: 'X001' } }));
+    expect(status).toBe(400);
+    expect(details['detail.voucherSeries']).toBeDefined();
+  });
+
+  it('400 cuando la serie no tiene 4 caracteres', async () => {
+    const { status, details } = await submit(validPayload({ detail: { voucherSeries: 'B01' } }));
+    expect(status).toBe(400);
+    expect(details['detail.voucherSeries']).toBeDefined();
+  });
+
+  it('acepta la serie en minúsculas y la normaliza a MAYÚSCULAS en la constancia', async () => {
+    const payload = validPayload({ detail: { voucherSeries: 'b001' } });
+    const { status, body } = await submit(payload);
+    expect(status).toBe(201);
+    expect(body?.sheet.detail.voucherSeries).toBe('B001');
+
+    const stored = await app.mongo.formsDb
+      .collection<ComplaintDoc>(complaintsCollections.complaints)
+      .findOne({ submissionId: payload['submissionId'] as string });
+    expect(stored?.detail.voucherSeries).toBe('B001');
+  });
+
+  it('400 cuando el correlativo no es numérico', async () => {
+    const { status, details } = await submit(validPayload({ detail: { voucherNumber: 'ABC' } }));
+    expect(status).toBe(400);
+    expect(details['detail.voucherNumber']).toBeDefined();
+  });
+
+  it('400 cuando el correlativo supera 8 dígitos', async () => {
+    const { status, details } = await submit(
+      validPayload({ detail: { voucherNumber: '123456789' } }),
+    );
+    expect(status).toBe(400);
+    expect(details['detail.voucherNumber']).toBeDefined();
+  });
+});
+
+describe('POST /v1/complaints — G4 género obligatorio (M o F)', () => {
+  it('400 cuando gender es null', async () => {
+    const { status, details } = await submit(validPayload({ consumer: { gender: null } }));
+    expect(status).toBe(400);
+    expect(details['consumer.gender']).toBeDefined();
+  });
+
+  it('400 cuando gender falta', async () => {
+    const { status, details } = await submit(validPayload({ consumer: { gender: undefined } }));
+    expect(status).toBe(400);
+    expect(details['consumer.gender']).toBeDefined();
+  });
+});
+
+describe('POST /v1/complaints — R1 teléfono por país (ADR-010)', () => {
+  it('PE con celular de 9 dígitos: 201', async () => {
+    const { status } = await submit(validPayload({ consumer: { phone: '987654321' } }));
+    expect(status).toBe(201);
+  });
+
+  it('PE con 10 dígitos: 400 en consumer.phone', async () => {
+    const { status, details } = await submit(validPayload({ consumer: { phone: '9876543210' } }));
+    expect(status).toBe(400);
+    expect(details['consumer.phone']).toBeDefined();
+  });
+
+  it('PE con fijo de Lima (17654321) y de provincia (74123456): 201', async () => {
+    for (const phone of ['17654321', '74123456']) {
+      const { status } = await submit(validPayload({ consumer: { phone } }));
+      expect(status).toBe(201);
+    }
+  });
+
+  it('VE con 10 dígitos: 201 y prefijo +58 persistido', async () => {
+    const payload = validPayload({ consumer: { phone: '4121234567', phoneCountry: 'VE' } });
+    const { status } = await submit(payload);
+    expect(status).toBe(201);
+    const stored = await app.mongo.formsDb
+      .collection<ComplaintDoc>(complaintsCollections.complaints)
+      .findOne({ submissionId: payload['submissionId'] as string });
+    expect(stored?.consumer.phoneDialCode).toBe('+58');
+  });
+
+  it('VE con 9 dígitos: 400', async () => {
+    const { status, details } = await submit(
+      validPayload({ consumer: { phone: '412123456', phoneCountry: 'VE' } }),
+    );
+    expect(status).toBe(400);
+    expect(details['consumer.phone']).toBeDefined();
+  });
+
+  it('US con 10 dígitos: 201 (número extranjero admitido, p. ej. con Pasaporte)', async () => {
+    const { status } = await submit(
+      validPayload({ consumer: { phone: '(212) 555-0147', phoneCountry: 'US' } }),
+    );
+    expect(status).toBe(201);
+  });
+
+  it('400 cuando falta consumer.phoneCountry', async () => {
+    const { status, details } = await submit(
+      validPayload({ consumer: { phoneCountry: undefined } }),
+    );
+    expect(status).toBe(400);
+    expect(details['consumer.phoneCountry']).toBeDefined();
+  });
+
+  it('400 cuando phoneCountry no está en el catálogo (XX)', async () => {
+    const { status, details } = await submit(validPayload({ consumer: { phoneCountry: 'XX' } }));
+    expect(status).toBe(400);
+    expect(details['consumer.phoneCountry']).toBeDefined();
+  });
+
+  it('400 cuando phoneCountry viene en minúsculas', async () => {
+    const { status, details } = await submit(validPayload({ consumer: { phoneCountry: 'pe' } }));
+    expect(status).toBe(400);
+    expect(details['consumer.phoneCountry']).toBeDefined();
+  });
+
+  it('400 cuando el teléfono trae el prefijo con + (el país viaja aparte)', async () => {
+    const { status, details } = await submit(validPayload({ consumer: { phone: '+51987654321' } }));
+    expect(status).toBe(400);
+    expect(details['consumer.phone']).toBeDefined();
+  });
+});
+
+describe('POST /v1/complaints — regresión: la queja sigue admitiendo monto', () => {
+  it('201 con claimedAmount numérico en una queja (§4: opcional, no prohibido)', async () => {
+    const { status, body } = await submit(
+      validPayload({
+        service: { claimedAmount: 55.5 },
+        detail: { type: 'queja', voucherType: null, voucherSeries: null, voucherNumber: null },
+      }),
+    );
+    expect(status).toBe(201);
+    expect(body?.sheet.service.claimedAmount).toBe(55.5);
   });
 });
 

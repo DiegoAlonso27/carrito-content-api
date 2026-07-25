@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { PNG } from 'pngjs';
 import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
 import type {
-  ConsumerInput,
+  ConsumerPersisted,
   DetailInput,
   GuardianInput,
   ProviderSnapshot,
@@ -100,7 +100,7 @@ interface CanonicalSheetInput {
   complaintCode: string;
   createdAtUtc: Date;
   provider: ProviderSnapshot;
-  consumer: ConsumerInput;
+  consumer: ConsumerPersisted;
   guardian: GuardianInput | null;
   service: ServiceInput;
   detail: DetailInput;
@@ -139,6 +139,11 @@ export function buildCanonicalSheet(input: CanonicalSheetInput): {
       lastNameMaternal: nfcOrNull(input.consumer.lastNameMaternal),
       address: nfc(input.consumer.address),
       phone: nfc(input.consumer.phone),
+      // País y snapshot del prefijo van INMEDIATAMENTE tras `phone` (ADR-010
+      // §4, validation-parity.md §2). Sin `nfc`: son ASCII acotados por
+      // catálogo/patrón, como `documentType` o `gender`.
+      phoneCountry: input.consumer.phoneCountry,
+      phoneDialCode: input.consumer.phoneDialCode,
       email: nfc(input.consumer.email),
       birthDate: input.consumer.birthDate,
       gender: input.consumer.gender,

@@ -166,16 +166,24 @@ Disponible cuando `FEATURE_CONTACT_ENABLED=true`. Si el kill-switch está en
 
 Body JSON:
 
-| Campo             | Regla                                                       |
-| ----------------- | ----------------------------------------------------------- |
-| `submissionId`    | UUID v4; clave de idempotencia.                             |
-| `nombreApellidos` | 3–200 caracteres, sin controles.                            |
-| `correo`          | Email de hasta 254 caracteres.                              |
-| `telefono`        | Separadores visuales permitidos; se persisten 6–15 dígitos. |
-| `dni`             | 8–12 caracteres alfanuméricos.                              |
-| `mensaje`         | 10–2000 caracteres; admite saltos de línea.                 |
-| `aceptaTerminos`  | Debe ser `true`.                                            |
-| `website`         | Honeypot opcional.                                          |
+| Campo             | Regla                                                                    |
+| ----------------- | ------------------------------------------------------------------------ |
+| `submissionId`    | UUID v4; clave de idempotencia.                                          |
+| `nombreApellidos` | 3–200 caracteres, sin controles.                                         |
+| `correo`          | Email de hasta 254 caracteres.                                           |
+| `telefonoPais`    | ISO2 del catálogo de prefijos (ADR-010); obligatorio.                    |
+| `telefono`        | Dígitos con separadores visuales, sin `+`; longitud según `telefonoPais`. |
+| `dni`             | 8–12 caracteres alfanuméricos.                                           |
+| `mensaje`         | 10–2000 caracteres; admite saltos de línea.                              |
+| `aceptaTerminos`  | Debe ser `true`.                                                         |
+| `website`         | Honeypot opcional.                                                       |
+
+El teléfono se valida según el país (ADR-010): Perú acepta celular de 9
+dígitos iniciando en 9 o fijo de 8 (Lima `1` + 7, o código de área `4–8` + 6);
+otros países usan el rango curado del overlay o el fallback E.164 (4–14
+dígitos nacionales, total ≤ 15 con el prefijo). Se persiste normalizado a
+solo dígitos junto al ISO2 y al prefijo resuelto al momento del alta
+(`telefonoPrefijo`, p. ej. `"+51"`).
 
 Los strings se recortan antes de validar. Un honeypot con contenido responde
 éxito falso sin persistir ni registrar el envío.
@@ -215,6 +223,23 @@ El request es `multipart/form-data` con:
 - `consumerSignaturePng`: firma PNG obligatoria;
 - `files`: cero o más adjuntos según límites configurados;
 - `website`: honeypot opcional, aceptado también dentro de `payload`.
+
+Reglas de la hoja además de la forma TypeBox (paridad con el front,
+`docs/validation-parity.md`):
+
+- `consumer.gender` ∈ {`M`, `F`} (sin null);
+- `consumer.phoneCountry` (ISO2 del catálogo de prefijos, ADR-010) y
+  `consumer.phone` validado según el país — misma regla que contacto; se
+  persisten dígitos + ISO2 + snapshot del prefijo;
+- `service.claimedAmount` con máximo 2 decimales (la hoja canónica sella el
+  monto con escala 2);
+- con `detail.type = "reclamo"`, comprobante completo y con formato SUNAT:
+  serie `^[FBCE][A-Z0-9]{3}$` (aceptada en minúsculas, normalizada a
+  mayúsculas) y correlativo de 1–8 dígitos; una queja sigue sin admitir
+  datos de comprobante.
+
+La constancia expone `phoneCountry` pero nunca el snapshot interno del
+prefijo (`phoneDialCode`), que sí forma parte de la hoja canónica firmada.
 
 La constancia `201`/`200` contiene código, fechas, estado, snapshot del
 proveedor, hoja, hashes de firma/adjuntos y estado del correo. No contiene

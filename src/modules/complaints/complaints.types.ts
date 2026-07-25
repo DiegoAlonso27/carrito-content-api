@@ -35,12 +35,24 @@ export interface ConsumerInput {
   lastNamePaternal: string;
   lastNameMaternal: string | null;
   address: string;
+  /** Solo dígitos NACIONALES; su longitud válida depende de `phoneCountry`. */
   phone: string;
+  /** ISO2 del país del teléfono, presente en el catálogo vendorizado (ADR-010). */
+  phoneCountry: string;
   email: string;
   /** ISO 8601 date (YYYY-MM-DD) o null. Necesaria para exigir apoderado a menores. */
   birthDate: string | null;
-  gender: Gender | null;
+  gender: Gender;
 }
+
+/**
+ * Consumidor PERSISTIDO: añade el snapshot del prefijo resuelto al alta, para
+ * que un cambio futuro del catálogo no reinterprete el registro histórico
+ * (ADR-010 §4). `phoneDialCode` entra a la hoja canónica firmada pero NUNCA a
+ * la constancia: `ComplaintReceiptDto` declara `ConsumerInput` y el response
+ * schema tampoco lo declara (doble barrera anti-fuga).
+ */
+export type ConsumerPersisted = ConsumerInput & { phoneDialCode: string };
 
 export interface GuardianInput {
   documentType: DocumentType;
@@ -141,7 +153,7 @@ export interface ComplaintDoc {
   submissionId: string;
   complaintCode: string;
   provider: ProviderSnapshot;
-  consumer: ConsumerInput;
+  consumer: ConsumerPersisted;
   guardian: GuardianInput | null;
   service: ServiceInput;
   detail: DetailInput;

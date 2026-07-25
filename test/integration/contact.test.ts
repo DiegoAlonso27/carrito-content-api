@@ -20,6 +20,7 @@ function validPayload(overrides: Partial<Record<string, unknown>> = {}): Record<
     nombreApellidos: 'Ana Pérez Díaz',
     correo: 'ana.perez@example.test',
     telefono: '987654321',
+    telefonoPais: 'PE',
     dni: '12345678',
     mensaje: 'Quisiera información sobre encomiendas a Chiclayo, por favor.',
     aceptaTerminos: true,
@@ -91,6 +92,9 @@ describe('POST /v1/contact — alta válida', () => {
     expect(stored?.nombreApellidos).toBe(payload['nombreApellidos']);
     expect(stored?.correo).toBe(payload['correo']);
     expect(stored?.telefono).toBe('987654321');
+    expect(stored?.telefonoPais).toBe('PE');
+    // Snapshot del prefijo resuelto al alta (ADR-010 §4).
+    expect(stored?.telefonoPrefijo).toBe('+51');
     expect(stored?.dni).toBe(payload['dni']);
     expect(stored?.mensaje).toBe(payload['mensaje']);
     expect(stored?.aceptaTerminos).toBe(true);
@@ -114,20 +118,23 @@ describe('POST /v1/contact — alta válida', () => {
         'nombreApellidos',
         'submissionId',
         'telefono',
+        'telefonoPais',
+        'telefonoPrefijo',
         'viewedAtUtc',
         'viewedBy',
       ].sort(),
     );
   });
 
-  it('normaliza el teléfono a solo dígitos (se admiten +, espacios, guiones y paréntesis en la entrada)', async () => {
-    const payload = validPayload({ telefono: '+51 (987) 654-321' });
+  it('normaliza el teléfono a solo dígitos nacionales (se admiten espacios, guiones y paréntesis)', async () => {
+    const payload = validPayload({ telefono: ' (987) 654-321 ' });
     await app.inject({ method: 'POST', url: '/v1/contact', payload });
 
     const stored = await app.mongo.formsDb
       .collection<ContactMessageDoc>(contactCollections.messages)
       .findOne({ submissionId: payload['submissionId'] as string });
-    expect(stored?.telefono).toBe('51987654321');
+    expect(stored?.telefono).toBe('987654321');
+    expect(stored?.telefonoPrefijo).toBe('+51');
   });
 
   it('recorta espacios en los campos de texto antes de guardar', async () => {
@@ -305,31 +312,16 @@ describe('POST /v1/contact — validación inválida', () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it('400 cuando el teléfono no tiene entre 6 y 15 dígitos (p. ej. solo separadores)', async () => {
+  it('400 cuando el teléfono solo trae separadores (ningún dígito)', async () => {
     const res = await app.inject({
       method: 'POST',
       url: '/v1/contact',
-      payload: validPayload({ telefono: '++++++' }),
+      payload: validPayload({ telefono: '()- ' }),
     });
     expect(res.statusCode).toBe(400);
-  });
-
-  it('400 cuando el teléfono tiene menos de 6 dígitos', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/v1/contact',
-      payload: validPayload({ telefono: '12345' }),
-    });
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('400 cuando el teléfono tiene más de 15 dígitos', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/v1/contact',
-      payload: validPayload({ telefono: '1234567890123456' }),
-    });
-    expect(res.statusCode).toBe(400);
+    expect(
+      res.json<{ error: { details: Record<string, string[]> } }>().error.details['telefono'],
+    ).toBeDefined();
   });
 
   it('los campos no declarados se descartan y nunca se persisten (additionalProperties: false)', async () => {
@@ -367,6 +359,107 @@ describe('POST /v1/contact — validación inválida', () => {
     });
     expect(res.statusCode).toBe(413);
     expect(res.json<{ error: { code: string; requestId: string } }>().error.requestId).toBeTruthy();
+  });
+});
+
+describe('POST /v1/contact — teléfono por país (ADR-010)', () => {
+  /** Envía y devuelve la respuesta + el documento guardado (si hubo alta). */
+  async function submit(
+    overrides: Record<string, unknown>,
+  ): Promise<{
+    status: number;
+    details: Record<string, string[]>;
+    stored: ContactMessageDoc | null;
+  }> {
+    const payload = validPayload(overrides);
+    const res = await app.inject({ method: 'POST', url: '/v1/contact', payload });
+    const stored = await app.mongo.formsDb
+      .collection<ContactMessageDoc>(contactCollections.messages)
+      .findOne({ submissionId: payload['submissionId'] as string });
+    const details =
+      res.statusCode === 400
+        ? res.json<{ error: { details: Record<string, string[]> } }>().error.details
+        : {};
+    return { status: res.statusCode, details, stored };
+  }
+
+  it('PE con celular de 9 dígitos: 201 y snapshot del prefijo +51', async () => {
+    const { status, stored } = await submit({ telefono: '987654321', telefonoPais: 'PE' });
+    expect(status).toBe(201);
+    expect(stored?.telefono).toBe('987654321');
+    expect(stored?.telefonoPais).toBe('PE');
+    expect(stored?.telefonoPrefijo).toBe('+51');
+  });
+
+  it('PE con 10 dígitos: 400 (la regla peruana es estructural, no 6–15)', async () => {
+    const { status, details, stored } = await submit({
+      telefono: '9876543210',
+      telefonoPais: 'PE',
+    });
+    expect(status).toBe(400);
+    expect(details['telefono']).toBeDefined();
+    expect(stored).toBeNull();
+  });
+
+  it('PE con fijo de Lima (8 dígitos que empiezan en 1): 201', async () => {
+    const { status, stored } = await submit({ telefono: '17654321', telefonoPais: 'PE' });
+    expect(status).toBe(201);
+    expect(stored?.telefono).toBe('17654321');
+  });
+
+  it('PE con fijo de provincia (8 dígitos que empiezan en 4–8): 201', async () => {
+    const { status, stored } = await submit({ telefono: '74123456', telefonoPais: 'PE' });
+    expect(status).toBe(201);
+    expect(stored?.telefono).toBe('74123456');
+  });
+
+  it('VE con 10 dígitos (overlay curado): 201 con prefijo +58', async () => {
+    const { status, stored } = await submit({ telefono: '4121234567', telefonoPais: 'VE' });
+    expect(status).toBe(201);
+    expect(stored?.telefonoPais).toBe('VE');
+    expect(stored?.telefonoPrefijo).toBe('+58');
+  });
+
+  it('VE con 9 dígitos: 400', async () => {
+    const { status, details } = await submit({ telefono: '412123456', telefonoPais: 'VE' });
+    expect(status).toBe(400);
+    expect(details['telefono']).toBeDefined();
+  });
+
+  it('US con 10 dígitos: 201 con prefijo +1 (número extranjero admitido)', async () => {
+    const { status, stored } = await submit({ telefono: '(212) 555-0147', telefonoPais: 'US' });
+    expect(status).toBe(201);
+    expect(stored?.telefono).toBe('2125550147');
+    expect(stored?.telefonoPrefijo).toBe('+1');
+  });
+
+  it('400 cuando falta telefonoPais (campo nuevo obligatorio)', async () => {
+    const { telefonoPais, ...withoutPais } = validPayload();
+    void telefonoPais;
+    const res = await app.inject({ method: 'POST', url: '/v1/contact', payload: withoutPais });
+    expect(res.statusCode).toBe(400);
+    expect(
+      res.json<{ error: { details: Record<string, string[]> } }>().error.details['telefonoPais'],
+    ).toBeDefined();
+  });
+
+  it('400 cuando telefonoPais no está en el catálogo (XX)', async () => {
+    const { status, details, stored } = await submit({ telefonoPais: 'XX' });
+    expect(status).toBe(400);
+    expect(details['telefonoPais']).toBeDefined();
+    expect(stored).toBeNull();
+  });
+
+  it('400 cuando telefonoPais viene en minúsculas (el ISO2 es mayúsculas)', async () => {
+    const { status, details } = await submit({ telefonoPais: 'pe' });
+    expect(status).toBe(400);
+    expect(details['telefonoPais']).toBeDefined();
+  });
+
+  it('400 cuando el teléfono trae el prefijo con + (el país viaja aparte)', async () => {
+    const { status, details } = await submit({ telefono: '+51987654321', telefonoPais: 'PE' });
+    expect(status).toBe(400);
+    expect(details['telefono']).toBeDefined();
   });
 });
 

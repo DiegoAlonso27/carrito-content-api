@@ -16,8 +16,15 @@ export interface ContactSubmissionInput {
   submissionId: string;
   nombreApellidos: string;
   correo: string;
-  /** Solo dígitos (normalizado: se descartan +, espacios, guiones y paréntesis antes de guardar). */
+  /** Solo dígitos NACIONALES (normalizado: se descartan espacios, guiones y paréntesis). */
   telefono: string;
+  /** ISO2 del país del teléfono, presente en el catálogo vendorizado (ADR-010). */
+  telefonoPais: string;
+  /**
+   * Snapshot del prefijo resuelto al momento del alta (p. ej. `"+51"`): si el
+   * catálogo cambiara, el registro histórico no se reinterpreta.
+   */
+  telefonoPrefijo: string;
   dni: string;
   mensaje: string;
   aceptaTerminos: true;

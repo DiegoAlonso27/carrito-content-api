@@ -1,13 +1,15 @@
 import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
-import type { ComplaintPayload } from './complaints.types.js';
+import type { ComplaintPayload, DetailInput } from './complaints.types.js';
 
 /**
  * Reglas de negocio del reclamo NO expresables de forma legible como JSON
  * Schema (heredadas de formularios-backend-csharp.md §4). TypeBox ya validó
  * forma, enums y longitudes; aquí van las condicionales:
  *
- * - monto reclamado obligatorio cuando `detail.type === 'reclamo'`;
- * - comprobante solo cuando `type === 'reclamo'` (nulo en queja);
+ * - monto reclamado obligatorio cuando `detail.type === 'reclamo'` y con
+ *   escala máxima de 2 decimales (G1);
+ * - comprobante obligatorio y con formato SUNAT cuando `type === 'reclamo'`
+ *   (G2/G3), y prohibido en queja;
  * - apoderado obligatorio si el consumidor es menor de edad;
  * - fecha de nacimiento válida y pasada; fecha de incidente válida y no futura.
  *
@@ -17,13 +19,36 @@ import type { ComplaintPayload } from './complaints.types.js';
 
 const MINOR_AGE = 18;
 
+/**
+ * Escala máxima del monto reclamado: 2 decimales. Se comprueba en céntimos con
+ * tolerancia porque `multipleOf: 0.01` en JSON Schema falla por errores de
+ * representación de coma flotante (p. ej. 0.29 % 0.01 ≠ 0). Es una regla dura:
+ * la hoja canónica firma `toFixed(2)`, así que un tercer decimal produciría un
+ * hash que no describe el dato persistido (G1).
+ */
+const CENTS_TOLERANCE = 1e-9;
+
+/** Serie SUNAT: letra de tipo de comprobante + 3 alfanuméricos (G3). */
+const SUNAT_SERIES = /^[FBCE][A-Z0-9]{3}$/i;
+/** Correlativo SUNAT: 1–8 dígitos (G3). */
+const SUNAT_NUMBER = /^\d{1,8}$/;
+
 export function validateBusinessRules(payload: ComplaintPayload, now: Date = new Date()): void {
   const errors: Record<string, string[]> = {};
 
+  const { claimedAmount } = payload.service;
+  if (
+    claimedAmount !== null &&
+    Math.abs(claimedAmount * 100 - Math.round(claimedAmount * 100)) > CENTS_TOLERANCE
+  ) {
+    addError(errors, 'service.claimedAmount', 'el monto reclamado admite máximo 2 decimales');
+  }
+
   if (payload.detail.type === 'reclamo') {
-    if (payload.service.claimedAmount === null) {
+    if (claimedAmount === null) {
       addError(errors, 'service.claimedAmount', 'el monto reclamado es obligatorio en un reclamo');
     }
+    validateVoucher(payload.detail, errors);
   } else {
     // queja: no lleva comprobante.
     if (
@@ -65,6 +90,42 @@ export function validateBusinessRules(payload: ComplaintPayload, now: Date = new
 
   if (Object.keys(errors).length > 0) {
     throw new AppError(ErrorCodes.validation, 'Datos inválidos.', 400, errors);
+  }
+}
+
+/**
+ * Comprobante en un reclamo: obligatorio (G2) y con formato SUNAT (G3). El
+ * error se reporta POR CAMPO, no agrupado, para que el front lo pinte donde
+ * corresponde. La serie se acepta en minúsculas y la ruta la normaliza a
+ * MAYÚSCULAS tras validar (espejo de `normalizeSunatSeries` del front).
+ */
+function validateVoucher(detail: DetailInput, errors: Record<string, string[]>): void {
+  if (detail.voucherType === null) {
+    addError(errors, 'detail.voucherType', 'el tipo de comprobante es obligatorio en un reclamo');
+  }
+
+  if (detail.voucherSeries === null) {
+    addError(
+      errors,
+      'detail.voucherSeries',
+      'la serie del comprobante es obligatoria en un reclamo',
+    );
+  } else if (!SUNAT_SERIES.test(detail.voucherSeries)) {
+    addError(
+      errors,
+      'detail.voucherSeries',
+      'la serie debe ser una letra F, B, C o E seguida de 3 caracteres alfanuméricos',
+    );
+  }
+
+  if (detail.voucherNumber === null) {
+    addError(
+      errors,
+      'detail.voucherNumber',
+      'el número del comprobante es obligatorio en un reclamo',
+    );
+  } else if (!SUNAT_NUMBER.test(detail.voucherNumber)) {
+    addError(errors, 'detail.voucherNumber', 'el correlativo debe tener entre 1 y 8 dígitos');
   }
 }
 

@@ -9,6 +9,7 @@ import { validateBusinessRules } from './complaints.validation.js';
 import { buildCanonicalSheet, sha256Hex, validateSignaturePng } from './complaints.signature.js';
 import { generateComplaintCode } from './complaints.code.js';
 import { createNotificationSender } from './complaints.email.js';
+import { resolveCountryPhone } from '../../shared/validation/country-phone.js';
 import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
 import { errorEnvelopeSchema } from '../../shared/errors/error-schema.js';
 import { describeResponse } from '../../shared/docs/openapi-annotations.js';
@@ -17,6 +18,7 @@ import type {
   ComplaintDoc,
   ComplaintPayload,
   ComplaintReceiptDto,
+  ConsumerPersisted,
   DispatchStatus,
 } from './complaints.types.js';
 
@@ -174,16 +176,35 @@ function registerEnabledRoutes(app: FastifyInstance): void {
       const { payload, honeypot: payloadHoneypot } = parseAndValidatePayload(parsed.payloadRaw);
       validateBusinessRules(payload);
 
+      if (payload.detail.voucherSeries !== null) {
+        // La serie SUNAT es mayúsculas: se normaliza TRAS validar el formato y
+        // ANTES del canónico y la persistencia, para que el hash firmado
+        // describa exactamente lo guardado (espejo de `normalizeSunatSeries`
+        // del front).
+        payload.detail.voucherSeries = payload.detail.voucherSeries.toUpperCase();
+      }
+
       // Honeypot: el contrato heredado lo ubica dentro del JSON (`website`);
       // esta API además acepta una parte multipart `website`. Se detecta en
       // AMBOS sitios porque el frontend heredado lo envía en el payload y
       // `Value.Clean` lo descartaría en silencio.
       const honeypotTriggered = parsed.honeypot.length > 0 || payloadHoneypot.length > 0;
 
-      // Teléfono: se admiten separadores en la entrada; se normaliza a dígitos
-      // (6–15) para persistir y para el hash canónico (regla de negocio).
-      const phone = normalizePhone(payload.consumer.phone);
-      payload.consumer.phone = phone;
+      // Teléfono: se admiten separadores en la entrada; la longitud válida
+      // depende de `phoneCountry` (ADR-010). Se persisten los dígitos
+      // nacionales, el ISO2 y un snapshot del prefijo; los tres entran al hash
+      // canónico, pero `phoneDialCode` nunca sale en la constancia.
+      const resolvedPhone = resolveCountryPhone(
+        payload.consumer.phoneCountry,
+        payload.consumer.phone,
+        { phone: 'consumer.phone', country: 'consumer.phoneCountry' },
+      );
+      const consumer: ConsumerPersisted = {
+        ...payload.consumer,
+        phone: resolvedPhone.nationalNumber,
+        phoneCountry: resolvedPhone.iso2,
+        phoneDialCode: resolvedPhone.dialCode,
+      };
 
       validateSignaturePng(parsed.signature.buffer);
 
@@ -201,7 +222,7 @@ function registerEnabledRoutes(app: FastifyInstance): void {
         complaintCode,
         createdAtUtc: now,
         provider,
-        consumer: payload.consumer,
+        consumer,
         guardian: payload.guardian,
         service: payload.service,
         detail: payload.detail,
@@ -220,7 +241,7 @@ function registerEnabledRoutes(app: FastifyInstance): void {
         submissionId: payload.submissionId,
         complaintCode,
         provider,
-        consumer: payload.consumer,
+        consumer,
         guardian: payload.guardian,
         service: payload.service,
         detail: payload.detail,
@@ -241,7 +262,7 @@ function registerEnabledRoutes(app: FastifyInstance): void {
         },
         attachments,
         emailDispatch: {
-          recipientEmail: payload.consumer.email,
+          recipientEmail: consumer.email,
           status: 'pendiente',
           attemptCount: 0,
           lastAttemptAtUtc: null,
@@ -390,16 +411,6 @@ function deepTrim(value: unknown): unknown {
     return out;
   }
   return value;
-}
-
-function normalizePhone(raw: string): string {
-  const digits = raw.replace(/\D/g, '');
-  if (digits.length < 6 || digits.length > 15) {
-    throw new AppError(ErrorCodes.validation, 'Datos inválidos.', 400, {
-      'consumer.phone': ['debe tener entre 6 y 15 dígitos'],
-    });
-  }
-  return digits;
 }
 
 function buildAttachments(

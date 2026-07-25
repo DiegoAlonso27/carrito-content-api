@@ -33,7 +33,14 @@ if (!FormatRegistry.Has('email')) {
 
 const uuidV4Pattern =
   '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$';
-const phoneInputPattern = '^[0-9+()\\-\\s]{6,25}$';
+/**
+ * Charset del teléfono SIN `+`: el país viaja aparte en `consumer.phoneCountry`
+ * y el prefijo lo resuelve el servidor desde el catálogo (ADR-010). La longitud
+ * válida depende del país y se valida en la ruta (`resolveCountryPhone`).
+ */
+const phoneInputPattern = '^[0-9()\\-\\s]{4,25}$';
+/** ISO2 del país del teléfono; que exista en el catálogo lo valida la ruta. */
+const countryIso2Pattern = '^[A-Z]{2}$';
 const docNumberPattern = '^[A-Za-z0-9]{8,12}$';
 const noControlChars = '^[^\\u0000-\\u001F\\u007F]*$';
 const noControlCharsMultiline = '^[^\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F]*$';
@@ -53,9 +60,11 @@ const consumerSchema = Type.Object(
     lastNameMaternal: NullableString(noControlChars, 1, 100),
     address: Type.String({ minLength: 5, maxLength: 300, pattern: noControlChars }),
     phone: Type.String({ pattern: phoneInputPattern }),
+    phoneCountry: Type.String({ pattern: countryIso2Pattern }),
     email: Type.String({ format: 'email', maxLength: 254 }),
     birthDate: Type.Union([Type.String({ pattern: isoDatePattern }), Type.Null()]),
-    gender: Type.Union([Type.Literal('M'), Type.Literal('F'), Type.Null()]),
+    // Sin null: el §4 heredado y el front lo exigen (G4 de validation-parity.md).
+    gender: Type.Union([Type.Literal('M'), Type.Literal('F')]),
   },
   { additionalProperties: false },
 );

@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { ObjectId } from 'mongodb';
 import { contactBodySchema, contactResponseSchema } from './contact.schemas.js';
 import { ContactRepo } from './contact.repo.js';
-import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
+import { resolveCountryPhone } from '../../shared/validation/country-phone.js';
 import { errorEnvelopeSchema } from '../../shared/errors/error-schema.js';
 import { describeResponse } from '../../shared/docs/openapi-annotations.js';
 import type { ContactMessageDto, ContactSubmissionInput } from './contact.types.js';
@@ -21,9 +21,11 @@ import type { ContactMessageDto, ContactSubmissionInput } from './contact.types.
  * - `preValidation` recorta los campos de texto ANTES de que TypeBox mida
  *   longitudes: validar sobre el valor crudo dejaría pasar `"   a   "` por
  *   encima de `minLength` y lo guardaría con contenido inválido.
- * - El teléfono admite `+ - ( ) espacio` en la entrada pero se normaliza a
- *   solo dígitos para contar 6–15 y para persistir — regla de negocio, no
- *   de formato: no es expresable de forma legible como patrón JSON Schema.
+ * - El teléfono admite `- ( ) espacio` en la entrada pero se normaliza a solo
+ *   dígitos nacionales; su longitud válida depende de `telefonoPais`
+ *   (`resolveCountryPhone`, ADR-010) — regla de negocio cruzada entre dos
+ *   campos, no expresable de forma legible como patrón JSON Schema. Se
+ *   persiste el ISO2 y un snapshot del prefijo, nunca el valor crudo.
  * - El honeypot activado responde éxito (201) sin tocar la base ni loguear
  *   el contenido del envío.
  * - Nunca se guarda IP ni User-Agent; el log de éxito solo lleva el id.
@@ -35,6 +37,7 @@ interface ContactBody {
   nombreApellidos: string;
   correo: string;
   telefono: string;
+  telefonoPais: string;
   dni: string;
   mensaje: string;
   aceptaTerminos: true;
@@ -46,6 +49,7 @@ const TRIMMED_FIELDS = [
   'nombreApellidos',
   'correo',
   'telefono',
+  'telefonoPais',
   'dni',
   'mensaje',
   'website',
@@ -87,9 +91,13 @@ export function contactRoutes(app: FastifyInstance): void {
           '- `201`: alta nueva.\n' +
           '- `200`: reintento del mismo `submissionId`; devuelve el mismo registro ' +
           '(idempotencia).\n\n' +
-          'Los strings se recortan antes de validar. `telefono` admite separadores ' +
-          'visuales en la entrada pero se persiste normalizado a 6–15 dígitos: fuera ' +
-          'de ese rango devuelve `400 VALIDATION_ERROR`.\n\n' +
+          'Los strings se recortan antes de validar. El teléfono viaja en dos campos: ' +
+          '`telefonoPais` (ISO2 del catálogo de prefijos) y `telefono` (dígitos ' +
+          'nacionales; admite `- ( ) espacio` como separadores, **no** `+`). El ' +
+          'servidor valida la longitud según el país y persiste los dígitos, el ISO2 y ' +
+          'un snapshot del prefijo; un país fuera del catálogo o un número que no ' +
+          'cumple su regla devuelven `400 VALIDATION_ERROR` en el campo ' +
+          'correspondiente.\n\n' +
           'La respuesta contiene únicamente `id`, `receivedAtUtc` e `isViewed`: nunca ' +
           'devuelve el contenido enviado. La API no persiste IP ni User-Agent, y el ' +
           'log de éxito solo lleva el identificador.\n\n' +
@@ -124,18 +132,18 @@ export function contactRoutes(app: FastifyInstance): void {
         return reply.code(201).send(fakeHoneypotSuccess());
       }
 
-      const telefono = body.telefono.replace(/\D/g, '');
-      if (telefono.length < 6 || telefono.length > 15) {
-        throw new AppError(ErrorCodes.validation, 'Datos inválidos.', 400, {
-          telefono: ['debe tener entre 6 y 15 dígitos'],
-        });
-      }
+      const phone = resolveCountryPhone(body.telefonoPais, body.telefono, {
+        phone: 'telefono',
+        country: 'telefonoPais',
+      });
 
       const input: ContactSubmissionInput = {
         submissionId: body.submissionId,
         nombreApellidos: body.nombreApellidos,
         correo: body.correo,
-        telefono,
+        telefono: phone.nationalNumber,
+        telefonoPais: phone.iso2,
+        telefonoPrefijo: phone.dialCode,
         dni: body.dni,
         mensaje: body.mensaje,
         aceptaTerminos: body.aceptaTerminos,

@@ -23,11 +23,17 @@ const uuidV4Pattern =
 
 /**
  * Charset admitido en la ENTRADA de teléfono (antes de normalizar): dígitos
- * y los separadores decorativos que el contrato tolera. El conteo real de
- * 6–15 dígitos se valida en contact.routes.ts tras extraer solo los
- * dígitos — no es expresable de forma legible como patrón JSON Schema.
+ * y los separadores decorativos que el contrato tolera. SIN `+`: el país
+ * viaja aparte en `telefonoPais` y el prefijo lo resuelve el servidor desde
+ * el catálogo (ADR-010), así que un `+` en el número solo puede ser un
+ * prefijo duplicado. La longitud real depende del país y se valida en
+ * contact.routes.ts con `resolveCountryPhone` — no es expresable de forma
+ * legible como patrón JSON Schema (regla cruzada entre dos campos).
  */
-const phoneInputPattern = '^[0-9+()\\-\\s]{6,25}$';
+const phoneInputPattern = '^[0-9()\\-\\s]{4,25}$';
+
+/** ISO2 del país del teléfono; que exista en el catálogo lo valida la ruta. */
+const countryIso2Pattern = '^[A-Z]{2}$';
 
 const dniPattern = '^[A-Za-z0-9]{8,12}$';
 
@@ -48,6 +54,7 @@ export const contactBodySchema = Type.Object(
     }),
     correo: Type.String({ format: 'email', maxLength: 254 }),
     telefono: Type.String({ pattern: phoneInputPattern }),
+    telefonoPais: Type.String({ pattern: countryIso2Pattern }),
     dni: Type.String({ pattern: dniPattern }),
     mensaje: Type.String({
       minLength: 10,
