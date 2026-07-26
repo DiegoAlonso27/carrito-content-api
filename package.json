@@ -24,6 +24,10 @@
     "content:set": "tsx scripts/content/content-set.ts",
     "content:publish": "tsx scripts/content/content-publish.ts",
     "content:export": "tsx scripts/content/content-export.ts",
+    "editorial:migrate": "tsx scripts/editorial/editorial-migrate.ts",
+    "editorial:validate": "tsx scripts/editorial/editorial-validate.ts",
+    "editorial:snapshot": "tsx scripts/editorial/editorial-snapshot.ts",
+    "editorial:cutover-check": "tsx scripts/editorial/editorial-cutover-check.ts",
     "indexes:obsolete": "tsx scripts/db/report-obsolete-indexes.ts"
   },
   "dependencies": {

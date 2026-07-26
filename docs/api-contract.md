@@ -27,6 +27,7 @@ explica el porqué.
 | `GET /v1/content/:locale`                         | Público                           | `200`, `304` | Bundle runtime por locale.               |
 | `GET /v1/content/:locale/collections/:slug/items` | Público                           | `200`, `304` | Items de una colección.                  |
 | `GET /v1/export/content-cache`                    | Protegido servidor-a-servidor     | `200`, `304` | Cache de build compatible con el golden. |
+| `GET /v1/export/editorial/:locale`                | Protegido servidor-a-servidor     | `200`, `304` | Snapshot editorial versionado (Track B). |
 | `POST /v1/contact`                                | Público si el feature está activo | `201`, `200` | Alta idempotente de contacto.            |
 | `POST /v1/complaints`                             | Público, bloqueado por defecto    | `503`        | Gate del Libro de Reclamaciones.         |
 
@@ -156,6 +157,54 @@ normalizando únicamente `generatedAtUtc`.
 La respuesta incluye un ETag fuerte derivado de `contentVersion` y
 `cache-control: no-cache`. La autenticación se exige también para obtener un
 `304`.
+
+## Modelo editorial por bloques (Track B)
+
+El modelo por bloques vive en colecciones `editorial_*`
+([ADR-011](decisions/011-modelo-editorial-bloques.md)) y se administra por CLI.
+Afecta al contrato existente en un solo punto: sus escrituras incrementan
+`editorialVersion`, no `contentVersion`. Editar destinos, servicios o puntos de
+embarque **no** invalida el ETag de `/v1/export/content-cache` ni el de los
+bundles públicos, y ninguna ruta `/v1` anterior cambia de forma.
+
+### `GET /v1/export/editorial/:locale`
+
+Snapshot editorial versionado ([ADR-012](decisions/012-export-editorial-v2.md)).
+Misma autenticación servidor-a-servidor que el export vigente (`X-Export-Key`,
+exigida también para el `304`).
+
+Devuelve el snapshot **activo** del locale. No construye nada al vuelo: si el
+locale no tiene snapshot activo responde `404 NOT_FOUND`. El artefacto servido
+es exactamente el que pasó el gate de publicación.
+
+Cuerpo:
+
+| Campo                                        | Contenido                                              |
+| -------------------------------------------- | ------------------------------------------------------ |
+| `schemaVersion`                               | `2`. Un consumidor puede rechazar lo que no entiende.  |
+| `version`, `generatedAtUtc`                   | Identidad de la versión activa.                        |
+| `locale`, `defaultLocale`                     | Locale servido y locale de fallback.                   |
+| `localities`, `destinations`, `boardingPoints`, `services`, `amenities`, `assets` | Documentos publicados.  |
+| `redirects`                                   | `{ from, to }` derivados de `redirectsFrom`.           |
+| `manifest`                                    | Por documento: `id`, `type`, `locale`, `hash`, `size`, `state`, `refs`. |
+| `checksum`                                    | SHA-256 del cuerpo completo salvo el propio campo.     |
+
+`hash` y `checksum` son SHA-256 sobre JSON canónico (claves ordenadas): el
+consumidor puede recalcularlos y detectar corrupción o manipulación.
+
+Reglas de contenido del snapshot:
+
+- Solo documentos `published`; bloques deshabilitados, `draft` o `archived` no
+  se exportan.
+- Los medios sin derechos verificados o con asset no publicado se excluyen, con
+  su texto emparejado. Una galería puede quedar vacía y se exporta igual.
+- Las listas de referencias se filtran a lo publicado; si quedan vacías, el
+  bloque se omite.
+- El contenido se resuelve por locale con fallback al default, marcado con
+  `isFallback`. La interfaz no debe afirmar que hay traducción cuando es `true`.
+
+El ETag es la versión activa (`"editorial-es-PE-v3"`): solo cambia al publicar o
+revertir, no cuando se edita un borrador.
 
 ## Formulario de contacto
 

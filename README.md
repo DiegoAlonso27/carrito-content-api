@@ -68,6 +68,10 @@ si contacto y reclamos están desactivados.
 | `npm run content:set`                | Crear o editar contenido; nuevo contenido nace draft. |
 | `npm run content:publish`            | Cambiar entre draft, published y archived.            |
 | `npm run content:export`             | Export local a una ruta distinta de los golden.       |
+| `npm run editorial:migrate`          | Migración flat → modelo por bloques; no publica nada. |
+| `npm run editorial:validate`         | Valida el grafo editorial sin escribir.               |
+| `npm run editorial:snapshot`         | Publica, lista o revierte snapshots del export v2.    |
+| `npm run editorial:cutover-check`    | Informe de gates P0 del corte Track B; solo lectura.  |
 | `npm run indexes:obsolete`           | Reporte de solo lectura; nunca elimina índices.       |
 
 ## Límites de seguridad

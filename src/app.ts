@@ -12,6 +12,7 @@ import { registerErrorHandling } from './shared/errors/error-handler.js';
 import { registerOpenApiDocs } from './docs/openapi.js';
 import { healthRoutes } from './modules/health/health.routes.js';
 import { exportRoutes } from './modules/export/export.routes.js';
+import { editorialExportRoutes } from './modules/export/editorial-export.routes.js';
 import { contentRoutes } from './modules/content/content.routes.js';
 import { contactRoutes } from './modules/contact/contact.routes.js';
 import { complaintsRoutes } from './modules/complaints/complaints.routes.js';
@@ -79,6 +80,8 @@ export function buildApp(config: AppConfig): FastifyInstance {
 
   app.register(healthRoutes);
   app.register(exportRoutes);
+  // Track B: export v2 en paralelo. No altera /v1/export/content-cache.
+  app.register(editorialExportRoutes);
   app.register(contentRoutes);
   // F5 cerrado: contacto registrado por defecto. FEATURE_CONTACT_ENABLED=false
   // es kill-switch operativo (ADR-006), no aislamiento de fase.

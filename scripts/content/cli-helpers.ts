@@ -5,6 +5,11 @@ import { fileURLToPath } from 'node:url';
 import { loadConfig } from '../../src/shared/config/env.js';
 import { sections } from '../../src/modules/content/content-write.js';
 import type { SectionName } from '../../src/modules/content/content-write.js';
+import {
+  editorialSectionNames,
+  isEditorialSection,
+} from '../../src/modules/editorial/editorial.schemas.js';
+import type { EditorialSectionName } from '../../src/modules/editorial/editorial.schemas.js';
 
 /** Conexión de los CLIs editoriales (usa la config/.env local). */
 export async function withContentDb<T>(fn: (db: Db) => Promise<T>): Promise<T> {
@@ -21,6 +26,29 @@ export function parseSection(value: string | undefined): SectionName {
   if (value !== undefined && value in sections) return value as SectionName;
   console.error(
     `ERROR: --section debe ser uno de: ${Object.keys(sections).join(', ')} (recibido: ${value ?? '(vacío)'})`,
+  );
+  process.exit(2);
+}
+
+/**
+ * `content:set` / `content:publish` atienden dos modelos: el flat que alimenta
+ * `content-cache.json` y el editorial por bloques. La sección elegida decide
+ * el camino; los contratos y los estados NO se mezclan.
+ */
+export type AnySection =
+  | { kind: 'flat'; name: SectionName }
+  | { kind: 'editorial'; name: EditorialSectionName };
+
+export function parseAnySection(value: string | undefined): AnySection {
+  if (value !== undefined && value in sections) {
+    return { kind: 'flat', name: value as SectionName };
+  }
+  if (value !== undefined && isEditorialSection(value)) {
+    return { kind: 'editorial', name: value };
+  }
+  const all = [...Object.keys(sections), ...editorialSectionNames];
+  console.error(
+    `ERROR: --section debe ser uno de: ${all.join(', ')} (recibido: ${value ?? '(vacío)'})`,
   );
   process.exit(2);
 }

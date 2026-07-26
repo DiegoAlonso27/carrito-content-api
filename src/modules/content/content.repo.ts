@@ -285,7 +285,8 @@ export class ContentRepo {
   }
 }
 
-function isTransactionUnsupported(err: unknown): boolean {
+/** Compartido con el módulo editorial: misma topología, mismo diagnóstico. */
+export function isTransactionUnsupported(err: unknown): boolean {
   if (!(err instanceof MongoServerError)) return false;
   // IllegalOperation (20): transacciones solo en replica set / mongos.
   if (err.code === 20) return true;

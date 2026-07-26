@@ -101,3 +101,22 @@ codebase-memory-mcp cli index_repository --repo-path "d:\PROYECTOS\transportes-c
   errores repetibles, de impacto o que revelen una restricción del proyecto.
 - Si el aprendizaje es específico de una decisión arquitectónica, registrarlo
   también como ADR en `docs/decisions/` cuando corresponda.
+
+## Lecciones
+
+- Al cambiar `isActive`, altas o bajas en `content-cache.json`, actualizar en el
+  mismo cambio los conteos de `test/integration/import-cache.test.ts`. Editar el
+  golden y dejar ese test en rojo hace que la siguiente tarea no pueda distinguir
+  un fallo propio de uno heredado (ocurrió al desactivar los comunicados: el test
+  seguía esperando 11 items inactivos cuando ya eran 13).
+- Antes de atribuirse un test en rojo, comprobar con `git diff HEAD -- <archivo>`
+  si el archivo del test y su fuente de datos ya venían así del commit anterior.
+- El modelo editorial por bloques NO comparte contador con el flat: sus
+  escrituras mueven `editorialVersion` (`meta/_id:'editorial'`), nunca
+  `contentVersion`. Reutilizar el contador flat invalidaría el ETag del export
+  que el front consume en build sin que su contenido haya cambiado (ADR-011).
+- No usar `editorial:validate` como gate Go/No-Go del corte: sale con código 1
+  mientras exista un punto de embarque sin dirección o localidad verificada, que
+  es el estado esperado por diseño (P-04/P-13). El gate del corte es
+  `editorial:cutover-check`, que distingue errores de documentos **publicados**
+  (P0, rojo) de los gates de publicación de un punto (aviso).

@@ -115,6 +115,7 @@ describe('documentación OpenAPI habilitada', () => {
     ['/v1/content/{locale}', 'get', 'content'],
     ['/v1/content/{locale}/collections/{slug}/items', 'get', 'content'],
     ['/v1/export/content-cache', 'get', 'export'],
+    ['/v1/export/editorial/{locale}', 'get', 'export'],
     ['/v1/contact', 'post', 'contact'],
     ['/v1/complaints', 'post', 'complaints'],
   ];

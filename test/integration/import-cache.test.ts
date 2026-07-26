@@ -115,8 +115,9 @@ describe('importación', () => {
   it('todo registro importado nace published (incluidos los isActive:false)', async () => {
     const items = db.collection(contentCollections.items);
     expect(await items.countDocuments({ status: 'published' })).toBe(83);
-    // El golden contiene 11 items inactivos: el export los incluye igualmente.
-    expect(await items.countDocuments({ isActive: false })).toBe(11);
+    // El golden contiene 13 items inactivos (11 footer-links + los 2
+    // announcements desactivados en el soft-launch): el export los incluye igual.
+    expect(await items.countDocuments({ isActive: false })).toBe(13);
   });
 
   it('meta: contentVersion inicial y tokenSeq = max(token) + 1', async () => {
