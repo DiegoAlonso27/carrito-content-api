@@ -1179,7 +1179,7 @@
       "localeCode": "es-PE",
       "slug": "covid",
       "sortOrder": 10,
-      "isActive": true,
+      "isActive": false,
       "data": {
         "title": "Comunicado",
         "body": "Informamos a nuestros pasajeros que según las nuevas medidas del Gobierno (DS-030 2022), los niños mayores de 12 años deberán acreditar segunda dosis de vacuna y los mayores de 18 años haber recibido la tercera dosis contra la COVID-19. Caso contrario, deberán presentar una prueba molecular negativa no mayor a 48 horas, antes de realizar su viaje.",
@@ -1194,7 +1194,7 @@
       "localeCode": "es-PE",
       "slug": "nav-modal",
       "sortOrder": 20,
-      "isActive": true,
+      "isActive": false,
       "data": {
         "title": "Comunicado Importante",
         "body": "Este es un comunicado importante para nuestros usuarios. Aquí puedes colocar información relevante sobre el servicio.",

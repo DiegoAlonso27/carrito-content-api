@@ -209,6 +209,38 @@ npm run content:publish -- --section items --key $itemKey --to archived
 revisión y publicación. Cada mutación confirmada incrementa `contentVersion`,
 renueva ETag y valida referencias antes de escribir.
 
+### Comunicados (`announcements`) on/off
+
+Interruptor: `isActive` del item (+ opcional `data.activeFrom` / `data.activeTo`
+en UTC; `null` = sin límite). No hay setting global aparte. El front solo
+muestra el modal (`nav-modal`) y la alerta home (`covid`) cuando el item está
+live; sin fallback hardcodeado si está inactivo.
+
+Claves naturales: `announcements/es-PE/covid` y `announcements/es-PE/nav-modal`.
+
+Ocultar (sin cambiar lógica del front):
+
+```powershell
+# JSON revisado con isActive: false (mismo slug/locale/colección)
+$changeFile = Read-Host 'Ruta del JSON editorial revisado'
+npm run content:set -- --section items --file $changeFile
+npm run content:publish -- --section items --key announcements/es-PE/covid --to published
+# repetir publish para nav-modal si aplica
+```
+
+Activar: mismo flujo con `isActive: true`, body/título actualizados y, si hace
+falta, ventana `activeFrom`/`activeTo`. Tras publicar:
+
+```powershell
+$env:CARRITO_EXPORT_FILE = Join-Path $env:TEMP 'carrito-content-cache.generated.json'
+npm run content:export -- --out $env:CARRITO_EXPORT_FILE
+# En carrito-front/ClientApp: npm run content:fetch && build del artefacto
+```
+
+Al cambiar el copy del modal, hacer bump de `data.dismissKey` para que vuelva a
+mostrarse a quien ya lo cerró en `localStorage`. Esto refresca contenido; no
+requiere redeploy de lógica TypeScript/Vue.
+
 ## 7. Export y comprobación del golden inicial
 
 Generar un archivo temporal desde la base configurada:

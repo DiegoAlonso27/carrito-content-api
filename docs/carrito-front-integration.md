@@ -136,6 +136,18 @@ El front actual usa `ContentCache` en build-time. Cambiarlo a consumo runtime
 requiere tipos y estrategia de caché específicos, además de configurar
 `CORS_ORIGINS`; no forma parte de F8.
 
+## Comunicados on/off (`announcements`)
+
+Paridad con el front: items `covid` (alerta home) y `nav-modal` (modal del
+navbar). Visibilidad = `isActive` + ventana opcional `activeFrom`/`activeTo`
+(`isAnnouncementLive` en el front). El export incluye `isActive: false`; el
+front no muestra ni inventa copy si el item no está live.
+
+Operación sin redeploy de lógica: `content:set` → `content:publish` →
+`content:export` → en el front `content:fetch` (+ build del artefacto). Detalle
+CLI en `docs/runbook.md` (sección Comunicados). Al cambiar el texto del modal,
+bump de `dismissKey`.
+
 ## Formularios
 
 Las páginas actuales del front no consumen estas rutas.
