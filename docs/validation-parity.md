@@ -39,7 +39,7 @@ Campos alineados 1:1 (sin acción): `documentType`, `documentNumber`,
 `firstName`/`lastNamePaternal` 2–100, `lastNameMaternal` nullable 1–100,
 `address` 5–300, `email` (misma regex en ambos lados), `birthDate` opcional y
 pasada, apoderado todo-o-null + obligatorio si menor de 18 (ambos lados),
-`service.type`, `description` 3–500, `reason`/`province`/`terminal` 1–100,
+`service.type`, `description` 3–500, `reason`/`terminal` 1–100,
 `incidentDate` opcional y no futura, `detail`/`consumerRequest` 10–4000,
 `confirmation` literal `true`. Server-only presentes: honeypot dual (payload y
 parte multipart), rate limit, PNG de firma (magia + decodificación + trazo),

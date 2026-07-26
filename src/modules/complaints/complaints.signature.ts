@@ -169,7 +169,6 @@ export function buildCanonicalSheet(input: CanonicalSheetInput): {
       voucherSeries: nfcOrNull(input.detail.voucherSeries),
       voucherNumber: nfcOrNull(input.detail.voucherNumber),
       reason: nfc(input.detail.reason),
-      province: nfc(input.detail.province),
       terminal: nfc(input.detail.terminal),
       incidentDate: input.detail.incidentDate,
       detail: nfc(input.detail.detail),

@@ -75,7 +75,6 @@ export interface DetailInput {
   voucherSeries: string | null;
   voucherNumber: string | null;
   reason: string;
-  province: string;
   terminal: string;
   incidentDate: string | null;
   detail: string;

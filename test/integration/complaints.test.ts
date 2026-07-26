@@ -119,7 +119,6 @@ function validPayload(overrides: PayloadOverrides = {}): Record<string, unknown>
       voucherSeries: 'B001',
       voucherNumber: '0012345',
       reason: 'Cobro indebido',
-      province: 'Chiclayo',
       terminal: 'Terminal Norte',
       incidentDate: '2026-07-10',
       detail: 'Descripción detallada del incidente ocurrido en el terminal.',

@@ -99,7 +99,6 @@ const detailSchema = Type.Object(
     voucherSeries: NullableString(noControlChars, 1, 20),
     voucherNumber: NullableString(noControlChars, 1, 30),
     reason: Type.String({ minLength: 1, maxLength: 100, pattern: noControlChars }),
-    province: Type.String({ minLength: 1, maxLength: 100, pattern: noControlChars }),
     terminal: Type.String({ minLength: 1, maxLength: 100, pattern: noControlChars }),
     incidentDate: Type.Union([Type.String({ pattern: isoDatePattern }), Type.Null()]),
     detail: Type.String({ minLength: 10, maxLength: 4000, pattern: noControlCharsMultiline }),
