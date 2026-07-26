@@ -470,7 +470,7 @@
     {
       "localeCode": "es-PE",
       "key": "footer.description",
-      "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "value": "Conectamos personas y destinos con transporte interprovincial y encomiendas. Viaja y envía con Transportes Chiclayo.",
       "isActive": true,
       "sortOrder": 200
     },
@@ -498,7 +498,7 @@
     {
       "localeCode": "es-PE",
       "key": "home.hero.covidNote",
-      "value": "Encuentra respuestas a todas tus preguntas sobre viajes relacionadas con la COVID-19 aquí",
+      "value": "Encuentra respuestas a todas tus preguntas sobre viajes aquí.",
       "isActive": true,
       "sortOrder": 40
     },
@@ -1812,9 +1812,9 @@
       "isActive": true,
       "data": {
         "iconAsset": "feature-message",
-        "title": "Experiencia 43 años",
-        "subTitle": "al servicio del transporte",
-        "description": "interprovincial"
+        "title": "Atención que te acompaña",
+        "subTitle": "",
+        "description": "Resuelve tus consultas antes de viajar."
       },
       "rowVersionToken": "0x000000000000084B"
     },
@@ -1826,9 +1826,9 @@
       "isActive": true,
       "data": {
         "iconAsset": "feature-package",
-        "title": "Experiencia 43 años",
-        "subTitle": "al servicio del transporte",
-        "description": "interprovincial"
+        "title": "Encomiendas a tu destino",
+        "subTitle": "",
+        "description": "Envía lo que necesitas a nuestros destinos."
       },
       "rowVersionToken": "0x000000000000084C"
     },
@@ -1840,9 +1840,9 @@
       "isActive": true,
       "data": {
         "iconAsset": "feature-bag",
-        "title": "Experiencia 43 años",
-        "subTitle": "al servicio del transporte",
-        "description": "interprovincial"
+        "title": "43 años conectando destinos",
+        "subTitle": "",
+        "description": "Viaja con la experiencia de Transportes Chiclayo."
       },
       "rowVersionToken": "0x000000000000084D"
     },
