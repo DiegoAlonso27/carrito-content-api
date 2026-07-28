@@ -42,7 +42,7 @@ afterAll(async () => {
 describe('validación y sanitización del golden file', () => {
   it('el archivo real cumple el contrato completo (sobre + data por colección)', () => {
     // beforeAll ya falló si no; se deja explícito como criterio de aceptación.
-    expect(cache.items).toHaveLength(83);
+    expect(cache.items).toHaveLength(84);
   });
 
   it('la sanitización del HTML embebido es no-op sobre el contenido actual', () => {
@@ -100,7 +100,7 @@ describe('validación y sanitización del golden file', () => {
 });
 
 describe('importación', () => {
-  it('primera corrida: inserta los conteos exactos del archivo (1/16/13/62/33/17/83)', async () => {
+  it('primera corrida: inserta los conteos exactos del archivo (1/16/13/62/33/17/84)', async () => {
     const summary = await importCache(db, cache);
 
     expect(summary.locales).toMatchObject({ inserted: 1, updated: 0, unchanged: 0 });
@@ -109,12 +109,12 @@ describe('importación', () => {
     expect(summary.texts).toMatchObject({ inserted: 62, updated: 0, unchanged: 0 });
     expect(summary.assets).toMatchObject({ inserted: 33, updated: 0, unchanged: 0 });
     expect(summary.collections).toMatchObject({ inserted: 17, updated: 0, unchanged: 0 });
-    expect(summary.items).toMatchObject({ inserted: 83, updated: 0, unchanged: 0 });
+    expect(summary.items).toMatchObject({ inserted: 84, updated: 0, unchanged: 0 });
   });
 
   it('todo registro importado nace published (incluidos los isActive:false)', async () => {
     const items = db.collection(contentCollections.items);
-    expect(await items.countDocuments({ status: 'published' })).toBe(83);
+    expect(await items.countDocuments({ status: 'published' })).toBe(84);
     // El golden contiene 13 items inactivos (11 footer-links + los 2
     // announcements desactivados en el soft-launch): el export los incluye igual.
     expect(await items.countDocuments({ isActive: false })).toBe(13);
