@@ -223,6 +223,6 @@ describe('ETag y caché', () => {
     expect(exported.versionTokens.some((t) => t.sourceKey.includes('faq-borrador-test'))).toBe(
       false,
     );
-    expect(exported.items).toHaveLength(83);
+    expect(exported.items).toHaveLength(84);
   });
 });

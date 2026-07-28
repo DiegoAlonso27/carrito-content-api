@@ -145,9 +145,9 @@
       "slug": "contactanos",
       "route": "/contactanos",
       "title": "Contáctanos",
-      "metaTitle": null,
-      "metaDescription": null,
-      "ogImageSlug": null,
+      "metaTitle": "Contáctanos: atención al cliente y canales oficiales",
+      "metaDescription": "Comunícate con Transportes Chiclayo a través de los canales oficiales. Usa el formulario de contacto de esta página o los datos publicados en el sitio.",
+      "ogImageSlug": "banner-contactanos",
       "isActive": true,
       "sortOrder": 60
     },
@@ -167,9 +167,9 @@
       "slug": "encomiendas",
       "route": "/encomiendas",
       "title": "Encomiendas",
-      "metaTitle": null,
-      "metaDescription": null,
-      "ogImageSlug": null,
+      "metaTitle": "Rastreo de encomiendas y pautas para enviar paquetes",
+      "metaDescription": "Consulta el rastreo de encomiendas y revisa las pautas de envío de Transportes Chiclayo. Sigue tu paquete e infórmate con claridad antes de enviar.",
+      "ogImageSlug": "banner-encomiendas",
       "isActive": true,
       "sortOrder": 40
     },
@@ -189,9 +189,9 @@
       "slug": "home",
       "route": "/",
       "title": "Inicio",
-      "metaTitle": null,
-      "metaDescription": null,
-      "ogImageSlug": null,
+      "metaTitle": "Compra pasajes de bus y envía encomiendas en línea",
+      "metaDescription": "Compra pasajes de bus y consulta el estado de tus encomiendas con Transportes Chiclayo. Encuentra información clara para viajar y enviar en Perú.",
+      "ogImageSlug": "banner-inicio",
       "isActive": true,
       "sortOrder": 10
     },
@@ -200,8 +200,8 @@
       "slug": "libro-de-reclamaciones",
       "route": "/libro-de-reclamaciones",
       "title": "Libro de Reclamaciones",
-      "metaTitle": null,
-      "metaDescription": null,
+      "metaTitle": "Libro de reclamaciones: información para el usuario",
+      "metaDescription": "Información sobre el Libro de Reclamaciones de Transportes Chiclayo. Consulta esta página para conocer el canal oficial destinado a presentar un reclamo.",
       "ogImageSlug": null,
       "isActive": true,
       "sortOrder": 110
@@ -222,7 +222,7 @@
       "slug": "politicas-de-privacidad",
       "route": "/politicas-de-privacidad",
       "title": "Políticas de privacidad",
-      "metaTitle": null,
+      "metaTitle": "Políticas de privacidad y protección de datos personales",
       "metaDescription": "Políticas de privacidad y protección de datos personales de Transportes Chiclayo conforme a la Ley N.° 29733.",
       "ogImageSlug": null,
       "isActive": true,
@@ -233,8 +233,8 @@
       "slug": "preguntas-frecuentes",
       "route": "/preguntas-frecuentes",
       "title": "Preguntas frecuentes",
-      "metaTitle": null,
-      "metaDescription": null,
+      "metaTitle": "Preguntas frecuentes sobre viajes, pasajes y envíos",
+      "metaDescription": "Resuelve dudas frecuentes sobre pasajes, viajes y encomiendas de Transportes Chiclayo. Encuentra respuestas claras antes de comprar o enviar.",
       "ogImageSlug": null,
       "isActive": true,
       "sortOrder": 100
@@ -277,8 +277,8 @@
       "slug": "terminos-y-condiciones",
       "route": "/terminos-y-condiciones",
       "title": "Términos y condiciones",
-      "metaTitle": null,
-      "metaDescription": null,
+      "metaTitle": "Términos y condiciones de uso del sitio y servicios",
+      "metaDescription": "Consulta los términos y condiciones de uso del sitio y de los servicios de Transportes Chiclayo. Documento informativo con las condiciones vigentes.",
       "ogImageSlug": null,
       "isActive": true,
       "sortOrder": 80
@@ -2139,6 +2139,18 @@
       "rowVersionToken": "0x0000000000004676"
     },
     {
+      "collectionSlug": "legal-sections",
+      "localeCode": "es-PE",
+      "slug": "terminos-encomiendas",
+      "sortOrder": 40,
+      "isActive": true,
+      "data": {
+        "title": "Términos y Condiciones de Encomiendas",
+        "bodyHtml": "<h4>Términos y Condiciones de Envío de Encomiendas</h4><h4>1.</h4><p>ENVÍO DE ENCOMIENDA: tiene que estar embalado y rotulado correctamente indicando remitente, consignado y destino.</p><h4>2.</h4><p>ENVÍO SEGURO: el remitente deberá ingresar una clave de 4 dígitos y deberá hacerla llegar al consignado para el retiro de la encomienda, portando su DNI físico.</p><h4>3.</h4><p>OLVIDO DE CLAVE DE SEGURIDAD: el remitente deberá acercarse a cualquier agencia a solicitar su clave.</p><h4>4.</h4><p>LA ENCOMIENDA: debe ser recogida dentro de los 30 días calendario contados a partir del día de arriba; pasado este plazo, la encomienda tendrá la calidad de rezagado y se cobrará dos soles por cada día en custodia; sin perjuicio de proceder conforme lo establece los art. 11 y 12 de la R.M. 572-2008 MTC/03 Directiva que regula el tratamiento de los envíos postales no distribuidos en el Perú.</p><h4>5.</h4><p>El cliente reconoce que TRANSPORTES CHICLAYO no conoce la naturaleza o estado del contenido de la carga y/o encomienda por tanto libera a TRANSPORTES CHICLAYO de responsabilidad por los daños y/o perjuicios derivados de los vicios, defectos o características inherentes o propios de dicho contenido.</p><h4>6.</h4><p>El cliente al momento de enviar su encomienda y/o carga deberá verificar, bajo su responsabilidad, que todos los datos registrados en los documentos del contrato de transporte y en el rotulado de la encomienda y/o carga sean correctos, la contratación del servicio implica plena conformidad, no aceptándose reclamos posteriores.</p><h4>7.</h4><p>El embalaje de la carga y/o encomienda y los mecanismos de protección del contenido, son de responsabilidad exclusiva del cliente remitente, TRANSPORTES CHICLAYO se reserva el derecho de no aceptar transportar carga y/o encomiendas con un embalaje deficiente. En caso de que el cliente insista, se dejará constancia de que el transporte se hace por su cuenta y riesgo eximiendo a la empresa de cualquier responsabilidad por los daños que sufra.</p><h4>8.</h4><p>Si la carga y/o encomienda consiste en maletas acrílicas o plásticas, la empresa se reserva el derecho de aceptar transportarlas si no están forradas para su protección. En caso de que el cliente insista, se dejará constancia de que el transporte se hace por su cuenta y riesgo eximiendo a la empresa de cualquier responsabilidad por los daños que sufran.</p><h4>9.</h4><p>TRANSPORTES CHICLAYO no se hace responsable por los daños magnéticos ni por borraduras de imágenes electrónicas, fotográficas o grabaciones contenidos en la encomienda y/o carga.</p><h4>10.</h4><p>Prohibiciones:</p><ul><li>No se transporta mercancías peligrosas, insumos, sustancias y/o materiales</li></ul><p>restringidos o prohibidos por la ley peruana.</p><ul><li>No se transporta dinero, valores y joyas.</li><li>No se transporta armas de fuego, elementos bélicos, productos pirotécnicos ni objetos</li></ul><p>deflagrantes y/o detonantes.</p><ul><li>No se transporta mercancía que no tenga procedencia lícita.</li><li>No se realiza el transporte de animales vivos, ni de bienes perecibles.</li><li>No transporta productos hidrobiológicos (pescados, mariscos, etc.), licores artesanales</li></ul><p>(chicha de jora) y frutas restringidas por SENASA si no cuentan con la autorización correspondiente.</p><h4>11.</h4><p>El cliente que vulnere esta prohibición haciendo una falsa declaración del contenido, asumirá la total responsabilidad por los daños y perjuicios que sufra y/o que ocasione al Estado, a terceros y a la empresa.</p><h4>12.</h4><p>TRANSPORTES CHICLAYO no es responsable por la sustracción o suplantación de identidad en la entrega de una encomienda y/o carga, en el que se haya empleado el código entregado al cliente.</p><h4>13.</h4><p>TRANSPORTES CHICLAYO no es responsable por pérdida, extravío, sustracción, deterioro, destrucción o demora en la entrega de una encomienda y/o carga debido a circunstancias o factores ajenos a su control, como son el caso fortuito y la fuerza mayor.</p><h4>14.</h4><p>TRANSPORTES CHICLAYO no es responsable por el deterioro o destrucción de productos perecibles, no prohibidos, que sean recogidos oportunamente, y ante una eventual descomposición por exceso del período de vida útil de lo enviado, la empresa quedará facultada para disponer su eliminación de acuerdo a ley.</p><h4>15.</h4><p>El cliente conviene en pactar con TRANSPORTES CHICLAYO el monto de la indemnización que corresponderá pagar a TRANSPORTES CHICLAYO en caso de pérdida, deterioro, sustracción del equipaje entregado por el usuario al transportista para su traslado en la bodega, por causa atribuible a éste o a su personal. Conforme Decreto Supremo N° 017-2009 en su Art. 76.2.12.4 Si el equipaje pesa más de 15 a 20 kilos, el monto que resultase de multiplicar el importe del 25% del valor de pasaje por 20. Y 76.2.12.5 Si no se hubiere establecido el peso de los equipajes, se asumirá que el equipaje tiene un peso de 20 Kilos.</p><h4>16.</h4><p>El cliente no podrá condicionar ni negarse a pagar otras prestaciones del servicio de transporte efectuadas a su favor por parte de la empresa, con el pretexto de compensar obligaciones.</p>"
+      },
+      "rowVersionToken": "0x0000000000000889"
+    },
+    {
       "collectionSlug": "nav-links",
       "localeCode": "es-PE",
       "slug": "nav-inicio",
@@ -2651,18 +2663,6 @@
         ]
       },
       "rowVersionToken": "0x0000000000000863"
-    },
-    {
-      "collectionSlug": "legal-sections",
-      "localeCode": "es-PE",
-      "slug": "terminos-encomiendas",
-      "sortOrder": 40,
-      "isActive": true,
-      "data": {
-        "title": "Términos y Condiciones de Encomiendas",
-        "bodyHtml": "<h4>Términos y Condiciones de Envío de Encomiendas</h4><h4>1.</h4><p>ENVÍO DE ENCOMIENDA: tiene que estar embalado y rotulado correctamente indicando remitente, consignado y destino.</p><h4>2.</h4><p>ENVÍO SEGURO: el remitente deberá ingresar una clave de 4 dígitos y deberá hacerla llegar al consignado para el retiro de la encomienda, portando su DNI físico.</p><h4>3.</h4><p>OLVIDO DE CLAVE DE SEGURIDAD: el remitente deberá acercarse a cualquier agencia a solicitar su clave.</p><h4>4.</h4><p>LA ENCOMIENDA: debe ser recogida dentro de los 30 días calendario contados a partir del día de arriba; pasado este plazo, la encomienda tendrá la calidad de rezagado y se cobrará dos soles por cada día en custodia; sin perjuicio de proceder conforme lo establece los art. 11 y 12 de la R.M. 572-2008 MTC/03 Directiva que regula el tratamiento de los envíos postales no distribuidos en el Perú.</p><h4>5.</h4><p>El cliente reconoce que TRANSPORTES CHICLAYO no conoce la naturaleza o estado del contenido de la carga y/o encomienda por tanto libera a TRANSPORTES CHICLAYO de responsabilidad por los daños y/o perjuicios derivados de los vicios, defectos o características inherentes o propios de dicho contenido.</p><h4>6.</h4><p>El cliente al momento de enviar su encomienda y/o carga deberá verificar, bajo su responsabilidad, que todos los datos registrados en los documentos del contrato de transporte y en el rotulado de la encomienda y/o carga sean correctos, la contratación del servicio implica plena conformidad, no aceptándose reclamos posteriores.</p><h4>7.</h4><p>El embalaje de la carga y/o encomienda y los mecanismos de protección del contenido, son de responsabilidad exclusiva del cliente remitente, TRANSPORTES CHICLAYO se reserva el derecho de no aceptar transportar carga y/o encomiendas con un embalaje deficiente. En caso de que el cliente insista, se dejará constancia de que el transporte se hace por su cuenta y riesgo eximiendo a la empresa de cualquier responsabilidad por los daños que sufra.</p><h4>8.</h4><p>Si la carga y/o encomienda consiste en maletas acrílicas o plásticas, la empresa se reserva el derecho de aceptar transportarlas si no están forradas para su protección. En caso de que el cliente insista, se dejará constancia de que el transporte se hace por su cuenta y riesgo eximiendo a la empresa de cualquier responsabilidad por los daños que sufran.</p><h4>9.</h4><p>TRANSPORTES CHICLAYO no se hace responsable por los daños magnéticos ni por borraduras de imágenes electrónicas, fotográficas o grabaciones contenidos en la encomienda y/o carga.</p><h4>10.</h4><p>Prohibiciones:</p><ul><li>No se transporta mercancías peligrosas, insumos, sustancias y/o materiales</li></ul><p>restringidos o prohibidos por la ley peruana.</p><ul><li>No se transporta dinero, valores y joyas.</li><li>No se transporta armas de fuego, elementos bélicos, productos pirotécnicos ni objetos</li></ul><p>deflagrantes y/o detonantes.</p><ul><li>No se transporta mercancía que no tenga procedencia lícita.</li><li>No se realiza el transporte de animales vivos, ni de bienes perecibles.</li><li>No transporta productos hidrobiológicos (pescados, mariscos, etc.), licores artesanales</li></ul><p>(chicha de jora) y frutas restringidas por SENASA si no cuentan con la autorización correspondiente.</p><h4>11.</h4><p>El cliente que vulnere esta prohibición haciendo una falsa declaración del contenido, asumirá la total responsabilidad por los daños y perjuicios que sufra y/o que ocasione al Estado, a terceros y a la empresa.</p><h4>12.</h4><p>TRANSPORTES CHICLAYO no es responsable por la sustracción o suplantación de identidad en la entrega de una encomienda y/o carga, en el que se haya empleado el código entregado al cliente.</p><h4>13.</h4><p>TRANSPORTES CHICLAYO no es responsable por pérdida, extravío, sustracción, deterioro, destrucción o demora en la entrega de una encomienda y/o carga debido a circunstancias o factores ajenos a su control, como son el caso fortuito y la fuerza mayor.</p><h4>14.</h4><p>TRANSPORTES CHICLAYO no es responsable por el deterioro o destrucción de productos perecibles, no prohibidos, que sean recogidos oportunamente, y ante una eventual descomposición por exceso del período de vida útil de lo enviado, la empresa quedará facultada para disponer su eliminación de acuerdo a ley.</p><h4>15.</h4><p>El cliente conviene en pactar con TRANSPORTES CHICLAYO el monto de la indemnización que corresponderá pagar a TRANSPORTES CHICLAYO en caso de pérdida, deterioro, sustracción del equipaje entregado por el usuario al transportista para su traslado en la bodega, por causa atribuible a éste o a su personal. Conforme Decreto Supremo N° 017-2009 en su Art. 76.2.12.4 Si el equipaje pesa más de 15 a 20 kilos, el monto que resultase de multiplicar el importe del 25% del valor de pasaje por 20. Y 76.2.12.5 Si no se hubiere establecido el peso de los equipajes, se asumirá que el equipaje tiene un peso de 20 Kilos.</p><h4>16.</h4><p>El cliente no podrá condicionar ni negarse a pagar otras prestaciones del servicio de transporte efectuadas a su favor por parte de la empresa, con el pretexto de compensar obligaciones.</p>"
-      },
-      "rowVersionToken": "0x0000000000000000"
     }
   ],
   "versionTokens": [
@@ -3155,6 +3155,11 @@
       "sourceTable": "ContentItem",
       "sourceKey": "legal-sections/es-PE/terminos",
       "rowVersionToken": "0x0000000000000886"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "legal-sections/es-PE/terminos-encomiendas",
+      "rowVersionToken": "0x0000000000000889"
     },
     {
       "sourceTable": "ContentItem",
