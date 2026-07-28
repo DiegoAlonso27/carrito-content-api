@@ -923,9 +923,9 @@
     },
     {
       "slug": "pay-amex",
-      "path": "/cms/img/amex_icon.png",
+      "path": "/cms/img/payment-logos/logo_amex.svg",
       "altText": null,
-      "mimeType": "image/png",
+      "mimeType": "image/svg+xml",
       "width": null,
       "height": null,
       "isActive": true,
@@ -933,9 +933,9 @@
     },
     {
       "slug": "pay-diners",
-      "path": "/cms/img/diners_icon.png",
+      "path": "/cms/img/payment-logos/logo_diners.svg",
       "altText": null,
-      "mimeType": "image/png",
+      "mimeType": "image/svg+xml",
       "width": null,
       "height": null,
       "isActive": true,
@@ -943,33 +943,23 @@
     },
     {
       "slug": "pay-mastercard",
-      "path": "/cms/img/mastercard_icon.png",
+      "path": "/cms/img/payment-logos/logo_mastercard.svg",
       "altText": null,
-      "mimeType": "image/png",
+      "mimeType": "image/svg+xml",
       "width": null,
       "height": null,
       "isActive": true,
       "sortOrder": 290
     },
     {
-      "slug": "pay-pagoefectivo",
-      "path": "/cms/img/pagoefectivo_icon.png",
+      "slug": "pay-plin",
+      "path": "/cms/img/payment-logos/logo_plin.svg",
       "altText": null,
-      "mimeType": "image/png",
+      "mimeType": "image/svg+xml",
       "width": null,
       "height": null,
       "isActive": true,
       "sortOrder": 300
-    },
-    {
-      "slug": "pay-paypal",
-      "path": "/cms/img/paypal_icon.png",
-      "altText": null,
-      "mimeType": "image/png",
-      "width": null,
-      "height": null,
-      "isActive": true,
-      "sortOrder": 280
     },
     {
       "slug": "pay-safetypay",
@@ -983,13 +973,23 @@
     },
     {
       "slug": "pay-visa",
-      "path": "/cms/img/visa_icon.png",
+      "path": "/cms/img/payment-logos/logo_visa.svg",
       "altText": null,
-      "mimeType": "image/png",
+      "mimeType": "image/svg+xml",
       "width": null,
       "height": null,
       "isActive": true,
       "sortOrder": 270
+    },
+    {
+      "slug": "pay-yape",
+      "path": "/cms/img/payment-logos/logo_yape.svg",
+      "altText": null,
+      "mimeType": "image/svg+xml",
+      "width": null,
+      "height": null,
+      "isActive": true,
+      "sortOrder": 280
     },
     {
       "slug": "service-banio",
@@ -2472,20 +2472,8 @@
     {
       "collectionSlug": "payment-methods",
       "localeCode": "es-PE",
-      "slug": "pay-paypal",
-      "sortOrder": 20,
-      "isActive": true,
-      "data": {
-        "name": "PayPal",
-        "iconAsset": "pay-paypal"
-      },
-      "rowVersionToken": "0x0000000000000876"
-    },
-    {
-      "collectionSlug": "payment-methods",
-      "localeCode": "es-PE",
       "slug": "pay-mastercard",
-      "sortOrder": 30,
+      "sortOrder": 20,
       "isActive": true,
       "data": {
         "name": "Mastercard",
@@ -2496,20 +2484,8 @@
     {
       "collectionSlug": "payment-methods",
       "localeCode": "es-PE",
-      "slug": "pay-pagoefectivo",
-      "sortOrder": 40,
-      "isActive": true,
-      "data": {
-        "name": "PagoEfectivo",
-        "iconAsset": "pay-pagoefectivo"
-      },
-      "rowVersionToken": "0x0000000000000878"
-    },
-    {
-      "collectionSlug": "payment-methods",
-      "localeCode": "es-PE",
       "slug": "pay-amex",
-      "sortOrder": 50,
+      "sortOrder": 30,
       "isActive": true,
       "data": {
         "name": "American Express",
@@ -2521,7 +2497,7 @@
       "collectionSlug": "payment-methods",
       "localeCode": "es-PE",
       "slug": "pay-diners",
-      "sortOrder": 60,
+      "sortOrder": 40,
       "isActive": true,
       "data": {
         "name": "Diners Club",
@@ -2532,9 +2508,33 @@
     {
       "collectionSlug": "payment-methods",
       "localeCode": "es-PE",
+      "slug": "pay-yape",
+      "sortOrder": 50,
+      "isActive": true,
+      "data": {
+        "name": "Yape",
+        "iconAsset": "pay-yape"
+      },
+      "rowVersionToken": "0x0000000000000876"
+    },
+    {
+      "collectionSlug": "payment-methods",
+      "localeCode": "es-PE",
+      "slug": "pay-plin",
+      "sortOrder": 60,
+      "isActive": true,
+      "data": {
+        "name": "Plin",
+        "iconAsset": "pay-plin"
+      },
+      "rowVersionToken": "0x0000000000000878"
+    },
+    {
+      "collectionSlug": "payment-methods",
+      "localeCode": "es-PE",
       "slug": "pay-safetypay",
       "sortOrder": 70,
-      "isActive": true,
+      "isActive": false,
       "data": {
         "name": "SafetyPay",
         "iconAsset": "pay-safetypay"
@@ -2771,13 +2771,8 @@
     },
     {
       "sourceTable": "Asset",
-      "sourceKey": "pay-pagoefectivo",
+      "sourceKey": "pay-plin",
       "rowVersionToken": "0x0000000000000813"
-    },
-    {
-      "sourceTable": "Asset",
-      "sourceKey": "pay-paypal",
-      "rowVersionToken": "0x0000000000000811"
     },
     {
       "sourceTable": "Asset",
@@ -2788,6 +2783,11 @@
       "sourceTable": "Asset",
       "sourceKey": "pay-visa",
       "rowVersionToken": "0x0000000000000810"
+    },
+    {
+      "sourceTable": "Asset",
+      "sourceKey": "pay-yape",
+      "rowVersionToken": "0x0000000000000811"
     },
     {
       "sourceTable": "Asset",
@@ -3286,13 +3286,8 @@
     },
     {
       "sourceTable": "ContentItem",
-      "sourceKey": "payment-methods/es-PE/pay-pagoefectivo",
+      "sourceKey": "payment-methods/es-PE/pay-plin",
       "rowVersionToken": "0x0000000000000878"
-    },
-    {
-      "sourceTable": "ContentItem",
-      "sourceKey": "payment-methods/es-PE/pay-paypal",
-      "rowVersionToken": "0x0000000000000876"
     },
     {
       "sourceTable": "ContentItem",
@@ -3303,6 +3298,11 @@
       "sourceTable": "ContentItem",
       "sourceKey": "payment-methods/es-PE/pay-visa",
       "rowVersionToken": "0x0000000000000875"
+    },
+    {
+      "sourceTable": "ContentItem",
+      "sourceKey": "payment-methods/es-PE/pay-yape",
+      "rowVersionToken": "0x0000000000000876"
     },
     {
       "sourceTable": "ContentItem",
