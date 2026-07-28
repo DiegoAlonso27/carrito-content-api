@@ -1,3 +1,6 @@
+import { createWriteStream, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { Writable } from 'node:stream';
 import type { FastifyServerOptions, FastifyRequest } from 'fastify';
 import type { AppConfig } from '../config/env.js';
 
@@ -18,12 +21,17 @@ import type { AppConfig } from '../config/env.js';
  * secretos (tokens, correos, documentos) y no aporta a la correlación. Solo
  * se registra la ruta.
  *
+ * Con `LOG_DIR` no vacío se hace tee a stdout + archivo diario
+ * (`content-api-YYYY-MM-DD.log`), análogo a `Logs/carrito-{Date}.txt` del
+ * front. Vacío = solo stdout (útil en tests y cuando NSSM ya captura stdout).
+ *
  * La barrera efectiva para headers, IP y query es este serializador: Pino lo
  * ejecuta antes de `redact`, por lo que los paths de headers no encuentran
  * campos en la salida actual. `redact` queda como defensa secundaria ante un
  * cambio futuro del serializador, no como fundamento de privacidad.
  */
 export function buildLoggerOptions(config: AppConfig): NonNullable<FastifyServerOptions['logger']> {
+  const logDir = config.LOG_DIR.trim();
   return {
     level: config.LOG_LEVEL,
     redact: {
@@ -39,7 +47,32 @@ export function buildLoggerOptions(config: AppConfig): NonNullable<FastifyServer
       service: 'carrito-content-api',
       env: config.NODE_ENV,
     },
+    ...(logDir.length > 0 ? { stream: createLoggerStream(logDir) } : {}),
   };
+}
+
+/** Ruta del archivo diario UTC bajo `logDir` (sin crear el directorio). */
+export function resolveDailyLogFilePath(logDir: string, now = new Date()): string {
+  const y = String(now.getUTCFullYear());
+  const m = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(now.getUTCDate()).padStart(2, '0');
+  return join(logDir, `content-api-${y}-${m}-${d}.log`);
+}
+
+/**
+ * Tee stdout + archivo diario. Sin dependencias nuevas (pino ya viene con
+ * Fastify); la rotación por fecha se resuelve al abrir el stream en el arranque.
+ */
+export function createLoggerStream(logDir: string, now = new Date()): Writable {
+  mkdirSync(logDir, { recursive: true });
+  const file = createWriteStream(resolveDailyLogFilePath(logDir, now), { flags: 'a' });
+  return new Writable({
+    write(chunk, encoding, callback) {
+      const asBuffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, encoding);
+      process.stdout.write(asBuffer);
+      file.write(asBuffer, callback);
+    },
+  });
 }
 
 export interface SafeErrorLogOptions {

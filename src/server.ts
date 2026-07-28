@@ -10,6 +10,26 @@ const app = buildApp(config);
 // y espera el cierre de ambos clientes MongoDB.
 registerShutdownHandlers(app);
 
+// Errores fuera del ciclo request/response: sin esto solo quedan en stderr
+// del proceso y no en el archivo diario bajo LOG_DIR.
+process.on('uncaughtException', (err) => {
+  app.log.fatal(
+    { error: safeErrorLog(err, { includeStackFrames: true }) },
+    'uncaughtException',
+  );
+  process.exitCode = 1;
+});
+process.on('unhandledRejection', (reason) => {
+  app.log.error(
+    { error: safeErrorLog(reason, { includeStackFrames: true }) },
+    'unhandledRejection',
+  );
+});
+
+if (config.LOG_DIR.trim().length > 0) {
+  app.log.info({ logDir: config.LOG_DIR.trim() }, 'logging a archivo habilitado');
+}
+
 try {
   await app.listen({ host: config.HOST, port: config.PORT });
 } catch (err) {

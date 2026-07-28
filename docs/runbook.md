@@ -45,6 +45,7 @@ existe, la aplicación falla antes de escuchar tráfico.
 | `NODE_ENV`                           | `development`, `test` o `production`.                                                                                  |
 | `HOST`, `PORT`                       | Interfaz y puerto del proceso.                                                                                         |
 | `LOG_LEVEL`                          | Nivel estructurado; no habilita bodies ni headers.                                                                     |
+| `LOG_DIR`                            | Directorio de logs en disco (default `Logs`). Vacío = solo stdout. Archivo diario: `content-api-YYYY-MM-DD.log`.       |
 | `MONGO_URI`                          | Cuenta de contenido; nunca una cuenta de ventas.                                                                       |
 | `MONGO_URI_FORMS`                    | Obligatoria y distinta de `MONGO_URI` en producción cuando contacto está activo; también cuando reclamos se habiliten. |
 | `MONGO_DB_CONTENT`, `MONGO_DB_FORMS` | Nombres no vacíos y siempre distintos.                                                                                 |
@@ -426,6 +427,12 @@ autorización operativa fuera de este runbook.
 Nunca imprimir, registrar o incorporar las claves en comandos con valores
 literales. Los logs de la API contienen request id, método, ruta y categorías
 de error sanitizadas; no contienen query string, headers, IP ni cuerpos.
+
+Con `LOG_DIR` (default `Logs`) cada línea también se escribe en
+`Logs/content-api-YYYY-MM-DD.log` (UTC), además de stdout. En producción con
+NSSM conviene seguir capturando stdout/stderr y, si se prefiere una sola
+fuente, poner `LOG_DIR=` vacío para no duplicar. Correlacionar incidentes por
+`x-request-id`.
 
 ## 12. Corte de Track B (modelo editorial por bloques)
 

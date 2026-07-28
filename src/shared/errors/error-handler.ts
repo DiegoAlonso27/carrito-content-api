@@ -55,26 +55,39 @@ export function registerErrorHandling(app: FastifyInstance): void {
 
   app.setErrorHandler((err: FastifyError | AppError, req, reply) => {
     if (err instanceof AppError) {
+      // Código/status sin message (puede llevar texto de negocio; safeErrorLog
+      // ya omite message). details solo enumera campos, no valores enviados.
+      if (err.statusCode >= 500) {
+        req.log.error(
+          { error: safeErrorLog(err, { includeStackFrames: true }), code: err.code },
+          'error de aplicación',
+        );
+      } else {
+        req.log.info(
+          {
+            error: safeErrorLog(err),
+            code: err.code,
+            ...(err.details ? { details: err.details } : {}),
+          },
+          'error de aplicación',
+        );
+      }
       void reply.status(err.statusCode).send(buildBody(req, err.code, err.message, err.details));
       return;
     }
 
     if (err.validation) {
+      const details = groupValidationErrors(err.validation);
+      req.log.info({ error: safeErrorLog(err), details }, 'error de validación');
       void reply
         .status(400)
-        .send(
-          buildBody(
-            req,
-            ErrorCodes.validation,
-            'Datos inválidos.',
-            groupValidationErrors(err.validation),
-          ),
-        );
+        .send(buildBody(req, ErrorCodes.validation, 'Datos inválidos.', details));
       return;
     }
 
     if (err.statusCode === 429) {
       // @fastify/rate-limit ya agregó Retry-After a la respuesta.
+      req.log.info({ error: safeErrorLog(err) }, 'rate limit');
       void reply
         .status(429)
         .send(

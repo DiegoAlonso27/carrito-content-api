@@ -6,6 +6,8 @@ export function makeTestConfig(overrides: Record<string, string> = {}): AppConfi
   return loadConfig({
     NODE_ENV: 'test',
     LOG_LEVEL: 'fatal',
+    // Sin archivo en disco: los tests no deben crear Logs/ ni bloquear streams.
+    LOG_DIR: '',
     ...overrides,
   });
 }

@@ -10,4 +10,5 @@ coverage/
 
 # Logs y temporales
 *.log
+Logs/
 tmp/

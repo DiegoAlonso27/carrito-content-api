@@ -1,7 +1,14 @@
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Writable } from 'node:stream';
 import Fastify from 'fastify';
 import { describe, expect, it } from 'vitest';
-import { buildLoggerOptions } from '../../src/shared/logging/logger.js';
-import { safeErrorLog } from '../../src/shared/logging/logger.js';
+import {
+  buildLoggerOptions,
+  resolveDailyLogFilePath,
+  safeErrorLog,
+} from '../../src/shared/logging/logger.js';
 import { makeTestConfig } from '../helpers/test-config.js';
 
 /**
@@ -62,6 +69,65 @@ describe('buildLoggerOptions — serializador de request sin IP', () => {
 
     const serialized = reqSerializer?.({ id: 'req-3', method: 'GET', url: '/health/ready' });
     expect(serialized?.['url']).toBe('/health/ready');
+  });
+
+  it('sin LOG_DIR no configura stream a archivo', () => {
+    const options = buildLoggerOptions(makeTestConfig({ LOG_DIR: '' }));
+    if (typeof options === 'boolean') throw new Error('logger options no es objeto');
+    expect(options.stream).toBeUndefined();
+  });
+
+  it('con LOG_DIR escribe en archivo diario sin datos personales', async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), 'content-api-log-'));
+    try {
+      const options = buildLoggerOptions(
+        makeTestConfig({ LOG_DIR: tmpDir, LOG_LEVEL: 'info' }),
+      );
+      if (typeof options === 'boolean') throw new Error('logger options no es objeto');
+      expect(options.stream).toBeDefined();
+
+      const app = Fastify({ logger: options });
+      try {
+        app.log.info(
+          {
+            req: {
+              id: 'req-file-1',
+              method: 'POST',
+              url: '/v1/contact?email=ana.perez@example.test',
+            },
+            error: safeErrorLog(new Error('Nombre Personal En Error')),
+          },
+          'prueba archivo',
+        );
+      } finally {
+        await app.close();
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        const stream = options.stream as Writable | undefined;
+        if (stream === undefined) {
+          resolve();
+          return;
+        }
+        stream.once('error', reject);
+        stream.end(() => resolve());
+      });
+
+      const logFile = resolveDailyLogFilePath(tmpDir);
+      expect(existsSync(logFile)).toBe(true);
+      const output = readFileSync(logFile, 'utf8');
+      expect(output).toContain('prueba archivo');
+      expect(output).toContain('/v1/contact');
+      expect(output).not.toContain('ana.perez@example.test');
+      expect(output).not.toContain('Nombre Personal En Error');
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('resolveDailyLogFilePath usa fecha UTC', () => {
+    const path = resolveDailyLogFilePath('Logs', new Date(Date.UTC(2026, 6, 28)));
+    expect(path.replaceAll('\\', '/')).toBe('Logs/content-api-2026-07-28.log');
   });
 
   it('la salida real no contiene headers, IP, query ni datos de un error', async () => {
