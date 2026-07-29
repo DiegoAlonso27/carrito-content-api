@@ -16,6 +16,7 @@ import { editorialExportRoutes } from './modules/export/editorial-export.routes.
 import { contentRoutes } from './modules/content/content.routes.js';
 import { contactRoutes } from './modules/contact/contact.routes.js';
 import { complaintsRoutes } from './modules/complaints/complaints.routes.js';
+import { internalEditorRoutes } from './modules/internal-editor/internal-editor.routes.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -93,6 +94,24 @@ export function buildApp(config: AppConfig): FastifyInstance {
   // disponible» sin tocar Mongo (ADR-007). La activación exige cerrar el
   // gate legal P1–P18 y es decisión explícita del usuario, no un despliegue.
   app.register(complaintsRoutes);
+
+  // Editor editorial interno: apagado por defecto. Con el flag en false NO se
+  // registra ninguna ruta —`/internal/*` cae en el notFound estándar—, así que
+  // el 404 no revela que exista. Encendido, su única barrera es la allowlist de
+  // IP del guard: no hay autenticación de usuario, por eso el arranque en
+  // producción lo advierte igual que con las docs.
+  if (config.INTERNAL_EDITOR_ENABLED) {
+    if (config.NODE_ENV === 'production') {
+      app.log.warn(
+        { editorPrefix: '/internal' },
+        'INTERNAL_EDITOR_ENABLED=true en producción: el editor publica contenido ' +
+          'sin autenticación de usuario, protegido solo por la allowlist de IP ' +
+          '(INTERNAL_EDITOR_ALLOWED_IPS); restringir además el acceso en la capa ' +
+          'HTTP (IIS/ARR) si no es intencional',
+      );
+    }
+    app.register(internalEditorRoutes);
+  }
 
   return app;
 }

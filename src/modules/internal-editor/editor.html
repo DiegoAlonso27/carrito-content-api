@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Editor interno de contenido</title>
+    <!--
+      Página de una sola pieza: el CSS y el JS viajan embebidos y se autorizan
+      con el nonce que la ruta inyecta por respuesta (el literal __CSP_NONCE__
+      se sustituye en cada GET). Sin el atributo nonce, la CSP los bloquea, y
+      por lo mismo no puede haber atributos de evento inline (onclick=…): todos
+      los manejadores se registran con addEventListener.
+    -->
+    <style nonce="__CSP_NONCE__">
+      :root {
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 1rem 1.25rem 3rem;
+        font:
+          14px/1.45 system-ui,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
+        color: #1b1f23;
+        background: #fff;
+      }
+      h1 {
+        font-size: 1.2rem;
+        margin: 0 0 0.35rem;
+      }
+      p {
+        margin: 0;
+      }
+      .mono,
+      code {
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+      .warn {
+        margin: 0 0 0.9rem;
+        padding: 0.55rem 0.7rem;
+        border: 1px solid #d4a72c;
+        background: #fff8c5;
+        border-radius: 4px;
+      }
+      .warn b {
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .tabs {
+        display: flex;
+        gap: 0.25rem;
+        border-bottom: 2px solid #d0d7de;
+        margin-bottom: 0.7rem;
+      }
+      .tabs button {
+        border: 1px solid #d0d7de;
+        border-bottom: none;
+        background: #f6f8fa;
+        border-radius: 4px 4px 0 0;
+        margin-bottom: -2px;
+      }
+      .tabs button[aria-current='true'] {
+        background: #fff;
+        font-weight: 600;
+        border-color: #0969da #0969da #fff;
+        border-bottom: 2px solid #fff;
+      }
+      button {
+        font: inherit;
+        padding: 0.3rem 0.75rem;
+        border: 1px solid #d0d7de;
+        background: #f6f8fa;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover:enabled {
+        background: #eaeef2;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      #save {
+        background: #1f883d;
+        border-color: #1a7f37;
+        color: #fff;
+        font-weight: 600;
+      }
+      #save:hover:enabled {
+        background: #1a7f37;
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        margin-bottom: 0.4rem;
+      }
+      .toolbar input[type='search'] {
+        flex: 1 1 16rem;
+        min-width: 10rem;
+        padding: 0.3rem 0.45rem;
+        font: inherit;
+        border: 1px solid #d0d7de;
+        border-radius: 4px;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+        color: #57606a;
+        font-size: 12.5px;
+      }
+      .msg {
+        margin: 0.5rem 0;
+        padding: 0.55rem 0.7rem;
+        border: 1px solid;
+        border-radius: 4px;
+      }
+      .msg.info {
+        border-color: #54aeff;
+        background: #ddf4ff;
+      }
+      .msg.ok {
+        border-color: #4ac26b;
+        background: #dafbe1;
+      }
+      .msg.error {
+        border-color: #ff8182;
+        background: #ffebe9;
+      }
+      .msg ul {
+        margin: 0.35rem 0 0;
+        padding-left: 1.2rem;
+      }
+      .msg li {
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 12.5px;
+      }
+      .msg button {
+        margin-top: 0.5rem;
+      }
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid #d0d7de;
+        border-radius: 4px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th,
+      td {
+        border-bottom: 1px solid #d8dee4;
+        padding: 0.3rem 0.4rem;
+        text-align: left;
+        vertical-align: top;
+      }
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: #f6f8fa;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #57606a;
+        white-space: nowrap;
+      }
+      tbody tr:nth-child(even) {
+        background: #fafbfc;
+      }
+      tbody tr.is-dirty {
+        background: #fff8c5;
+      }
+      tbody tr.is-new {
+        background: #dafbe1;
+      }
+      td.col-key {
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+      }
+      .col-key {
+        min-width: 8rem;
+        max-width: 16rem;
+      }
+      .col-text {
+        min-width: 11rem;
+      }
+      .col-textarea {
+        min-width: 20rem;
+      }
+      .col-checkbox,
+      .col-number,
+      .col-status,
+      .col-actions {
+        width: 1%;
+        white-space: nowrap;
+      }
+      input[type='text'],
+      textarea {
+        width: 100%;
+        font: inherit;
+        padding: 0.2rem 0.3rem;
+        border: 1px solid #d0d7de;
+        border-radius: 3px;
+        background: #fff;
+      }
+      textarea {
+        min-height: 3.1rem;
+        resize: vertical;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 12.5px;
+      }
+      input.num {
+        width: 4.5rem;
+        font: inherit;
+        padding: 0.2rem 0.3rem;
+        border: 1px solid #d0d7de;
+        border-radius: 3px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.05rem 0.4rem;
+        border: 1px solid;
+        border-radius: 999px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .badge.published {
+        border-color: #1a7f37;
+        background: #dafbe1;
+        color: #1a7f37;
+      }
+      .badge.draft {
+        border-color: #9a6700;
+        background: #fff8c5;
+        color: #9a6700;
+      }
+      .badge.new {
+        border-color: #0969da;
+        background: #ddf4ff;
+        color: #0969da;
+      }
+      .hint {
+        display: block;
+        max-width: 9rem;
+        margin-top: 0.15rem;
+        font-size: 11px;
+        color: #9a6700;
+        white-space: normal;
+      }
+      .empty {
+        padding: 1rem;
+        color: #57606a;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Editor interno de contenido</h1>
+    <p class="warn">
+      <b>Guardar publica de inmediato.</b> Todo registro enviado queda publicado y visible para el
+      sitio; un registro en <code>draft</code> que edites pasará a <code>published</code> al
+      guardar. Este editor <b>no tiene autenticación de usuario</b>: su única barrera es la
+      allowlist de IP. Uso interno.
+    </p>
+
+    <nav class="tabs" id="tabs" aria-label="Secciones"></nav>
+
+    <div class="toolbar">
+      <input
+        type="search"
+        id="filter"
+        placeholder="Filtrar por clave o contenido (en cliente, sobre lo ya cargado)…"
+        aria-label="Filtro"
+      />
+      <button type="button" id="new">Nuevo registro</button>
+      <button type="button" id="reload">Recargar</button>
+      <button type="button" id="save">Guardar y publicar</button>
+    </div>
+
+    <div class="meta">
+      <span id="version">contentVersion: —</span>
+      <span id="counts">—</span>
+    </div>
+
+    <div id="message" role="status" aria-live="polite"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <script nonce="__CSP_NONCE__">
+      (function () {
+        'use strict';
+
+        // ─── Núcleo puro: sin DOM ni red, para poder probarlo fuera del navegador ───
+        // Todo lo de este bloque es función pura sobre el modelo de filas. Se
+        // mantiene aislado a propósito: la lógica que decide QUÉ se publica no
+        // debería necesitar un navegador para verificarse.
+
+        const SECTIONS = {
+          texts: {
+            label: 'Texts',
+            path: '/internal/api/texts',
+            keyFields: ['localeCode', 'key'],
+            fields: [
+              { name: 'value', control: 'textarea' },
+              { name: 'isActive', control: 'checkbox' },
+              { name: 'sortOrder', control: 'number' },
+            ],
+            defaults: { localeCode: '', key: '', value: '', isActive: true, sortOrder: 0 },
+          },
+          pages: {
+            label: 'Pages',
+            path: '/internal/api/pages',
+            keyFields: ['localeCode', 'slug'],
+            fields: [
+              { name: 'title', control: 'text' },
+              { name: 'route', control: 'text' },
+              { name: 'metaTitle', control: 'text', nullable: true },
+              { name: 'metaDescription', control: 'textarea', nullable: true },
+              { name: 'ogImageSlug', control: 'text', nullable: true },
+              { name: 'isActive', control: 'checkbox' },
+              { name: 'sortOrder', control: 'number' },
+            ],
+            defaults: {
+              localeCode: '',
+              slug: '',
+              route: '',
+              title: '',
+              metaTitle: null,
+              metaDescription: null,
+              ogImageSlug: null,
+              isActive: true,
+              sortOrder: 0,
+            },
+          },
+          settings: {
+            label: 'Settings',
+            path: '/internal/api/settings',
+            keyFields: ['key'],
+            fields: [
+              { name: 'value', control: 'textarea' },
+              { name: 'valueType', control: 'text' },
+              { name: 'description', control: 'text' },
+              { name: 'isActive', control: 'checkbox' },
+              { name: 'sortOrder', control: 'number' },
+            ],
+            defaults: {
+              key: '',
+              value: '',
+              valueType: 'string',
+              description: '',
+              isActive: true,
+              sortOrder: 0,
+            },
+          },
+        };
+
+        /** Campos que viajan en el PUT: clave natural + editables. Nunca `status`. */
+        function sectionFieldNames(spec) {
+          return spec.keyFields.concat(spec.fields.map((field) => field.name));
+        }
+
+        /** Clave natural con el mismo formato `a/b` que usan el backend y los CLI. */
+        function naturalKey(record, keyFields) {
+          return keyFields.map((field) => String(record[field])).join('/');
+        }
+
+        /**
+         * Campos nullable de `pages` (metaTitle, metaDescription, ogImageSlug):
+         * el backend distingue `null` de `''` y la distinción importa, porque un
+         * consumidor resuelve `metaTitle ?? porDefecto` y una cadena vacía NO
+         * dispara ese fallback. Un `<input>` no puede representar las dos cosas
+         * (ambas se ven vacías), así que una caja vacía conserva la forma de
+         * partida: si el registro llegó con `null` se reenvía `null`, y si llegó
+         * con `''` se reenvía `''`. Nunca se convierte una en la otra.
+         */
+        function normalizeNullable(rawValue, baseline) {
+          if (rawValue !== '') return rawValue;
+          return baseline === null ? null : '';
+        }
+
+        /**
+         * Fila del modelo. `original` es la instantánea contra la que se compara
+         * para decidir si la fila está sucia; en las filas nuevas son los valores
+         * por defecto (y sirven además de baseline de los nullables).
+         */
+        function makeRow(spec, record, isNew) {
+          const original = {};
+          for (const name of sectionFieldNames(spec)) original[name] = record[name];
+          return {
+            isNew: isNew,
+            // `status` es de solo lectura: se muestra, no se edita ni se reenvía.
+            status: typeof record.status === 'string' ? record.status : null,
+            original: original,
+            current: Object.assign({}, original),
+          };
+        }
+
+        function makeNewRow(spec) {
+          return makeRow(spec, spec.defaults, true);
+        }
+
+        function isRowDirty(row, spec) {
+          if (row.isNew) return true;
+          // Object.is y no ==: distingue null de '' (ver normalizeNullable) y
+          // 0 de '0' si un control devolviera texto donde se espera número.
+          return sectionFieldNames(spec).some(
+            (name) => !Object.is(row.original[name], row.current[name]),
+          );
+        }
+
+        function toPayloadRecord(row, spec) {
+          const record = {};
+          for (const name of sectionFieldNames(spec)) record[name] = row.current[name];
+          return record;
+        }
+
+        /**
+         * CRÍTICO: solo los registros modificados (más los creados en la sesión).
+         * El PUT publica TODO lo que recibe, así que enviar la sección completa
+         * publicaría cualquier borrador que el operador no tocó —contenido que
+         * quizá está a medias— sin que nadie lo decidiera. El filtro por diferencia
+         * campo a campo es lo que mantiene «guardar» acotado a lo que se editó.
+         */
+        function collectDirtyRecords(rows, spec) {
+          return rows
+            .filter((row) => isRowDirty(row, spec))
+            .map((row) => toPayloadRecord(row, spec));
+        }
+
+        /** Texto sobre el que filtra la caja de búsqueda: clave natural + campos string. */
+        function rowSearchText(row, spec) {
+          const parts = [naturalKey(row.current, spec.keyFields)];
+          for (const name of sectionFieldNames(spec)) {
+            const value = row.current[name];
+            if (typeof value === 'string') parts.push(value);
+          }
+          return parts.join('\n').toLowerCase();
+        }
+
+        function rowMatchesFilter(row, spec, query) {
+          if (query === '') return true;
+          // Las filas nuevas no se ocultan nunca: aún no tienen contenido que
+          // buscar y esconderlas haría creer que se perdieron.
+          if (row.isNew) return true;
+          return rowSearchText(row, spec).includes(query.toLowerCase());
+        }
+
+        function summarizeResults(results) {
+          const counts = { created: 0, updated: 0, unchanged: 0 };
+          for (const result of results) {
+            if (Object.hasOwn(counts, result.action)) counts[result.action] += 1;
+          }
+          return counts;
+        }
+
+        // ─── Fin del núcleo puro ───
+
+        const state = {
+          name: 'texts',
+          spec: SECTIONS.texts,
+          contentVersion: null,
+          rows: [],
+          filter: '',
+        };
+
+        let lastLoadFailure = '';
+
+        const el = {
+          tabs: document.getElementById('tabs'),
+          filter: document.getElementById('filter'),
+          newBtn: document.getElementById('new'),
+          reloadBtn: document.getElementById('reload'),
+          saveBtn: document.getElementById('save'),
+          version: document.getElementById('version'),
+          counts: document.getElementById('counts'),
+          message: document.getElementById('message'),
+          thead: document.getElementById('thead'),
+          tbody: document.getElementById('tbody'),
+        };
+
+        // ─── Mensajes ───────────────────────────────────────────────────────────
+
+        function showMessage(kind, text, details, actions) {
+          const box = document.createElement('div');
+          box.className = 'msg ' + kind;
+          const line = document.createElement('p');
+          // textContent y no innerHTML: `text` puede arrastrar mensajes del
+          // servidor y el contenido editorial es texto arbitrario (puede traer
+          // HTML). Pintarlo como marcado sería XSS almacenado.
+          line.textContent = text;
+          box.appendChild(line);
+          if (Array.isArray(details) && details.length > 0) {
+            const list = document.createElement('ul');
+            for (const detail of details) {
+              const item = document.createElement('li');
+              item.textContent = String(detail);
+              list.appendChild(item);
+            }
+            box.appendChild(list);
+          }
+          for (const action of actions ?? []) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = action.label;
+            button.addEventListener('click', action.run);
+            box.appendChild(button);
+          }
+          el.message.replaceChildren(box);
+        }
+
+        function describeError(status, body) {
+          const error = body && typeof body === 'object' ? body.error : null;
+          if (!error || typeof error !== 'object') {
+            return { text: 'Error HTTP ' + status + '.', details: [] };
+          }
+          let text = String(error.message ?? 'Error HTTP ' + status);
+          text += ' [' + String(error.code ?? status);
+          if (error.requestId) text += ' · requestId ' + String(error.requestId);
+          text += ']';
+          const records = error.details?.records;
+          return { text: text, details: Array.isArray(records) ? records : [] };
+        }
+
+        function showHttpError(status, body) {
+          const described = describeError(status, body);
+          showMessage('error', described.text, described.details);
+        }
+
+        // ─── Render ─────────────────────────────────────────────────────────────
+
+        function renderTabs() {
+          const buttons = [];
+          for (const name of Object.keys(SECTIONS)) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = SECTIONS[name].label;
+            button.setAttribute('aria-current', name === state.name ? 'true' : 'false');
+            button.addEventListener('click', () => {
+              if (name !== state.name) requestSection(name);
+            });
+            buttons.push(button);
+          }
+          el.tabs.replaceChildren(...buttons);
+        }
+
+        function renderMeta() {
+          el.version.textContent =
+            'contentVersion: ' + (state.contentVersion === null ? '—' : state.contentVersion);
+          refreshCounts();
+        }
+
+        function refreshCounts() {
+          const dirty = state.rows.filter((row) => isRowDirty(row, state.spec)).length;
+          el.counts.textContent =
+            state.rows.length + ' registros · ' + dirty + ' se publicarán al guardar';
+          el.saveBtn.textContent =
+            dirty > 0 ? 'Guardar y publicar (' + dirty + ')' : 'Guardar y publicar';
+        }
+
+        function makeCell(className) {
+          const cell = document.createElement('td');
+          cell.className = className;
+          return cell;
+        }
+
+        function makeHeaderCell(label, className) {
+          const cell = document.createElement('th');
+          cell.scope = 'col';
+          cell.className = className;
+          cell.textContent = label;
+          return cell;
+        }
+
+        function makeControl(row, field) {
+          const name = field.name;
+          if (field.control === 'checkbox') {
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.checked = row.current[name] === true;
+            input.addEventListener('change', () => {
+              row.current[name] = input.checked;
+              refreshRow(row);
+            });
+            return input;
+          }
+          if (field.control === 'number') {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = '1';
+            input.className = 'num';
+            input.value = String(row.current[name]);
+            input.addEventListener('input', () => {
+              const parsed = Number.parseInt(input.value, 10);
+              // Caja vacía o no entera: se conserva el valor de partida en vez de
+              // inventar un 0 que el operador nunca escribió (y que se publicaría).
+              row.current[name] = Number.isInteger(parsed) ? parsed : row.original[name];
+              refreshRow(row);
+            });
+            // Al salir del campo se reescribe la caja con el valor del modelo: si
+            // quedó vacía o con algo no entero, mostrarla así haría creer al
+            // operador que guardará eso, cuando lo que se publica es el original.
+            // Va en `blur` y no en `input` para no pelearse con quien está
+            // borrando para reescribir.
+            input.addEventListener('blur', () => {
+              input.value = String(row.current[name]);
+            });
+            return input;
+          }
+          const input =
+            field.control === 'textarea'
+              ? document.createElement('textarea')
+              : document.createElement('input');
+          if (field.control !== 'textarea') input.type = 'text';
+          // `.value` y nunca innerHTML/textContent como marcado: el valor es texto
+          // editorial arbitrario. Un `null` se muestra vacío (ver normalizeNullable).
+          input.value = row.current[name] === null ? '' : String(row.current[name]);
+          input.addEventListener('input', () => {
+            row.current[name] = field.nullable
+              ? normalizeNullable(input.value, row.original[name])
+              : input.value;
+            refreshRow(row);
+          });
+          return input;
+        }
+
+        function renderRow(row) {
+          const spec = state.spec;
+          const tr = document.createElement('tr');
+          row.el = tr;
+
+          for (const name of spec.keyFields) {
+            const cell = makeCell('col-key');
+            if (row.isNew) {
+              // La clave natural solo es editable mientras el registro no exista:
+              // en uno ya guardado, cambiarla no renombraría nada, crearía otro
+              // documento y dejaría el original publicado y huérfano.
+              cell.appendChild(makeControl(row, { name: name, control: 'text' }));
+            } else {
+              cell.textContent = String(row.current[name]);
+            }
+            tr.appendChild(cell);
+          }
+
+          for (const field of spec.fields) {
+            const cell = makeCell('col-' + field.control);
+            cell.appendChild(makeControl(row, field));
+            tr.appendChild(cell);
+          }
+
+          const statusCell = makeCell('col-status');
+          const badge = document.createElement('span');
+          if (row.isNew) {
+            badge.className = 'badge new';
+            badge.textContent = 'nuevo';
+          } else {
+            badge.className = 'badge ' + (row.status === 'published' ? 'published' : 'draft');
+            badge.textContent = row.status ?? '—';
+          }
+          statusCell.appendChild(badge);
+          row.hintEl = document.createElement('span');
+          row.hintEl.className = 'hint';
+          statusCell.appendChild(row.hintEl);
+          tr.appendChild(statusCell);
+
+          const actionsCell = makeCell('col-actions');
+          const action = document.createElement('button');
+          action.type = 'button';
+          if (row.isNew) {
+            action.textContent = 'quitar';
+            action.addEventListener('click', () => {
+              state.rows.splice(state.rows.indexOf(row), 1);
+              renderTable();
+              refreshCounts();
+            });
+          } else {
+            action.textContent = 'revertir';
+            row.revertEl = action;
+            action.addEventListener('click', () => {
+              row.current = Object.assign({}, row.original);
+              renderTable();
+            });
+          }
+          actionsCell.appendChild(action);
+          tr.appendChild(actionsCell);
+
+          refreshRow(row);
+          return tr;
+        }
+
+        /**
+         * Actualiza solo los adornos de la fila (clase, aviso, contadores). No
+         * re-renderiza: reconstruir el `<tr>` en cada pulsación robaría el foco
+         * del textarea que se está escribiendo.
+         */
+        function refreshRow(row) {
+          const dirty = isRowDirty(row, state.spec);
+          row.el.classList.toggle('is-new', row.isNew);
+          row.el.classList.toggle('is-dirty', dirty && !row.isNew);
+          row.hintEl.textContent =
+            dirty && row.status === 'draft' ? 'al guardar pasará a published' : '';
+          if (row.revertEl) row.revertEl.disabled = !dirty;
+          refreshCounts();
+        }
+
+        function renderTable() {
+          const spec = state.spec;
+          const header = document.createElement('tr');
+          for (const name of spec.keyFields) header.appendChild(makeHeaderCell(name, 'col-key'));
+          for (const field of spec.fields) {
+            header.appendChild(makeHeaderCell(field.name, 'col-' + field.control));
+          }
+          header.appendChild(makeHeaderCell('status', 'col-status'));
+          header.appendChild(makeHeaderCell('', 'col-actions'));
+          el.thead.replaceChildren(header);
+
+          const visible = state.rows.filter((row) => rowMatchesFilter(row, spec, state.filter));
+          if (visible.length === 0) {
+            const tr = document.createElement('tr');
+            const cell = makeCell('empty');
+            cell.colSpan = spec.keyFields.length + spec.fields.length + 2;
+            cell.textContent =
+              state.rows.length === 0
+                ? 'Sin registros cargados.'
+                : 'Ningún registro coincide con el filtro.';
+            tr.appendChild(cell);
+            el.tbody.replaceChildren(tr);
+            return;
+          }
+          el.tbody.replaceChildren(...visible.map((row) => renderRow(row)));
+        }
+
+        // ─── Red ────────────────────────────────────────────────────────────────
+
+        async function readJson(res) {
+          try {
+            return await res.json();
+          } catch {
+            return null;
+          }
+        }
+
+        function setBusy(busy) {
+          el.saveBtn.disabled = busy;
+          el.reloadBtn.disabled = busy;
+          el.newBtn.disabled = busy;
+          for (const button of el.tabs.children) button.disabled = busy;
+        }
+
+        /** Carga la sección desde el servidor y descarta el estado local. */
+        async function loadSection(name) {
+          const spec = SECTIONS[name];
+          state.name = name;
+          state.spec = spec;
+          renderTabs();
+          setBusy(true);
+          try {
+            // URL relativa (mismo origen): la CSP solo autoriza `connect-src 'self'`.
+            // `no-store` porque la sección cambia con cada publicación.
+            const res = await fetch(spec.path, {
+              method: 'GET',
+              headers: { accept: 'application/json' },
+              cache: 'no-store',
+            });
+            const body = await readJson(res);
+            if (!res.ok) {
+              state.rows = [];
+              state.contentVersion = null;
+              renderMeta();
+              renderTable();
+              showHttpError(res.status, body);
+              lastLoadFailure = describeError(res.status, body).text;
+              return false;
+            }
+            state.contentVersion = body.contentVersion;
+            state.rows = body.records.map((record) => makeRow(spec, record, false));
+            renderMeta();
+            renderTable();
+            return true;
+          } catch (err) {
+            state.rows = [];
+            renderTable();
+            lastLoadFailure = 'No se pudo contactar con la API: ' + err.message;
+            showMessage('error', lastLoadFailure);
+            return false;
+          } finally {
+            setBusy(false);
+          }
+        }
+
+        function pendingChanges() {
+          return state.rows.some((row) => isRowDirty(row, state.spec));
+        }
+
+        /** Cambio de sección o recarga manual: avisa antes de tirar cambios locales. */
+        async function requestSection(name) {
+          if (
+            pendingChanges() &&
+            !window.confirm('Hay cambios sin guardar en esta sección. Se perderán. ¿Continuar?')
+          ) {
+            return;
+          }
+          const ok = await loadSection(name);
+          if (ok) showMessage('info', 'Sección ' + name + ' cargada desde el servidor.');
+        }
+
+        async function save() {
+          const spec = state.spec;
+          if (state.contentVersion === null) {
+            showMessage('error', 'Carga la sección antes de guardar.');
+            return;
+          }
+          const records = collectDirtyRecords(state.rows, spec);
+          if (records.length === 0) {
+            showMessage('info', 'Sin cambios: no se envió nada al servidor.');
+            return;
+          }
+          const confirmed = window.confirm(
+            'Se PUBLICARÁN ' +
+              records.length +
+              ' registro(s) de ' +
+              state.name +
+              ' de forma inmediata. ¿Continuar?',
+          );
+          if (!confirmed) return;
+
+          setBusy(true);
+          try {
+            const res = await fetch(spec.path, {
+              method: 'PUT',
+              headers: { 'content-type': 'application/json', accept: 'application/json' },
+              cache: 'no-store',
+              body: JSON.stringify({
+                // Concurrencia optimista: el contentVersion del último GET de ESTA
+                // sección. Si otro cliente publicó entretanto, el servidor responde 409.
+                expectedContentVersion: state.contentVersion,
+                records: records,
+              }),
+            });
+            const body = await readJson(res);
+
+            if (res.status === 409) {
+              showMessage(
+                'error',
+                describeError(409, body).text,
+                [],
+                [
+                  {
+                    label: 'Recargar sección (se pierden los cambios locales)',
+                    run: () => {
+                      void loadSection(state.name).then((ok) => {
+                        if (ok)
+                          showMessage('info', 'Sección recargada. Vuelve a aplicar tus cambios.');
+                      });
+                    },
+                  },
+                ],
+              );
+              return;
+            }
+            if (!res.ok) {
+              showHttpError(res.status, body);
+              return;
+            }
+
+            // `contentVersion: null` = ninguna escritura efectiva (todo unchanged):
+            // se conserva el anterior, que sigue siendo el válido.
+            if (typeof body.contentVersion === 'number') state.contentVersion = body.contentVersion;
+            const counts = summarizeResults(body.results ?? []);
+            const summary =
+              'Publicado: ' +
+              counts.created +
+              ' creados, ' +
+              counts.updated +
+              ' actualizados, ' +
+              counts.unchanged +
+              ' sin cambios.';
+            // Recarga obligatoria: tras publicar, el estado real (status, orden,
+            // valores saneados por el servidor) puede no ser el que quedó en pantalla.
+            const reloaded = await loadSection(state.name);
+            if (reloaded) showMessage('ok', summary);
+            else showMessage('error', summary + ' Pero la recarga falló: ' + lastLoadFailure);
+          } catch (err) {
+            showMessage('error', 'No se pudo guardar: ' + err.message);
+          } finally {
+            setBusy(false);
+          }
+        }
+
+        // ─── Eventos ────────────────────────────────────────────────────────────
+
+        el.filter.addEventListener('input', () => {
+          state.filter = el.filter.value.trim();
+          renderTable();
+        });
+
+        el.newBtn.addEventListener('click', () => {
+          const row = makeNewRow(state.spec);
+          state.rows.unshift(row);
+          renderTable();
+          const firstInput = row.el?.querySelector('input');
+          if (firstInput) firstInput.focus();
+        });
+
+        el.reloadBtn.addEventListener('click', () => {
+          void requestSection(state.name);
+        });
+
+        el.saveBtn.addEventListener('click', () => {
+          void save();
+        });
+
+        window.addEventListener('beforeunload', (event) => {
+          if (pendingChanges()) event.preventDefault();
+        });
+
+        renderTabs();
+        renderTable();
+        void loadSection(state.name);
+      })();
+    </script>
+  </body>
+</html>

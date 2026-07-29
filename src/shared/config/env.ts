@@ -175,6 +175,21 @@ const schema = Type.Object({
   COMPLAINTS_SMTP_USER: Type.String({ default: '' }),
   COMPLAINTS_SMTP_PASSWORD: Type.String({ default: '' }),
   COMPLAINTS_SMTP_FROM: Type.String({ default: '' }),
+  /**
+   * Editor editorial interno (`/internal/edit`). Apagado por defecto: con
+   * `false` no se registra ninguna ruta.
+   *
+   * No tiene autenticación de usuario: su única barrera es este flag más la
+   * allowlist de IP (`INTERNAL_EDITOR_ALLOWED_IPS`), así que nunca debe
+   * encenderse en un entorno público.
+   */
+  INTERNAL_EDITOR_ENABLED: Type.Boolean({ default: false }),
+  /**
+   * Allowlist de IPs que pueden usar el editor interno, separada por coma.
+   * Vacío (default) = solo loopback, deliberadamente restrictivo (mismo
+   * patrón que `DOCS_ALLOWED_IPS`).
+   */
+  INTERNAL_EDITOR_ALLOWED_IPS: Type.String({ default: '' }),
 });
 
 type EnvironmentConfig = Static<typeof schema>;
@@ -189,6 +204,8 @@ export type AppConfig = EnvironmentConfig & {
   DOCS_UI_ENABLED: boolean;
   /** Allowlist de `/docs` ya normalizada; vacía = solo loopback. */
   DOCS_ALLOWED_IPS_LIST: readonly string[];
+  /** Allowlist del editor interno ya normalizada; vacía = solo loopback. */
+  INTERNAL_EDITOR_ALLOWED_IPS_LIST: readonly string[];
 };
 
 /**
@@ -224,10 +241,17 @@ export function loadConfig(overrides?: Record<string, string>): AppConfig {
     ...config,
     CORS_ORIGINS_LIST: corsOrigins,
     DOCS_UI_ENABLED: resolveDocsEnabled(config),
-    DOCS_ALLOWED_IPS_LIST: config.DOCS_ALLOWED_IPS.split(',')
-      .map((ip) => ip.trim())
-      .filter((ip) => ip.length > 0),
+    DOCS_ALLOWED_IPS_LIST: parseIpList(config.DOCS_ALLOWED_IPS),
+    INTERNAL_EDITOR_ALLOWED_IPS_LIST: parseIpList(config.INTERNAL_EDITOR_ALLOWED_IPS),
   };
+}
+
+/** Normaliza una allowlist de IPs separadas por coma (usado por `/docs` y el editor interno). */
+function parseIpList(raw: string): readonly string[] {
+  return raw
+    .split(',')
+    .map((ip) => ip.trim())
+    .filter((ip) => ip.length > 0);
 }
 
 /** `auto` = solo development; los valores explícitos mandan sobre NODE_ENV. */

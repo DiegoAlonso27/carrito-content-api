@@ -91,6 +91,22 @@ export class ContentWriteError extends Error {
   }
 }
 
+/**
+ * Escritura rechazada por la TOPOLOGÍA del despliegue (Mongo standalone, sin
+ * transacciones — ADR-001), no por la entrada del llamante.
+ *
+ * Sigue siendo un `ContentWriteError` para que los CLI la sigan tratando igual,
+ * pero se distingue con `instanceof` porque su mensaje describe infraestructura:
+ * quien la exponga por HTTP debe traducirla a un 5xx genérico en vez de filtrar
+ * ese detalle en la envolvente de error (AGENTS.md).
+ */
+export class ContentTopologyWriteError extends ContentWriteError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ContentTopologyWriteError';
+  }
+}
+
 export interface SetResult {
   key: string;
   action: 'created' | 'updated' | 'unchanged';
@@ -334,10 +350,15 @@ export async function setRecords(
   db: Db,
   section: SectionName,
   records: unknown[],
-  opts: { publish?: boolean } = {},
+  opts: { publish?: boolean; ensureSetup?: boolean } = {},
 ): Promise<{ results: SetResult[]; contentVersion: number | null }> {
   const repo = new ContentRepo(db);
-  await repo.ensureSetup();
+  // El DDL idempotente pertenece a los CLI y a la migración, que corren con la
+  // cuenta privilegiada. Una superficie HTTP pasa `ensureSetup: false`: exigir
+  // DDL al usuario Mongo del runtime lo dejaría con permisos que sobreviven al
+  // flag que la habilitó, y un `collMod` por guardado tomaría lock exclusivo
+  // sobre las mismas colecciones que sirven la lectura pública.
+  if (opts.ensureSetup !== false) await repo.ensureSetup();
   const spec = sections[section];
 
   const allErrors: string[] = [];
@@ -493,7 +514,7 @@ export async function setRecords(
     return { results: result, contentVersion };
   } catch (err) {
     if (err instanceof ContentTopologyError) {
-      throw new ContentWriteError(err.message);
+      throw new ContentTopologyWriteError(err.message);
     }
     throw err;
   }
@@ -548,7 +569,7 @@ export async function setStatus(
     return { result, contentVersion };
   } catch (err) {
     if (err instanceof ContentTopologyError) {
-      throw new ContentWriteError(err.message);
+      throw new ContentTopologyWriteError(err.message);
     }
     throw err;
   }

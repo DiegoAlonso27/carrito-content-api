@@ -79,6 +79,94 @@ verificable desde este repositorio. «Try it out» de la UI queda deshabilitado
 fuera de `development`, porque ejecuta llamadas reales y `POST /v1/contact`
 persiste datos personales. Ver ADR-009.
 
+### Editor editorial interno
+
+Superficie análoga a `/docs` en el modelo de exposición (flag + allowlist de
+IP), pero de escritura: `GET /internal/edit` sirve una página HTML de una sola
+pieza, y `GET`/`PUT` sobre `/internal/api/texts`, `/internal/api/pages` y
+`/internal/api/settings` leen y guardan esas tres secciones. No es un CMS: no
+tiene login ni sesiones de usuario, no gestiona `items`, `assets`,
+`collections` ni `locales` —eso sigue siendo territorio exclusivo de los CLI
+de `scripts/content/`, que tocan la topología del contenido (referencias,
+esquemas por colección)— y no aparece en `/docs`: sus rutas se declaran
+`hide: true` a propósito, por lo que este runbook es su única documentación.
+
+Encenderlo:
+
+```
+INTERNAL_EDITOR_ENABLED=true
+```
+
+en el archivo de entorno, y abrir `http://127.0.0.1:3000/internal/edit` desde
+la propia máquina donde corre el proceso. Con el flag en `false` (default) no
+se registra ninguna ruta: `/internal/edit` cae en el notFound estándar y
+responde `404`, igual que cualquier ruta inexistente.
+
+**Allowlist e IP de origen.** `INTERNAL_EDITOR_ALLOWED_IPS` vacío (default) es
+modo loopback: exige socket loopback real y **rechaza de plano** cualquier
+petición que traiga `X-Forwarded-For`, aunque el socket sea `127.0.0.1`. La
+razón es la misma que sostiene el resto del proceso: `trustProxy: '127.0.0.1'`
+hace que, detrás de un proxy en la misma máquina, `req.ip` se calcule a partir
+de esa cabecera; si el proxy la reenvía sin anexarla correctamente, cualquier
+cliente externo podría presentarse como `127.0.0.1`. En `/docs` ese fallo solo
+dejaría leer documentación; aquí dejaría escribir en `carrito_content`. Por
+eso el flujo previsto es abrir el editor **desde la propia máquina del
+servidor**, o por un túnel SSH hasta ella —nunca a través de IIS/ARR. Si hace
+falta acceso a través del proxy, hay que declarar la IP explícitamente en
+`INTERNAL_EDITOR_ALLOWED_IPS` (loopback deja de estar implícitamente permitido
+en cuanto la allowlist deja de estar vacía); a partir de ahí la seguridad
+depende por completo de que el proxy anexe `X-Forwarded-For` correctamente, y
+este repositorio no puede verificarlo. Una IP fuera de la allowlist recibe
+`403`, no `404`: a diferencia de `/docs`, encender el editor ya fue una
+decisión explícita, así que no hay nada que ocultarle a un cliente rechazado.
+
+**Advertencia de producción.** Guardar en el editor publica de inmediato
+(`setRecords(..., { publish: true })`) y sube `contentVersion`, lo que
+invalida el ETag del contenido público y el del export que `carrito-front`
+consume en build. Encenderlo en un entorno públicamente alcanzable es publicar
+contenido editorial sin autenticación de usuario, protegido solo por la
+allowlist de IP. El arranque lo advierte en el log cuando
+`INTERNAL_EDITOR_ENABLED=true` y `NODE_ENV=production`.
+
+**Permisos de MongoDB.** El editor no abre una conexión propia: escribe con la
+misma conexión `MONGO_URI` que usa el resto del proceso en ejecución. Esto es
+distinto de los CLI de `scripts/content/`, que se invocan bajo demanda y
+pueden apuntar a un archivo de entorno con la cuenta de «Operador editorial»
+solo mientras dura la operación (§3). Encender el editor exige que la cuenta
+de `MONGO_URI` del proceso tenga permisos de **lectura y escritura** sobre las
+colecciones editoriales de `carrito_content` de forma continua —ya no basta la
+cuenta de solo lectura de «Runtime de contenido»—, pero **no** de DDL: el
+camino HTTP llama a `setRecords` con `ensureSetup: false` a propósito, para no
+requerir privilegios de esquema sobre la cuenta que queda expuesta por más
+tiempo que una invocación de CLI.
+
+**Topología.** Igual que `content:set`/`content:publish`, las escrituras del
+editor son transacciones multi-documento y exigen MongoDB en replica set
+(ADR-001). Contra un servidor standalone, el editor responde `503` al
+guardar; la lectura de las secciones no se ve afectada.
+
+**Errores que verá el operador:**
+
+- `403 FORBIDDEN`: la IP de origen no está en la allowlist.
+- `409 CONTENT_VERSION_CONFLICT`: el contenido cambió desde que se cargó la
+  sección (otra pestaña, otro operador). Recargar la sección antes de guardar;
+  el editor no fusiona cambios.
+- `400 VALIDATION_ERROR`: uno o más registros del lote no pasan las reglas
+  editoriales (referencia inexistente, clave duplicada, campo inválido); el
+  detalle viene por registro.
+- `503 SERVICE_NOT_READY`: MongoDB no está en replica set, o la escritura no
+  pudo confirmarse por un problema de infraestructura. La lectura de la
+  sección sigue disponible.
+
+**Apagarlo:** `INTERNAL_EDITOR_ENABLED=false` y reiniciar. Verificar que
+`GET /internal/edit` responde `404`.
+
+**Después de publicar**, el contenido servido por el editor ya está
+actualizado en `carrito_content`, pero `carrito-front` sigue leyendo su propio
+cache de build: hace falta `npm run content:fetch` en el front (o esperar a
+que caduque la caché HTTP pública) y reconstruir el artefacto para verlo
+reflejado.
+
 ### Feature flags
 
 - `FEATURE_CONTACT_ENABLED=true`: contacto registrado. `false` retira la ruta

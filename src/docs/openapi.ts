@@ -3,6 +3,7 @@ import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import type { AppConfig } from '../shared/config/env.js';
 import { ErrorCodes } from '../shared/errors/app-error.js';
+import { isClientIpAllowed } from '../shared/security/ip-allowlist.js';
 import { EXPORT_KEY_SECURITY_SCHEME } from '../shared/docs/openapi-annotations.js';
 import {
   complaintMultipartDocSchema,
@@ -89,9 +90,14 @@ const DESCRIPTION = [
   '',
   '### Superficie de escritura',
   '',
-  '**No hay rutas administrativas de escritura.** La edición y publicación de ' +
-    'contenido se hacen con CLIs privilegiados de `scripts/content/`, fuera de ' +
-    'la superficie HTTP y sin exposición de red.',
+  'La superficie pública descrita en este documento es de solo lectura. La vía ' +
+    'normal de edición y publicación sigue siendo los CLI privilegiados de ' +
+    '`scripts/content/`, fuera de la superficie HTTP. Existe además un editor ' +
+    'editorial interno, apagado por defecto (`INTERNAL_EDITOR_ENABLED=false`) y ' +
+    'restringido por allowlist de IP cuando se enciende; con el flag apagado no ' +
+    'existe ninguna de sus rutas. No es un panel público ni tiene autenticación ' +
+    'de usuario, y sus rutas no se publican en este spec a propósito: este ' +
+    'documento no lo describe.',
 ].join('\n');
 
 /**
@@ -166,7 +172,7 @@ export function registerOpenApiDocs(app: FastifyInstance, config: AppConfig): vo
   void app.register((scope, _opts, done) => {
     if (config.NODE_ENV === 'production') {
       scope.addHook('onRequest', (req, reply, next) => {
-        if (isDocsClientAllowed(req.ip, config.DOCS_ALLOWED_IPS_LIST)) {
+        if (isClientIpAllowed(req.ip, config.DOCS_ALLOWED_IPS_LIST)) {
           next();
           return;
         }
@@ -201,17 +207,6 @@ export function registerOpenApiDocs(app: FastifyInstance, config: AppConfig): vo
 
     done();
   });
-}
-
-/**
- * Loopback en todas sus formas, incluida la IPv4 mapeada sobre IPv6 que expone
- * Node cuando el socket escucha en dualstack.
- */
-const LOOPBACK_IPS = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
-
-/** Allowlist vacía = solo loopback (default deliberadamente restrictivo). */
-function isDocsClientAllowed(ip: string, allowed: readonly string[]): boolean {
-  return allowed.length > 0 ? allowed.includes(ip) : LOOPBACK_IPS.has(ip);
 }
 
 function isComplaintsIntake(url: string, method: string | string[], config: AppConfig): boolean {
