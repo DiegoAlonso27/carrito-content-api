@@ -1,5 +1,20 @@
 # Cierre F8 — API e integración verificable
 
+> **DOCUMENTO HISTÓRICO — acta de cierre de F8 al 2026-07-20.**
+>
+> Describe el estado del repositorio **en esa fecha** y no se reescribe: sus
+> afirmaciones, hashes, conteos y resultados de verificación son la evidencia
+> de aquel cierre. Desde entonces el proyecto incorporó trabajo posterior —
+> modelo editorial por bloques y export v2 ([ADR-011](decisions/011-modelo-editorial-bloques.md)
+> y [ADR-012](decisions/012-export-editorial-v2.md)), logging a archivo en
+> `LOG_DIR`, el editor editorial interno y el corte de Track B—, así que
+> **este documento ya no describe el estado actual**.
+>
+> Para el estado vigente: `docs/runbook.md` (§12 para Track B),
+> `docs/api-contract.md` y `docs/carrito-front-integration.md`. Las notas
+> marcadas «Al 2026-07-28» de más abajo son punteros añadidos después, no
+> correcciones del acta.
+
 **Fecha:** 2026-07-20  
 **Estado:** COMPLETA  
 **Alcance:** cierre operativo de `carrito-content-api`; sin cambios en
@@ -77,18 +92,39 @@ Sobre el checkout local de `carrito-front` en `docs/forms-backend-plan`:
 La garantía exacta corresponde al flujo de esta API: importar el golden y
 exportarlo mediante el mismo builder, cubierto por `test:golden`.
 
+> **Al 2026-07-28.** Los conteos citados arriba son los del cierre. Tras las
+> publicaciones editoriales posteriores, el golden y el cache del front valen
+> `1/16/13/62/33/17/84/226`. Los conteos vigentes se afirman en
+> `docs/runbook.md` §5 y en `test/integration/import-cache.test.ts`.
+
 ## Evidencia de golden
 
-Hash SHA-256 inicial de ambos archivos:
+Hash SHA-256 de ambos archivos **al cierre de F8 (2026-07-20)**, cuando el
+alcance de la fase era no tocarlos:
 
 ```text
 2D37E66835CE49A1F7B918CB877501BB4A2FBB278F255BA4AC9117D04C166BF4
 ```
 
-| Archivo                                   | Hash final                                                         | Estado  |
-| ----------------------------------------- | ------------------------------------------------------------------ | ------- |
-| `content-cache.json`                      | `2D37E66835CE49A1F7B918CB877501BB4A2FBB278F255BA4AC9117D04C166BF4` | Intacto |
-| `test/contract/golden/content-cache.json` | `2D37E66835CE49A1F7B918CB877501BB4A2FBB278F255BA4AC9117D04C166BF4` | Intacto |
+| Archivo                                   | Hash al cierre de F8                                               | Estado en F8 |
+| ----------------------------------------- | ------------------------------------------------------------------ | ------------ |
+| `content-cache.json`                      | `2D37E66835CE49A1F7B918CB877501BB4A2FBB278F255BA4AC9117D04C166BF4` | Intacto      |
+| `test/contract/golden/content-cache.json` | `2D37E66835CE49A1F7B918CB877501BB4A2FBB278F255BA4AC9117D04C166BF4` | Intacto      |
+
+> **Al 2026-07-28: este hash ya no es el vigente, y eso es lo esperado.** El
+> golden se sincroniza en commits de contenido cuando se publica material
+> editorial (ver `README.md`), así que su hash cambia por diseño. Hoy ambos
+> archivos valen:
+>
+> ```text
+> FB14DED99D86724B0E668544A1BD3FDB8B2D144D0478292FF5180D423D0E2208
+> ```
+>
+> y siguen siendo idénticos entre sí, que es la invariante que `test:golden`
+> comprueba. **No usar el hash de F8 como referencia de integridad**: una
+> auditoría que lo haga concluirá manipulación donde solo hubo publicaciones
+> editoriales trazadas. La referencia viva es el historial:
+> `git log -- content-cache.json`.
 
 ## Resultados de verificación
 
@@ -102,6 +138,12 @@ Hash SHA-256 inicial de ambos archivos:
 | `npm run build`         | PASS — `tsc -p tsconfig.build.json`, código 0.                     |
 | Humo MongoDB efímero    | PASS — replica set efímero; no usó MongoDB local.                  |
 | Revisión final del diff | PASS — `git diff --check` sin errores; solo archivos F8 esperados. |
+
+> **Al 2026-07-28.** Esa corrida es la de F8: la suite tenía entonces 17
+> archivos de test. Hoy hay **26** archivos `*.test.ts` (Track B, editor
+> interno, snapshots editoriales y logging añadieron los suyos). No usar esta
+> fila como conteo esperado; la cifra vigente se obtiene ejecutando
+> `npm test`.
 
 El humo ejecutado levantó `MongoMemoryReplSet` y cubrió:
 

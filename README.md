@@ -9,12 +9,21 @@ Reglas vinculantes: [AGENTS.md](AGENTS.md). Contratos y operación:
 
 - [Contrato HTTP](docs/api-contract.md)
 - [Runbook operativo](docs/runbook.md)
+- [Paridad de validaciones front ↔ API](docs/validation-parity.md)
 - [Integración con carrito-front](docs/carrito-front-integration.md)
-- [Cierre y backlog de F8](docs/f8-closure.md)
+- [Cierre de F8 (documento histórico)](docs/f8-closure.md)
 - [Decisiones arquitectónicas](docs/decisions/)
 
 `content-cache.json` es la fuente de la migración inicial y el golden canónico
-del export. No debe editarse, reformatearse ni usarse como destino de un CLI.
+del export. **No se edita a mano, no se reformatea y nunca es el destino de un
+CLI** (`content:export` escribe siempre en otra ruta). Eso no significa que sea
+inmutable: se **sincroniza** cuando se publica contenido editorial, en un
+commit de contenido dedicado que en el mismo cambio actualiza los conteos de
+`test/integration/import-cache.test.ts`. Dejar ese test en rojo hace que la
+siguiente tarea no pueda distinguir un fallo propio de uno heredado
+(AGENTS.md — Lecciones). Su copia contractual
+`test/contract/golden/content-cache.json` debe quedar byte-idéntica: eso es lo
+que comprueba `npm run test:golden`.
 
 ## Requisitos
 
@@ -58,6 +67,7 @@ si contacto y reclamos están desactivados.
 | `npm run typecheck`                  | TypeScript estricto sin emitir archivos.              |
 | `npm run lint`                       | Reglas ESLint del proyecto.                           |
 | `npm run format`                     | Comprobar formato sin escribir.                       |
+| `npm run format:write`               | Aplicar el formato Prettier al repositorio.           |
 | `npm test`                           | Suite completa de Vitest.                             |
 | `npm run test:golden`                | Gate F2 del export contra el golden.                  |
 | `npm run setup:contact`              | Validador e índices de `contact_messages`.            |
@@ -80,7 +90,20 @@ si contacto y reclamos están desactivados.
   jamás se expone al navegador ni se guarda en una variable `NUXT_PUBLIC_*`.
 - En producción, contenido y formularios usan credenciales Mongo distintas.
 - Los logs no contienen bodies, IP, User-Agent, headers sensibles ni datos
-  personales de los formularios.
+  personales de los formularios. Los 5xx sí registran frames de stack
+  sanitizados (sin el `message`); ver runbook §11.
+- Con `LOG_DIR` (default `Logs`) cada línea se escribe además en un archivo
+  diario. La aplicación **no lo poda**: la retención es responsabilidad
+  operativa externa.
+- Dos superficies condicionales, ambas con allowlist de IP de igualdad exacta
+  (sin CIDR ni rangos):
+  - `/docs*` (`DOCS_ENABLED`, default `auto`): OpenAPI y Swagger UI, solo
+    lectura. `auto` significa **encendida en `NODE_ENV=development` y apagada
+    en producción**. La allowlist solo se evalúa en producción: allí responde
+    `404` a quien no esté en ella; fuera de producción no se aplica.
+  - `/internal/*` (`INTERNAL_EDITOR_ENABLED`): editor editorial **de
+    escritura**, sin autenticación de usuario; guardar publica de inmediato.
+    Con el flag apagado no se registra ninguna ruta. Ver runbook.
 - `FEATURE_COMPLAINTS_ENABLED=false` y
   `COMPLAINTS_LEGAL_GATE_CLEARED=false` permanecen sin cambios hasta una
   autorización expresa posterior al cierre P1–P18.

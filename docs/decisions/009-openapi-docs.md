@@ -4,6 +4,40 @@
 **Fecha:** 2026-07-20  
 **Fases:** posterior a F8
 
+> **Actualización (2026-07-29): el recuento de rutas y el alcance de «TODAS».**
+> Dos correcciones verificadas contra el código, sin cambiar la decisión.
+>
+> 1. **Ya no son ocho rutas, son nueve.** `test/integration/docs.test.ts:111-121`
+>    enumera hoy `/health/live`, `/health/ready`, `/v1/locales`,
+>    `/v1/content/{locale}`, `/v1/content/{locale}/collections/{slug}/items`,
+>    `/v1/export/content-cache`, `/v1/export/editorial/{locale}`, `/v1/contact` y
+>    `/v1/complaints`. La novena la sumó
+>    [ADR-012](012-export-editorial-v2.md) (export editorial v2). La
+>    consecuencia de más abajo se corrige en su sitio.
+> 2. **«Documenta TODAS las rutas HTTP de la API»
+>    (`test/integration/docs.test.ts:123-127`) es cierto solo con
+>    `INTERNAL_EDITOR_ENABLED=false`.** Ese es el default del esquema
+>    (`src/shared/config/env.ts:186`) y el que usan las pruebas —
+>    `docs.test.ts:62` construye la app con `makeTestConfig({ DOCS_ENABLED:
+>    'true' })` y el helper no toca el flag del editor
+>    (`test/helpers/test-config.ts:5-13`)—, así que el aserto pasa. Con el
+>    **editor encendido** hay cuatro rutas más vivas y **deliberadamente
+>    ausentes** del spec: `/internal/edit`, `/internal/api/texts`,
+>    `/internal/api/pages` y `/internal/api/settings` (esta última terna con
+>    `GET` y `PUT`). Cada una se registra con `schema: { hide: true }`
+>    (`src/modules/internal-editor/internal-editor.routes.ts:296-359`), y la
+>    descripción del spec lo declara en prosa: «sus rutas no se publican en este
+>    spec a propósito» (`src/docs/openapi.ts:91-100`).
+>
+> **Esa exclusión forma parte de la decisión**, no es un olvido: publicar una
+> superficie de escritura sin autenticación de usuario sería un mapa para
+> terceros, y el editor se apoya en no ser alcanzable (allowlist de IP) más que
+> en no ser conocido. El precio es explícito: con el editor encendido el spec
+> **deja de ser** el inventario completo de la superficie HTTP, y el nombre del
+> test promete más de lo que puede garantizar. La decisión del editor y su
+> postura de seguridad se registran en
+> [ADR-013](013-editor-editorial-interno.md).
+
 ## Contexto
 
 `docs/api-contract.md` describe el contrato HTTP en prosa, pero no es
@@ -81,7 +115,9 @@ AGENTS.md. Ese material ya es, de hecho, un contrato formal sin publicar.
   `rowVersionToken` en el bundle público ni los binarios de firma/adjuntos
   (que salen como hashes). Hay pruebas que lo verifican sobre el JSON generado.
 - Añadir una ruta sin `tags`/`summary` la deja documentada pobremente pero
-  visible; el test que enumera las ocho rutas obliga a mantener la lista al día.
+  visible; el test que enumera las nueve rutas públicas obliga a mantener la
+  lista al día. (Eran ocho al redactar este ADR; ver la actualización del
+  2026-07-29 en el encabezado.)
 - El endpoint del export queda descrito como autenticación servidor-a-servidor
   (`apiKey` en header), con la advertencia de que la clave nunca debe llegar al
   navegador. El security scheme nombra el header en minúsculas (`x-export-key`)

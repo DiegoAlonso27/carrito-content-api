@@ -29,10 +29,58 @@ explica el porqué.
 | `GET /v1/export/content-cache`                    | Protegido servidor-a-servidor     | `200`, `304` | Cache de build compatible con el golden. |
 | `GET /v1/export/editorial/:locale`                | Protegido servidor-a-servidor     | `200`, `304` | Snapshot editorial versionado (Track B). |
 | `POST /v1/contact`                                | Público si el feature está activo | `201`, `200` | Alta idempotente de contacto.            |
-| `POST /v1/complaints`                             | Público, bloqueado por defecto    | `503`        | Gate del Libro de Reclamaciones.         |
+| `POST /v1/complaints`                             | Público, bloqueado por defecto    | `201`, `200` | Alta de reclamo; hoy `503` por el gate.  |
+| `GET /docs*`                                      | Opt-in; en prod, allowlist de IP  | `200`        | Swagger UI y spec OpenAPI 3.1.           |
 
-No hay rutas administrativas de escritura. La edición y publicación de
-contenido se realizan mediante CLIs privilegiados en `scripts/content/`.
+`POST /v1/complaints` **no tiene éxito alcanzable hoy**: con
+`FEATURE_COMPLAINTS_ENABLED=false` (el default) el handler responde
+`503 COMPLAINTS_DISABLED` sin tocar MongoDB. El `201`/`200` es el contrato
+reservado para una activación futura autorizada.
+
+`GET /docs*` cubre cuatro rutas: `/docs` (UI), `/docs/json`, `/docs/yaml` y los
+assets de la UI bajo `/docs/static/*`. Con `DOCS_ENABLED` apagado no se
+registra ninguna: responden `404` como cualquier ruta inexistente.
+
+Las rutas `/v1` y de health son la superficie permanente. Además existen dos
+superficies **opt-in**, apagadas por defecto y sin ruta registrada mientras su
+flag esté en `false`: la documentación OpenAPI (`DOCS_ENABLED`, arriba) y el
+editor editorial interno (abajo).
+
+### Superficie interna de escritura (opt-in)
+
+Con `INTERNAL_EDITOR_ENABLED=true`, `src/app.ts` registra el editor editorial
+interno. Con el flag en `false` —el default— **no se registra ninguna ruta**:
+`/internal/*` cae en el notFound estándar y responde `404` como cualquier ruta
+inexistente.
+
+| Método y ruta                | Acceso                 | Éxito | Uso                                                   |
+| ---------------------------- | ---------------------- | ----- | ----------------------------------------------------- |
+| `GET /internal/edit`         | Flag + allowlist de IP | `200` | Página HTML del editor, con CSP y nonce por respuesta. |
+| `GET /internal/api/texts`    | Flag + allowlist de IP | `200` | Lee la sección junto con su `contentVersion`.         |
+| `GET /internal/api/pages`    | Flag + allowlist de IP | `200` | Ídem para `pages`.                                    |
+| `GET /internal/api/settings` | Flag + allowlist de IP | `200` | Ídem para `settings`.                                 |
+| `PUT /internal/api/texts`    | Flag + allowlist de IP | `200` | Guarda **y publica** el lote enviado.                 |
+| `PUT /internal/api/pages`    | Flag + allowlist de IP | `200` | Ídem para `pages`.                                    |
+| `PUT /internal/api/settings` | Flag + allowlist de IP | `200` | Ídem para `settings`.                                 |
+
+Siete rutas en total. Notas de contrato:
+
+- Los tres `PUT` escriben con `publish: true` y `ensureSetup: false`: guardar
+  **publica de inmediato** e incrementa `contentVersion`, lo que invalida el
+  ETag del contenido público y el de `/v1/export/content-cache`.
+- Su única barrera es la allowlist de IP (`INTERNAL_EDITOR_ALLOWED_IPS`); no
+  hay autenticación de usuario. Una IP rechazada recibe `403 FORBIDDEN`.
+- El cuerpo del `PUT` exige `expectedContentVersion` (control de concurrencia
+  optimista): si no coincide con la versión vigente, responde
+  `409 CONTENT_VERSION_CONFLICT`. El lote admite entre 1 y 500 registros.
+- Cada `PUT` lleva su propio presupuesto de 30 peticiones por minuto, separado
+  del de lectura pública.
+- Las rutas se declaran `hide: true`: no aparecen en `/docs`. Su documentación
+  operativa es `docs/runbook.md`.
+
+`locales`, `collections`, `assets` e `items` quedan fuera del editor: su
+edición y publicación siguen siendo exclusivas de los CLI privilegiados de
+`scripts/content/`.
 
 ## Envolvente de error
 
@@ -52,19 +100,20 @@ contenido se realizan mediante CLIs privilegiados en `scripts/content/`.
 `details` es opcional. Nunca se devuelven stacks, nombres internos de
 colecciones, credenciales ni detalles de infraestructura.
 
-| HTTP  | Código estable           | Significado                                                  |
-| ----- | ------------------------ | ------------------------------------------------------------ |
-| `400` | `VALIDATION_ERROR`       | Forma o regla de negocio inválida.                           |
-| `401` | `UNAUTHORIZED`           | Credencial de export ausente o inválida.                     |
-| `403` | `FORBIDDEN`              | Acceso denegado por una capa HTTP.                           |
-| `404` | `NOT_FOUND`              | Ruta, locale o colección no encontrados.                     |
-| `405` | `METHOD_NOT_ALLOWED`     | Método no permitido cuando la capa HTTP lo reporta como 405. |
-| `413` | `PAYLOAD_TOO_LARGE`      | Body, firma o adjuntos demasiado grandes.                    |
-| `415` | `UNSUPPORTED_MEDIA_TYPE` | Tipo de contenido no soportado.                              |
-| `429` | `RATE_LIMITED`           | Presupuesto de la ruta agotado; incluye `Retry-After`.       |
-| `500` | `INTERNAL_ERROR`         | Fallo interno sanitizado.                                    |
-| `503` | `SERVICE_NOT_READY`      | Readiness falló.                                             |
-| `503` | `COMPLAINTS_DISABLED`    | Libro bloqueado por el gate de fase.                         |
+| HTTP  | Código estable             | Significado                                                                                                    |
+| ----- | -------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `400` | `VALIDATION_ERROR`         | Forma o regla de negocio inválida.                                                                             |
+| `401` | `UNAUTHORIZED`             | Credencial de export ausente o inválida.                                                                       |
+| `403` | `FORBIDDEN`                | Acceso denegado: lo emite la allowlist de IP del editor interno y también cualquier capa HTTP que reporte 403. |
+| `404` | `NOT_FOUND`                | Ruta, locale o colección no encontrados.                                                                       |
+| `405` | `METHOD_NOT_ALLOWED`       | Método no permitido cuando la capa HTTP lo reporta como 405.                                                   |
+| `409` | `CONTENT_VERSION_CONFLICT` | Solo en el `PUT` del editor interno: el `contentVersion` esperado ya no es el vigente.                         |
+| `413` | `PAYLOAD_TOO_LARGE`        | Body, firma o adjuntos demasiado grandes.                                                                      |
+| `415` | `UNSUPPORTED_MEDIA_TYPE`   | Tipo de contenido no soportado.                                                                                |
+| `429` | `RATE_LIMITED`             | Presupuesto de la ruta agotado; incluye `Retry-After`.                                                         |
+| `500` | `INTERNAL_ERROR`           | Fallo interno sanitizado.                                                                                      |
+| `503` | `SERVICE_NOT_READY`        | Readiness falló.                                                                                               |
+| `503` | `COMPLAINTS_DISABLED`      | Libro bloqueado por el gate de fase.                                                                           |
 
 ## Health checks
 
@@ -282,10 +331,17 @@ Reglas de la hoja además de la forma TypeBox (paridad con el front,
   persisten dígitos + ISO2 + snapshot del prefijo;
 - `service.claimedAmount` con máximo 2 decimales (la hoja canónica sella el
   monto con escala 2);
+- `service.claimedAmount` **obligatorio** con `detail.type = "reclamo"`; en una
+  queja sigue siendo opcional;
 - con `detail.type = "reclamo"`, comprobante completo y con formato SUNAT:
   serie `^[FBCE][A-Z0-9]{3}$` (aceptada en minúsculas, normalizada a
   mayúsculas) y correlativo de 1–8 dígitos; una queja sigue sin admitir
-  datos de comprobante.
+  datos de comprobante;
+- `consumer.birthDate` e `detail.incidentDate`, cuando vienen, deben ser fechas
+  de calendario reales en formato `YYYY-MM-DD`: la de nacimiento estrictamente
+  anterior al día UTC en curso y la del incidente no futura;
+- apoderado (`guardian`) **obligatorio** cuando la fecha de nacimiento es
+  válida y el consumidor tiene menos de 18 años.
 
 La constancia expone `phoneCountry` pero nunca el snapshot interno del
 prefijo (`phoneDialCode`), que sí forma parte de la hoja canónica firmada.

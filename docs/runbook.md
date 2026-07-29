@@ -53,10 +53,44 @@ existe, la aplicación falla antes de escuchar tráfico.
 | `EXPORT_API_KEYS`                    | Cero, una o dos claves de al menos 32 caracteres. Vacío deshabilita el export con `401`.                               |
 | `DOCS_ENABLED`                       | `auto` (default: solo `development`), `true` o `false`. Gobierna la superficie `/docs*`.                               |
 | `DOCS_ALLOWED_IPS`                   | IPs que pueden leer `/docs` en producción, separadas por coma. Vacío = solo loopback. No aplica fuera de producción.   |
+| `RATE_LIMIT_READ_PER_MINUTE`         | Presupuesto por IP y minuto de las tres rutas públicas de lectura (default 120). No cubre health ni export.            |
+| `RATE_LIMIT_CONTACT_MAX`             | Envíos de contacto permitidos por ventana (default 5).                                                                 |
+| `RATE_LIMIT_CONTACT_WINDOW_MINUTES`  | Duración de esa ventana, en minutos (default 10).                                                                      |
+| `INTERNAL_EDITOR_ENABLED`            | Editor editorial interno. Default `false`: no se registra ninguna ruta `/internal/*`.                                  |
+| `INTERNAL_EDITOR_ALLOWED_IPS`        | IPs que pueden usar el editor, separadas por coma. Vacío = modo loopback estricto (ver más abajo).                     |
+
+Los flags y límites de reclamos (`FEATURE_COMPLAINTS_ENABLED`,
+`COMPLAINTS_LEGAL_GATE_CLEARED`, `RATE_LIMIT_COMPLAINTS_*`, valores legales,
+SMTP, firma y adjuntos) se documentan en «Feature flags» y en
+`docs/api-contract.md`; no se tocan en un despliegue ordinario.
 
 `X-Export-Key` es una credencial servidor-a-servidor exclusiva del build. No
 se guarda en el repositorio, no se entrega al navegador y nunca se publica como
 `NUXT_PUBLIC_*`.
+
+**Las allowlists de IP (`DOCS_ALLOWED_IPS`, `INTERNAL_EDITOR_ALLOWED_IPS`) se
+comparan por igualdad exacta.** No admiten CIDR, rangos ni comodines: escribir
+`10.0.0.0/24` o `10.0.0.*` no autoriza a nadie —falla cerrado, pero la entrada
+tampoco se rechaza al arrancar, así que el operador solo lo descubre al recibir
+un `404`/`403` inesperado. Cada IP se declara suelta. La única normalización es
+la del formato IPv4 mapeado sobre IPv6 (`::ffff:10.0.0.5` casa con
+`10.0.0.5`).
+
+**El rate limit no es global.** El plugin se registra con `global: false` y
+cada ruta declara el suyo. Lo tienen: las tres rutas públicas de lectura
+(`RATE_LIMIT_READ_PER_MINUTE`), `POST /v1/contact`
+(`RATE_LIMIT_CONTACT_*`), `POST /v1/complaints` **solo con el gate abierto**
+(`RATE_LIMIT_COMPLAINTS_*`; la ruta que responde `503` no lleva presupuesto) y
+el `PUT` del editor interno (30/min, fijo en código). `/health/*` y
+`/v1/export/*` **no tienen presupuesto**: su control es la credencial de export
+y la red desde la que se alcanzan, no el rate limit.
+
+**Presupuesto BSON de reclamos (validado al arrancar).**
+`COMPLAINTS_SIGNATURE_MAX_BYTES + COMPLAINTS_ATTACHMENTS_MAX_TOTAL_BYTES` debe
+ser como máximo **15 MiB**; superarlo detiene el proceso antes de escuchar
+tráfico. El reclamo se persiste como un único documento atómico y el margen
+restante hasta los 16 MiB de BSON queda reservado para hoja, metadatos y sobre.
+`COMPLAINTS_ATTACHMENTS_MAX_FILE_BYTES` tampoco puede superar el total.
 
 ### Documentación OpenAPI
 
@@ -119,6 +153,13 @@ depende por completo de que el proxy anexe `X-Forwarded-For` correctamente, y
 este repositorio no puede verificarlo. Una IP fuera de la allowlist recibe
 `403`, no `404`: a diferencia de `/docs`, encender el editor ya fue una
 decisión explícita, así que no hay nada que ocultarle a un cliente rechazado.
+La comparación es por **igualdad exacta**, sin CIDR ni rangos: ver la nota de
+la sección «Variables base».
+
+**Rate limit propio.** Cada `PUT` de sección lleva un presupuesto fijo en
+código de **30 peticiones por minuto y por IP**, independiente del de lectura
+pública. Un guardado que llegue por encima recibe `429 RATE_LIMITED` con
+`Retry-After`. Los `GET` del editor no tienen presupuesto.
 
 **Advertencia de producción.** Guardar en el editor publica de inmediato
 (`setRecords(..., { publish: true })`) y sube `contentVersion`, lo que
@@ -153,7 +194,9 @@ guardar; la lectura de las secciones no se ve afectada.
   el editor no fusiona cambios.
 - `400 VALIDATION_ERROR`: uno o más registros del lote no pasan las reglas
   editoriales (referencia inexistente, clave duplicada, campo inválido); el
-  detalle viene por registro.
+  detalle viene por registro. También si el lote va vacío o supera 500
+  registros.
+- `429 RATE_LIMITED`: más de 30 guardados por minuto desde la misma IP.
 - `503 SERVICE_NOT_READY`: MongoDB no está en replica set, o la escritura no
   pudo confirmarse por un problema de infraestructura. La lectura de la
   sección sigue disponible.
@@ -162,10 +205,23 @@ guardar; la lectura de las secciones no se ve afectada.
 `GET /internal/edit` responde `404`.
 
 **Después de publicar**, el contenido servido por el editor ya está
-actualizado en `carrito_content`, pero `carrito-front` sigue leyendo su propio
-cache de build: hace falta `npm run content:fetch` en el front (o esperar a
-que caduque la caché HTTP pública) y reconstruir el artefacto para verlo
-reflejado.
+actualizado en `carrito_content`, pero ni el golden de este repositorio ni el
+cache de build del front lo reflejan todavía. El resync completo son cuatro
+pasos, y omitirlos deja pruebas en rojo:
+
+1. Reexportar el golden de este repo con `npm run content:export` y sincronizar
+   la copia contractual `test/contract/golden/content-cache.json` (deben quedar
+   byte-idénticas; ADR-004). Si no, `npm run test:golden` falla.
+2. Actualizar en el **mismo cambio** los conteos de
+   `test/integration/import-cache.test.ts` si variaron altas, bajas o
+   `isActive`. Editar el golden y dejar ese test en rojo hace que la siguiente
+   tarea no pueda distinguir un fallo propio de uno heredado (lección de
+   `AGENTS.md`).
+3. En `carrito-front`: `npm run content:fetch` (o esperar a que caduque la
+   caché HTTP pública) y reconstruir el artefacto.
+4. Commitear en **ambos** repos: el `content-cache.json` del front está
+   versionado por la excepción de su ADR-0010, así que un publish sin commit
+   deja producción y repositorio divergentes sin que ningún gate lo detecte.
 
 ### Feature flags
 
@@ -255,7 +311,11 @@ inicial es:
 - texts: 62;
 - assets: 33;
 - collections: 17;
-- items: 83.
+- items: 84.
+
+Esos conteos son los que afirma `test/integration/import-cache.test.ts`: al
+dar de alta o de baja registros en el golden hay que actualizarlos en el mismo
+cambio (AGENTS.md — Lecciones).
 
 Nunca usar `content-cache.json` ni
 `test/contract/golden/content-cache.json` como destino de un export.
@@ -514,13 +574,36 @@ autorización operativa fuera de este runbook.
 
 Nunca imprimir, registrar o incorporar las claves en comandos con valores
 literales. Los logs de la API contienen request id, método, ruta y categorías
-de error sanitizadas; no contienen query string, headers, IP ni cuerpos.
+de error sanitizadas; no contienen headers, IP ni cuerpos. El serializador de
+`req` descarta la query a propósito, pero hay una excepción conocida: el
+rechazo de `/docs` por allowlist registra `req.url` completo
+(`src/docs/openapi.ts:181`), que sí incluye la query. El guard del editor
+interno evita ese caso registrando `req.routeOptions.url`.
+
+**Los fallos internos sí registran frames de stack** (desde `536cc5e`). Para un
+5xx —y para `uncaughtException`/`unhandledRejection`, que `src/server.ts`
+engancha para que no se pierdan fuera del archivo diario— el log incluye tipo,
+código, `statusCode` y hasta 20 frames del stack, recortados a 4096 caracteres.
+Lo que **nunca** se registra es el `message` del error: la primera línea del
+stack (`Error: <mensaje>`) se elimina, porque puede llevar texto de negocio o
+valores enviados. Los 4xx se registran sin stack. La respuesta HTTP sigue sin
+stack ni detalles internos: la sanitización es del cuerpo público, no del log.
+Los frames apuntan a rutas de archivo del despliegue, así que el archivo de log
+merece el mismo control de acceso que el resto del directorio de la release.
 
 Con `LOG_DIR` (default `Logs`) cada línea también se escribe en
 `Logs/content-api-YYYY-MM-DD.log` (UTC), además de stdout. En producción con
 NSSM conviene seguir capturando stdout/stderr y, si se prefiere una sola
 fuente, poner `LOG_DIR=` vacío para no duplicar. Correlacionar incidentes por
 `x-request-id`.
+
+**Retención: no hay.** El nombre del archivo cambia por fecha UTC, pero la
+aplicación no borra, comprime ni rota nada; además el archivo se abre **una
+vez, al arrancar**, así que un proceso que cruce la medianoche sigue
+escribiendo en el archivo del día en que arrancó hasta el siguiente reinicio.
+La poda de `LOG_DIR` es responsabilidad operativa externa (tarea programada o
+la política de NSSM/IIS): sin ella el directorio crece sin límite. Definir el
+plazo de conservación es una decisión operativa, no un default del código.
 
 ## 12. Corte de Track B (modelo editorial por bloques)
 
@@ -644,8 +727,14 @@ contenido realmente cargado en la base.
    npm run build:ci
    ```
 
-   `build` y `build:ci` ejecutan `content:verify && editorial:verify && nuxt
-   build`. El artefacto que se promueve a producción es el mismo que se probó.
+   Ambos scripts del front empiezan por los dos gates de contenido:
+
+   - `build` = `content:verify && editorial:verify && nuxt build &&
+     seo:generate && copytowwwroot`;
+   - `build:ci` = lo mismo **sin** `copytowwwroot` (no copia el artefacto a
+     `wwwroot` del host .NET).
+
+   El artefacto que se promueve a producción es el mismo que se probó.
 9. Confirmar que `nav-destinos` y `nav-servicios` están activos (§12.5). En el
    dataset vigente **ya lo están** (`isActive: true` en el golden), así que este
    paso normalmente es una comprobación, no un cambio. Solo hay que ejecutar el

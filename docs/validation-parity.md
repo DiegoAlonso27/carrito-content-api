@@ -105,8 +105,10 @@ versionado en el payload de venta. Ver ADR-010 §5.
 - `birthDate` e `incidentDate` siguen opcionales (front y API coinciden; el
   §4 heredado es ambiguo). Hacerlas obligatorias es decisión del gate legal
   P1–P18.
-- `voucherType` sigue texto libre 1–20 (los catálogos de comprobante, motivo,
-  provincia y terminal están pendientes — §10/P10 del plan heredado).
+- `voucherType` sigue texto libre 1–20 (los catálogos de comprobante, motivo y
+  terminal están pendientes — §10/P10 del plan heredado). `province` ya no
+  entra en esa lista: se eliminó del contrato del Libro en `3da5d1f` y no
+  existe en `complaints.schemas.ts`.
 - Queja con `claimedAmount` numérico sigue permitida (§4: opcional en queja);
   el front lo fuerza a null en queja, la API no lo prohíbe.
 - Comprobante obligatorio en reclamo y `gender ∈ {M, F}` son espejo del
