@@ -5,7 +5,11 @@ import { ContactRepo } from './contact.repo.js';
 import { resolveCountryPhone } from '../../shared/validation/country-phone.js';
 import { errorEnvelopeSchema } from '../../shared/errors/error-schema.js';
 import { describeResponse } from '../../shared/docs/openapi-annotations.js';
-import type { ContactMessageDto, ContactSubmissionInput } from './contact.types.js';
+import type {
+  ContactBody,
+  ContactMessageDto,
+  ContactSubmissionInput,
+} from './contact.types.js';
 
 /**
  * Formulario de contacto público (F5) — POST /v1/contact.
@@ -31,18 +35,6 @@ import type { ContactMessageDto, ContactSubmissionInput } from './contact.types.
  * - Nunca se guarda IP ni User-Agent; el log de éxito solo lleva el id.
  * - `bodyLimit` pequeño (32 KB): es un formulario de texto, no adjuntos.
  */
-
-interface ContactBody {
-  submissionId: string;
-  nombreApellidos: string;
-  correo: string;
-  telefono: string;
-  telefonoPais: string;
-  dni: string;
-  mensaje: string;
-  aceptaTerminos: true;
-  website?: string;
-}
 
 const TRIMMED_FIELDS = [
   'submissionId',

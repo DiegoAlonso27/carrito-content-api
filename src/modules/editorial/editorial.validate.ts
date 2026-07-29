@@ -87,10 +87,6 @@ export function canonicalUrlOf(
   return `/destinos/${destination.slug}`;
 }
 
-export function hierarchicalUrlOf(slug: string, parentSlug: string | null): string {
-  return parentSlug === null ? `/destinos/${slug}` : `/destinos/${parentSlug}/${slug}`;
-}
-
 // ── Validación de bloques ───────────────────────────────────────────────────
 
 function validateBlockShape(

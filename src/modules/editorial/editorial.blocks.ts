@@ -52,8 +52,6 @@ export type BlockType = (typeof blockTypes)[number];
  */
 export const mediaRights = ['own', 'licensed', 'public-domain', 'unverified'] as const;
 
-export type MediaRightsValue = (typeof mediaRights)[number];
-
 export function isPublishableMedia(rights: string): boolean {
   return rights !== 'unverified';
 }

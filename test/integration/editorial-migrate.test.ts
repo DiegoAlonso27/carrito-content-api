@@ -101,7 +101,7 @@ describe('migración flat → modelo editorial', () => {
 
   it('el export flat sigue intacto tras la migración (contrato del lunes)', async () => {
     const cache = JSON.parse((await new ExportService(db).get()).body) as ContentCache;
-    expect(cache.items).toHaveLength(83);
+    expect(cache.items).toHaveLength(84);
     expect(cache.collections.map((c) => c.slug)).toContain('destination-guides');
   });
 

@@ -1,3 +1,6 @@
+import type { Static } from '@sinclair/typebox';
+import type { contactBodySchema, contactResponseSchema } from './contact.schemas.js';
+
 /**
  * Tipos del formulario de contacto (F5).
  *
@@ -11,24 +14,15 @@
  * User-Agent. `ContactMessageDto` es lo único que la API devuelve.
  */
 
-export interface ContactSubmissionInput {
-  /** UUID v4 generado por el cliente; clave de idempotencia del envío. */
-  submissionId: string;
-  nombreApellidos: string;
-  correo: string;
-  /** Solo dígitos NACIONALES (normalizado: se descartan espacios, guiones y paréntesis). */
-  telefono: string;
-  /** ISO2 del país del teléfono, presente en el catálogo vendorizado (ADR-010). */
-  telefonoPais: string;
+export type ContactBody = Static<typeof contactBodySchema>;
+
+export type ContactSubmissionInput = Omit<ContactBody, 'website'> & {
   /**
    * Snapshot del prefijo resuelto al momento del alta (p. ej. `"+51"`): si el
    * catálogo cambiara, el registro histórico no se reinterpreta.
    */
   telefonoPrefijo: string;
-  dni: string;
-  mensaje: string;
-  aceptaTerminos: true;
-}
+};
 
 export type ContactMessageDoc = ContactSubmissionInput & {
   isViewed: boolean;
@@ -37,8 +31,4 @@ export type ContactMessageDoc = ContactSubmissionInput & {
   createdAtUtc: Date;
 };
 
-export interface ContactMessageDto {
-  id: string;
-  receivedAtUtc: string;
-  isViewed: boolean;
-}
+export type ContactMessageDto = Static<typeof contactResponseSchema>;

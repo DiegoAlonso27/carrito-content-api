@@ -117,7 +117,7 @@ describe('GET /v1/content/:locale', () => {
     const res = await app.inject({ method: 'GET', url: '/v1/content/es-PE' });
     const bundle = res.json<ContentBundle>();
     expect(bundle.items.some((i) => i.slug === 'faq-draft-runtime')).toBe(false);
-    expect(bundle.items).toHaveLength(83);
+    expect(bundle.items).toHaveLength(84);
   });
 });
 
@@ -162,7 +162,7 @@ describe('fallback de idioma (en → es-PE)', () => {
     expect(fallback?.localeCode).toBe('es-PE');
 
     // Items y pages sin traducción: 100% fallback.
-    expect(bundle.items).toHaveLength(83);
+    expect(bundle.items).toHaveLength(84);
     expect(bundle.pages).toHaveLength(13);
     expect(bundle.items.every((i) => i.localeCode === 'es-PE')).toBe(true);
   });

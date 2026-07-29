@@ -1,6 +1,5 @@
 import Fastify from 'fastify';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -34,7 +33,7 @@ export function buildApp(config: AppConfig): FastifyInstance {
     logger: buildLoggerOptions(config),
     // Detrás de IIS/ARR solo se confía en el loopback para X-Forwarded-For (plan F7).
     trustProxy: '127.0.0.1',
-  }).withTypeProvider<TypeBoxTypeProvider>();
+  });
 
   app.decorate('config', config);
   app.decorate('mongo', createMongoContext(config));

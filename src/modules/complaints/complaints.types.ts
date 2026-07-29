@@ -1,3 +1,9 @@
+import type { Static } from '@sinclair/typebox';
+import type {
+  complaintPayloadSchema,
+  complaintReceiptSchema,
+} from './complaints.schemas.js';
+
 /**
  * Tipos del Libro de Reclamaciones (F6).
  *
@@ -20,30 +26,32 @@
  * futuro» (§14 del plan).
  */
 
-export type DocumentType = 'DNI' | 'Pasaporte';
-export type ServiceKind = 'producto' | 'servicio';
-export type ComplaintKind = 'reclamo' | 'queja';
-export type Gender = 'M' | 'F';
+/** Payload JSON (parte `payload` del multipart), ya validado y normalizado. */
+export type ComplaintPayload = Static<typeof complaintPayloadSchema>;
 
+/**
+ * Constancia devuelta al presentar el reclamo. Solo datos no sensibles
+ * necesarios para imprimir/mostrar la hoja; sin `_id`, binarios ni internos.
+ */
+export type ComplaintReceiptDto = Static<typeof complaintReceiptSchema>;
+
+export type ConsumerInput = ComplaintPayload['consumer'];
+export type GuardianInput = NonNullable<ComplaintPayload['guardian']>;
+export type ServiceInput = ComplaintPayload['service'];
+export type DetailInput = ComplaintPayload['detail'];
+export type DocumentType = ConsumerInput['documentType'];
+export type ServiceKind = ServiceInput['type'];
+export type ComplaintKind = DetailInput['type'];
+export type Gender = ConsumerInput['gender'];
 /** El alta pública solo crea `PENDIENTE` (§5.3). Otros estados: servicio futuro. */
-export type ComplaintStatus = 'PENDIENTE';
-
-export interface ConsumerInput {
-  documentType: DocumentType;
-  documentNumber: string;
-  firstName: string;
-  lastNamePaternal: string;
-  lastNameMaternal: string | null;
-  address: string;
-  /** Solo dígitos NACIONALES; su longitud válida depende de `phoneCountry`. */
-  phone: string;
-  /** ISO2 del país del teléfono, presente en el catálogo vendorizado (ADR-010). */
-  phoneCountry: string;
-  email: string;
-  /** ISO 8601 date (YYYY-MM-DD) o null. Necesaria para exigir apoderado a menores. */
-  birthDate: string | null;
-  gender: Gender;
-}
+export type ComplaintStatus = ComplaintReceiptDto['status'];
+/** Snapshot del proveedor desde configuración del backend (§5.5, P8). */
+export type ProviderSnapshot = ComplaintReceiptDto['provider'];
+/** Metadatos de firma expuestos en la constancia — NUNCA el PNG (§5.4). */
+export type SignatureDto = ComplaintReceiptDto['signature'];
+/** Metadatos de adjunto expuestos — NUNCA el binario. */
+export type AttachmentDto = ComplaintReceiptDto['attachments'][number];
+export type DispatchStatus = ComplaintReceiptDto['emailReceipt']['status'];
 
 /**
  * Consumidor PERSISTIDO: añade el snapshot del prefijo resuelto al alta, para
@@ -53,50 +61,6 @@ export interface ConsumerInput {
  * schema tampoco lo declara (doble barrera anti-fuga).
  */
 export type ConsumerPersisted = ConsumerInput & { phoneDialCode: string };
-
-export interface GuardianInput {
-  documentType: DocumentType;
-  documentNumber: string;
-  firstName: string;
-  lastName: string;
-}
-
-export interface ServiceInput {
-  type: ServiceKind;
-  /** Obligatorio cuando `detail.type === 'reclamo'` (§4, CK_Complaint_ClaimedAmount). */
-  claimedAmount: number | null;
-  description: string;
-}
-
-export interface DetailInput {
-  type: ComplaintKind;
-  /** Comprobante solo cuando `type === 'reclamo'`. */
-  voucherType: string | null;
-  voucherSeries: string | null;
-  voucherNumber: string | null;
-  reason: string;
-  terminal: string;
-  incidentDate: string | null;
-  detail: string;
-  consumerRequest: string;
-}
-
-/** Payload JSON (parte `payload` del multipart), ya validado y normalizado. */
-export interface ComplaintPayload {
-  submissionId: string;
-  consumer: ConsumerInput;
-  guardian: GuardianInput | null;
-  service: ServiceInput;
-  detail: DetailInput;
-  confirmation: true;
-}
-
-/** Snapshot del proveedor desde configuración del backend (§5.5, P8). */
-export interface ProviderSnapshot {
-  legalName: string;
-  ruc: string;
-  address: string;
-}
 
 /** Firma del consumidor: PNG del trazo + hashes de integridad (§5.8). */
 export interface ConsumerSignature {
@@ -126,8 +90,6 @@ export interface ComplaintAttachment {
   /** Cuarentena: los adjuntos nacen sin escanear (§6). */
   scanStatus: 'PENDIENTE';
 }
-
-export type DispatchStatus = 'pendiente' | 'enviado' | 'fallido';
 
 /** Outbox de la constancia por correo, embebido (1:1 con el reclamo). */
 export interface EmailDispatch {
@@ -180,44 +142,3 @@ export type ComplaintMetadataDoc = Omit<ComplaintDoc, 'signature' | 'attachments
   signature: Omit<ConsumerSignature, 'content'>;
   attachments: Omit<ComplaintAttachment, 'content'>[];
 };
-
-/** Metadatos de firma expuestos en la constancia — NUNCA el PNG (§5.4). */
-export interface SignatureDto {
-  type: 'CONSUMIDOR';
-  method: 'TRAZO_MANUSCRITO';
-  signedAtUtc: string;
-  signedDocumentHash: string;
-  contentHash: string;
-  documentVersion: string;
-}
-
-/** Metadatos de adjunto expuestos — NUNCA el binario. */
-export interface AttachmentDto {
-  uploadOrder: number;
-  fileName: string;
-  sizeBytes: number;
-  sha256: string;
-}
-
-/**
- * Constancia devuelta al presentar el reclamo. Solo datos no sensibles
- * necesarios para imprimir/mostrar la hoja; sin `_id`, binarios ni internos.
- */
-export interface ComplaintReceiptDto {
-  code: string;
-  receivedAtUtc: string;
-  status: ComplaintStatus;
-  responseDueAtUtc: string;
-  provider: ProviderSnapshot;
-  sheet: {
-    consumer: ConsumerInput;
-    guardian: GuardianInput | null;
-    service: ServiceInput;
-    detail: DetailInput;
-    confirmedAtUtc: string;
-    confirmationTextVersion: string;
-  };
-  signature: SignatureDto;
-  attachments: AttachmentDto[];
-  emailReceipt: { recipient: string; status: DispatchStatus };
-}

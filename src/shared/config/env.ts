@@ -31,12 +31,6 @@ const schema = Type.Object({
     ],
     { default: 'info' },
   ),
-  /**
-   * Directorio de logs en disco (tee stdout + archivo diario
-   * `content-api-YYYY-MM-DD.log`). Default `Logs` (paridad con carrito-front).
-   * Vacío = solo stdout (tests, o cuando NSSM/IIS ya capturan la salida).
-   */
-  LOG_DIR: Type.String({ default: 'Logs' }),
   MONGO_URI: Type.String({ default: 'mongodb://127.0.0.1:27017', pattern: MONGODB_URI_PATTERN }),
   /**
    * Credenciales propias de `carrito_forms` (usuario Mongo separado del de

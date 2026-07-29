@@ -2,7 +2,6 @@ import type { Db } from 'mongodb';
 import { EditorialRepo } from './editorial.repo.js';
 import { editorialCollections } from './editorial.collections.js';
 import { editorialSectionCollections } from './editorial-write.js';
-import { transportServicesAlertText } from './editorial.blocks.js';
 import { ContentRepo, ContentTopologyError } from '../content/content.repo.js';
 import { contentCollections } from '../content/content.collections.js';
 import type { ItemDoc } from '../content/content.types.js';
@@ -792,6 +791,3 @@ export async function applyMigrationPlan(db: Db, plan: MigrationPlan): Promise<M
     throw err;
   }
 }
-
-/** Aviso obligatorio junto a la oferta comercial (D-G). Lo usa el seed y el front. */
-export { transportServicesAlertText };

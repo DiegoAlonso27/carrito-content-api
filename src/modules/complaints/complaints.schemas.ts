@@ -1,5 +1,4 @@
 import { Type, FormatRegistry } from '@sinclair/typebox';
-import type { Static } from '@sinclair/typebox';
 
 /**
  * El payload es multipart, así que se valida con `Value` de TypeBox (no con el
@@ -122,8 +121,6 @@ export const complaintPayloadSchema = Type.Object(
   },
   { additionalProperties: false },
 );
-
-export type ComplaintPayloadStatic = Static<typeof complaintPayloadSchema>;
 
 /**
  * Forma DOCUMENTAL de la parte `payload`, publicada como componente OpenAPI.

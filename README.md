@@ -92,9 +92,8 @@ si contacto y reclamos están desactivados.
 - Los logs no contienen bodies, IP, User-Agent, headers sensibles ni datos
   personales de los formularios. Los 5xx sí registran frames de stack
   sanitizados (sin el `message`); ver runbook §11.
-- Con `LOG_DIR` (default `Logs`) cada línea se escribe además en un archivo
-  diario. La aplicación **no lo poda**: la retención es responsabilidad
-  operativa externa.
+- La aplicación emite logs estructurados solo por stdout; el despliegue debe
+  configurar NSSM/IIS para capturar, rotar y retener los archivos.
 - Dos superficies condicionales, ambas con allowlist de IP de igualdad exacta
   (sin CIDR ni rangos):
   - `/docs*` (`DOCS_ENABLED`, default `auto`): OpenAPI y Swagger UI, solo

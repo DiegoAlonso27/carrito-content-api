@@ -45,7 +45,6 @@ existe, la aplicación falla antes de escuchar tráfico.
 | `NODE_ENV`                           | `development`, `test` o `production`.                                                                                  |
 | `HOST`, `PORT`                       | Interfaz y puerto del proceso.                                                                                         |
 | `LOG_LEVEL`                          | Nivel estructurado; no habilita bodies ni headers.                                                                     |
-| `LOG_DIR`                            | Directorio de logs en disco (default `Logs`). Vacío = solo stdout. Archivo diario: `content-api-YYYY-MM-DD.log`.       |
 | `MONGO_URI`                          | Cuenta de contenido; nunca una cuenta de ventas.                                                                       |
 | `MONGO_URI_FORMS`                    | Obligatoria y distinta de `MONGO_URI` en producción cuando contacto está activo; también cuando reclamos se habiliten. |
 | `MONGO_DB_CONTENT`, `MONGO_DB_FORMS` | Nombres no vacíos y siempre distintos.                                                                                 |
@@ -582,28 +581,26 @@ interno evita ese caso registrando `req.routeOptions.url`.
 
 **Los fallos internos sí registran frames de stack** (desde `536cc5e`). Para un
 5xx —y para `uncaughtException`/`unhandledRejection`, que `src/server.ts`
-engancha para que no se pierdan fuera del archivo diario— el log incluye tipo,
-código, `statusCode` y hasta 20 frames del stack, recortados a 4096 caracteres.
+engancha para conservarlos en logs estructurados— el log incluye tipo, código,
+`statusCode` y hasta 20 frames del stack, recortados a 4096 caracteres.
 Lo que **nunca** se registra es el `message` del error: la primera línea del
 stack (`Error: <mensaje>`) se elimina, porque puede llevar texto de negocio o
 valores enviados. Los 4xx se registran sin stack. La respuesta HTTP sigue sin
 stack ni detalles internos: la sanitización es del cuerpo público, no del log.
-Los frames apuntan a rutas de archivo del despliegue, así que el archivo de log
-merece el mismo control de acceso que el resto del directorio de la release.
+Los frames apuntan a rutas de archivo del despliegue, así que la captura de
+stdout/stderr debe tener el mismo control de acceso que el resto de la release.
+La aplicación no crea archivos de log. Antes de desplegar con NSSM:
 
-Con `LOG_DIR` (default `Logs`) cada línea también se escribe en
-`Logs/content-api-YYYY-MM-DD.log` (UTC), además de stdout. En producción con
-NSSM conviene seguir capturando stdout/stderr y, si se prefiere una sola
-fuente, poner `LOG_DIR=` vacío para no duplicar. Correlacionar incidentes por
-`x-request-id`.
+1. Configurar `AppStdout` y `AppStderr` hacia rutas con acceso restringido.
+2. Habilitar `AppRotateFiles` y `AppRotateOnline`, y fijar `AppRotateBytes`
+   según el límite operativo aprobado.
+3. Configurar una tarea externa de retención; NSSM rota, pero no aplica por sí
+   solo el plazo de conservación.
+4. Reiniciar el servicio y verificar que una petición aparece en el archivo
+   capturado con su `x-request-id`, sin IP, query ni headers sensibles.
 
-**Retención: no hay.** El nombre del archivo cambia por fecha UTC, pero la
-aplicación no borra, comprime ni rota nada; además el archivo se abre **una
-vez, al arrancar**, así que un proceso que cruce la medianoche sigue
-escribiendo en el archivo del día en que arrancó hasta el siguiente reinicio.
-La poda de `LOG_DIR` es responsabilidad operativa externa (tarea programada o
-la política de NSSM/IIS): sin ella el directorio crece sin límite. Definir el
-plazo de conservación es una decisión operativa, no un default del código.
+Con IIS u otro supervisor se exige el equivalente. No desplegar sin captura,
+rotación y retención verificadas.
 
 ## 12. Corte de Track B (modelo editorial por bloques)
 

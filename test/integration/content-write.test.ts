@@ -60,7 +60,7 @@ describe('ciclo editorial completo (crear → draft → publicar → export)', (
 
     const exported = await exportNow();
     expect(exported.items.some((i) => i.slug === 'faq-nueva-editorial')).toBe(false);
-    expect(exported.items).toHaveLength(83);
+    expect(exported.items).toHaveLength(84);
   });
 
   it('al publicarlo aparece en el export con token nuevo, y versionTokens lo incluye', async () => {
@@ -81,14 +81,14 @@ describe('ciclo editorial completo (crear → draft → publicar → export)', (
     expect(
       exported.versionTokens.some((t) => t.sourceKey === 'faqs/es-PE/faq-nueva-editorial'),
     ).toBe(true);
-    expect(exported.items).toHaveLength(84);
+    expect(exported.items).toHaveLength(85);
   });
 
   it('al archivarlo desaparece del export', async () => {
     await setStatus(db, 'items', 'faqs/es-PE/faq-nueva-editorial', 'archived');
     const exported = await exportNow();
     expect(exported.items.some((i) => i.slug === 'faq-nueva-editorial')).toBe(false);
-    expect(exported.items).toHaveLength(83);
+    expect(exported.items).toHaveLength(84);
   });
 });
 
@@ -343,7 +343,7 @@ describe('statusSummary', () => {
     expect(summary.contentVersion).toBeGreaterThan(1);
     expect(summary.tokenSeq).toBeGreaterThan(0x4678);
     const items = summary.sections.find((s) => s.section === 'items');
-    expect(items?.byStatus['published']).toBe(83);
+    expect(items?.byStatus['published']).toBe(84);
     expect(items?.byStatus['archived']).toBe(1);
     expect(items?.byStatus['draft']).toBeGreaterThanOrEqual(1);
   });
