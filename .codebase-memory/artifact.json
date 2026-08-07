@@ -1,11 +1,11 @@
 {
     "schema_version": 2,
     "commit": "45a703d6f309bec8bbbac097aad33b3b6336f09a",
-    "indexed_at": "2026-08-02T21:52:13Z",
-    "project": "carrito-content-api",
+    "indexed_at": "2026-08-05T08:00:58Z",
+    "project": "D-PROYECTOS-transportes-chiclayo-carrito-content-api",
     "nodes": 1596,
-    "edges": 3779,
-    "original_size": 4194304,
-    "compressed_size": 948883,
+    "edges": 3778,
+    "original_size": 4653056,
+    "compressed_size": 959048,
     "compression_level": 9
 }
