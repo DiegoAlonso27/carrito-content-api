@@ -3,7 +3,8 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist/', 'node_modules/', 'coverage/'] },
+  // `scripts/tmp/` contiene utilidades locales ignoradas, fuera del programa TS.
+  { ignores: ['dist/', 'node_modules/', 'coverage/', 'scripts/tmp/'] },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {
