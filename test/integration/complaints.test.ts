@@ -295,6 +295,25 @@ describe('POST /v1/complaints — idempotencia y honeypot', () => {
     expect(count).toBe(1);
   });
 
+  it('mismo submissionId con payload distinto devuelve 409 sin duplicar', async () => {
+    const payload = validPayload();
+    expect((await post(app, complaintRequest(payload))).statusCode).toBe(201);
+
+    const changed = validPayload({
+      submissionId: payload['submissionId'] as string,
+      detail: { reason: 'Motivo distinto para un identificador ya usado' },
+    });
+    const conflict = await post(app, complaintRequest(changed));
+
+    expect(conflict.statusCode).toBe(409);
+    expect(conflict.json<{ error: { code: string } }>().error.code).toBe('IDEMPOTENCY_CONFLICT');
+    expect(
+      await app.mongo.formsDb
+        .collection(complaintsCollections.complaints)
+        .countDocuments({ submissionId: payload['submissionId'] as string }),
+    ).toBe(1);
+  });
+
   it('honeypot (website con contenido) responde 201 pero no persiste nada', async () => {
     const payload = validPayload({ consumer: { email: 'bot@example.test' } });
     const res = await post(app, complaintRequest(payload, { website: 'http://spam.example.test' }));
@@ -304,6 +323,27 @@ describe('POST /v1/complaints — idempotencia y honeypot', () => {
       .collection(complaintsCollections.complaints)
       .findOne({ submissionId: payload['submissionId'] });
     expect(stored).toBeNull();
+  });
+
+  it('el honeypot conserva el éxito falso aunque reutilice un submissionId existente', async () => {
+    const payload = validPayload();
+    expect((await post(app, complaintRequest(payload))).statusCode).toBe(201);
+
+    const botRetry = validPayload({
+      submissionId: payload['submissionId'] as string,
+      detail: { reason: 'Contenido distinto de bot' },
+    });
+    const res = await post(
+      app,
+      complaintRequest(botRetry, { website: 'http://spam.example.test' }),
+    );
+
+    expect(res.statusCode).toBe(201);
+    expect(
+      await app.mongo.formsDb
+        .collection(complaintsCollections.complaints)
+        .countDocuments({ submissionId: payload['submissionId'] as string }),
+    ).toBe(1);
   });
 });
 

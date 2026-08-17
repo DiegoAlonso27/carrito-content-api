@@ -28,6 +28,9 @@ Reclamaciones (Perú). Monolito modular. Sin panel administrativo en fase 1.
   configuración aprobado por el usuario, nunca un despliegue.
 - Sin commits, push, ramas, tags ni cambios de historial sin autorización
   expresa del usuario en cada ocasión.
+- Antes de cada commit, reindexar el grafo de codebase-memory de este
+  proyecto (ver «Codebase Memory») e incluir `.codebase-memory/` en el
+  staging. Sin grafo fresco no se commitea.
 
 ## Seguridad y privacidad
 
@@ -83,10 +86,12 @@ Usar búsqueda de texto solo para literales, configs, no-código, o cuando el
 grafo no esté disponible o sea insuficiente. Si una consulta al grafo
 contradice el archivo real, **manda el archivo real**.
 
-Para refrescar el artefacto tras cambios estructurales:
+Antes de **cada** commit que toque archivos de este proyecto, reindexar el
+grafo e incluir el artefacto (`.codebase-memory/`) en el mismo commit. No
+commitear con el grafo desactualizado.
 
 ```powershell
-codebase-memory-mcp cli index_repository --repo-path "d:\PROYECTOS\transportes-chiclayo\carrito-content-api" --mode fast --persistence true
+codebase-memory-mcp cli index_repository --repo-path "d:\PROYECTOS\transportes-chiclayo\carrito-content-api" --mode full --persistence true --name carrito-content-api
 ```
 
 ## Registro de errores y aprendizajes

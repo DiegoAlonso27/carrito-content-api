@@ -97,6 +97,7 @@ describe('POST /v1/contact — alta válida', () => {
     expect(stored?.telefonoPrefijo).toBe('+51');
     expect(stored?.dni).toBe(payload['dni']);
     expect(stored?.mensaje).toBe(payload['mensaje']);
+    expect(stored?.contentHash).toMatch(/^[0-9a-f]{64}$/);
     expect(stored?.aceptaTerminos).toBe(true);
     expect(stored?.isViewed).toBe(false);
     expect(stored?.viewedAtUtc).toBeNull();
@@ -110,6 +111,7 @@ describe('POST /v1/contact — alta válida', () => {
       [
         '_id',
         'aceptaTerminos',
+        'contentHash',
         'correo',
         'createdAtUtc',
         'dni',
@@ -187,6 +189,25 @@ describe('POST /v1/contact — idempotencia por submissionId', () => {
       .collection(contactCollections.messages)
       .countDocuments({ submissionId: payload['submissionId'] as string });
     expect(count).toBe(1);
+  });
+
+  it('mismo submissionId con contenido distinto devuelve 409 sin duplicar', async () => {
+    const payload = validPayload();
+    expect((await app.inject({ method: 'POST', url: '/v1/contact', payload })).statusCode).toBe(201);
+
+    const conflict = await app.inject({
+      method: 'POST',
+      url: '/v1/contact',
+      payload: { ...payload, mensaje: 'Mensaje diferente que no debe reutilizar el identificador.' },
+    });
+
+    expect(conflict.statusCode).toBe(409);
+    expect(conflict.json<{ error: { code: string } }>().error.code).toBe('IDEMPOTENCY_CONFLICT');
+    expect(
+      await app.mongo.formsDb
+        .collection(contactCollections.messages)
+        .countDocuments({ submissionId: payload['submissionId'] as string }),
+    ).toBe(1);
   });
 });
 

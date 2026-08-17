@@ -16,6 +16,7 @@ import { describeResponse } from '../../shared/docs/openapi-annotations.js';
 import type {
   ComplaintAttachment,
   ComplaintDoc,
+  ComplaintMetadataDoc,
   ComplaintPayload,
   ComplaintReceiptDto,
   ConsumerPersisted,
@@ -149,6 +150,7 @@ function registerEnabledRoutes(app: FastifyInstance): void {
           '`schema.body`, así que el cuerpo documentado aquí es descriptivo.\n\n' +
           '- `201`: alta nueva.\n' +
           '- `200`: reintento del mismo `submissionId`; devuelve la constancia previa.\n\n' +
+          '- `409 IDEMPOTENCY_CONFLICT`: el mismo id trae otra hoja, firma o adjunto.\n\n' +
           'La constancia **no** contiene `_id`, binarios de firma o adjuntos, ni ' +
           'detalles internos: solo hashes. La firma y los adjuntos jamás aparecen en ' +
           'logs, DTOs ni correo, y no se persiste IP ni User-Agent. Como la constancia ' +
@@ -210,6 +212,7 @@ function registerEnabledRoutes(app: FastifyInstance): void {
 
       const now = new Date();
       const attachments = buildAttachments(parsed.files);
+
       const complaintCode = generateComplaintCode(now);
       const provider = {
         legalName: config.COMPLAINTS_PROVIDER_LEGAL_NAME,
@@ -283,11 +286,22 @@ function registerEnabledRoutes(app: FastifyInstance): void {
         return reply.code(201).send(toReceiptDto({ ...doc, _id: new ObjectId() }));
       }
 
+      const existing = await repo.findBySubmissionId(payload.submissionId);
+      if (existing !== null) {
+        if (!matchesExistingSubmission(existing, payload, consumer, parsed.signature.buffer, attachments))
+          throw idempotencyConflict();
+        return reply.code(200).send(toReceiptDto(existing));
+      }
+
       const { dto, created, insertedId } = await repo.submit(doc);
       req.log.info({ complaintCode: dto.code, created }, 'reclamo recibido');
 
       if (!created || insertedId === null) {
-        // Reintento idempotente: se devuelve el registro previo tal cual.
+        // Carrera: el índice único eligió otro request. Se compara contra su
+        // contenido antes de tratarlo como reintento válido.
+        const winner = await repo.findBySubmissionId(payload.submissionId);
+        if (winner === null || !matchesExistingSubmission(winner, payload, consumer, parsed.signature.buffer, attachments))
+          throw idempotencyConflict();
         return reply.code(200).send(dto);
       }
 
@@ -360,6 +374,42 @@ function errorCategory(err: unknown): string {
     if (typeof code === 'string' && code.length > 0) return code;
   }
   return 'SEND_FAILED';
+}
+
+function idempotencyConflict(): AppError {
+  return new AppError(
+    'IDEMPOTENCY_CONFLICT',
+    'El identificador de envío ya corresponde a otro contenido.',
+    409,
+  );
+}
+
+function matchesExistingSubmission(
+  existing: import('mongodb').WithId<ComplaintMetadataDoc>,
+  payload: ComplaintPayload,
+  consumer: ConsumerPersisted,
+  signature: Buffer,
+  attachments: ComplaintAttachment[],
+): boolean {
+  const { signedDocumentHash } = buildCanonicalSheet({
+    complaintCode: existing.complaintCode,
+    createdAtUtc: existing.createdAtUtc,
+    provider: existing.provider,
+    consumer,
+    guardian: payload.guardian,
+    service: payload.service,
+    detail: payload.detail,
+    confirmation: {
+      textVersion: existing.confirmation.textVersion,
+      confirmedAtUtc: existing.confirmation.confirmedAtUtc,
+    },
+    attachments,
+  });
+
+  return (
+    signedDocumentHash === existing.signature.signedDocumentHash
+    && sha256Hex(signature) === existing.signature.contentHash
+  );
 }
 
 /**

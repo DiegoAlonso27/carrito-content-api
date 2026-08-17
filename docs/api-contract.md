@@ -28,8 +28,8 @@ explica el porqué.
 | `GET /v1/content/:locale/collections/:slug/items` | Público                           | `200`, `304` | Items de una colección.                  |
 | `GET /v1/export/content-cache`                    | Protegido servidor-a-servidor     | `200`, `304` | Cache de build compatible con el golden. |
 | `GET /v1/export/editorial/:locale`                | Protegido servidor-a-servidor     | `200`, `304` | Snapshot editorial versionado (Track B). |
-| `POST /v1/contact`                                | Público si el feature está activo | `201`, `200` | Alta idempotente de contacto.            |
-| `POST /v1/complaints`                             | Público, bloqueado por defecto    | `201`, `200` | Alta de reclamo; hoy `503` por el gate.  |
+| `POST /v1/contact`                                | Público si el feature está activo | `201`, `200`, `409` | Alta idempotente de contacto.            |
+| `POST /v1/complaints`                             | Público, bloqueado por defecto    | `201`, `200`, `409` | Alta de reclamo; hoy `503` por el gate.  |
 | `GET /docs*`                                      | Opt-in; en prod, allowlist de IP  | `200`        | Swagger UI y spec OpenAPI 3.1.           |
 
 `POST /v1/complaints` **no tiene éxito alcanzable hoy**: con
@@ -108,6 +108,7 @@ colecciones, credenciales ni detalles de infraestructura.
 | `404` | `NOT_FOUND`                | Ruta, locale o colección no encontrados.                                                                       |
 | `405` | `METHOD_NOT_ALLOWED`       | Método no permitido cuando la capa HTTP lo reporta como 405.                                                   |
 | `409` | `CONTENT_VERSION_CONFLICT` | Solo en el `PUT` del editor interno: el `contentVersion` esperado ya no es el vigente.                         |
+| `409` | `IDEMPOTENCY_CONFLICT` | Un `submissionId` de contacto o reclamo ya existe, pero el contenido normalizado, firma o adjuntos no coinciden. |
 | `413` | `PAYLOAD_TOO_LARGE`        | Body, firma o adjuntos demasiado grandes.                                                                      |
 | `415` | `UNSUPPORTED_MEDIA_TYPE`   | Tipo de contenido no soportado.                                                                                |
 | `429` | `RATE_LIMITED`             | Presupuesto de la ruta agotado; incluye `Retry-After`.                                                         |
