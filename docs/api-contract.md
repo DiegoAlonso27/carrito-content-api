@@ -319,7 +319,14 @@ El request es `multipart/form-data` con:
 
 - `payload`: JSON con `submissionId`, consumidor, apoderado opcional, servicio,
   detalle y `confirmation: true`;
-- `consumerSignaturePng`: firma PNG obligatoria;
+- `consumerSignaturePng`: firma PNG **opcional** (ADR-014 de
+  `carrito-content-api`). Si se envía, se valida por firma mágica,
+  decodificación, dimensiones y trazo no vacío, y se acota con
+  `COMPLAINTS_SIGNATURE_MAX_BYTES`; si se omite, la aceptación queda registrada
+  por `confirmation` y el sello de la hoja pasa a
+  `signature.method = "CONFIRMACION_ELECTRONICA"` con `signature.contentHash`
+  en `null`. `signature.signedDocumentHash` y `documentVersion` no dependen del
+  trazo (la hoja canónica nunca incluyó los bytes de la firma);
 - `files`: cero o más adjuntos según límites configurados;
 - `website`: honeypot opcional, aceptado también dentro de `payload`.
 
@@ -348,7 +355,9 @@ La constancia expone `phoneCountry` pero nunca el snapshot interno del
 prefijo (`phoneDialCode`), que sí forma parte de la hoja canónica firmada.
 
 La constancia `201`/`200` contiene código, fechas, estado, snapshot del
-proveedor, hoja, hashes de firma/adjuntos y estado del correo. No contiene
+proveedor, hoja, el sello de la hoja (`signature`: método, `signedAtUtc`,
+`signedDocumentHash`, `contentHash` —`null` sin trazo— y `documentVersion`),
+hashes de adjuntos y estado del correo. No contiene
 `_id`, binarios ni detalles internos. Como la constancia refleja datos de la
 hoja al mismo remitente, el consumidor no debe registrarla en consola ni
 telemetría cliente.

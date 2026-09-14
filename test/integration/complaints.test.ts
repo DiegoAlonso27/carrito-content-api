@@ -129,10 +129,13 @@ function validPayload(overrides: PayloadOverrides = {}): Record<string, unknown>
   };
 }
 
-/** Request multipart completa (payload + firma con trazo + adjuntos opcionales). */
+/**
+ * Request multipart completa (payload + firma con trazo + adjuntos opcionales).
+ * `signature: null` omite la parte de firma (ADR-014: el trazo es opcional).
+ */
 function complaintRequest(
   payload: Record<string, unknown>,
-  opts: { signature?: Buffer; files?: Buffer[]; website?: string } = {},
+  opts: { signature?: Buffer | null; files?: Buffer[]; website?: string } = {},
 ): { body: Buffer; headers: Record<string, string> } {
   const parts: Part[] = [{ name: 'payload', value: JSON.stringify(payload) }];
   if (opts.website !== undefined) parts.push({ name: 'website', value: opts.website });
@@ -144,13 +147,15 @@ function complaintRequest(
       buffer: f,
     });
   }
-  const sig = opts.signature ?? makePng(true);
-  parts.push({
-    name: 'consumerSignaturePng',
-    filename: 'firma.png',
-    contentType: 'image/png',
-    buffer: sig,
-  });
+  const sig = opts.signature === undefined ? makePng(true) : opts.signature;
+  if (sig !== null) {
+    parts.push({
+      name: 'consumerSignaturePng',
+      filename: 'firma.png',
+      contentType: 'image/png',
+      buffer: sig,
+    });
+  }
   return multipart(parts);
 }
 
@@ -262,6 +267,49 @@ describe('POST /v1/complaints — alta válida y constancia', () => {
   });
 });
 
+describe('POST /v1/complaints — firma manuscrita opcional (ADR-014)', () => {
+  it('201 sin la parte de firma: sello por confirmación electrónica, contentHash null', async () => {
+    const payload = validPayload();
+    const res = await post(app, complaintRequest(payload, { signature: null }));
+
+    expect(res.statusCode).toBe(201);
+    const body = res.json<ComplaintReceiptDto>();
+    expect(body.signature.type).toBe('CONSUMIDOR');
+    expect(body.signature.method).toBe('CONFIRMACION_ELECTRONICA');
+    expect(body.signature.contentHash).toBeNull();
+    // El sello de integridad de la hoja NO depende del trazo: sigue presente.
+    expect(body.signature.signedDocumentHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(body.signature.documentVersion).toBe('1');
+
+    const stored = await app.mongo.formsDb
+      .collection<ComplaintDoc>(complaintsCollections.complaints)
+      .findOne({ submissionId: payload['submissionId'] as string });
+    expect(stored).not.toBeNull();
+    expect(stored?.signature.content).toBeNull();
+    expect(stored?.signature.contentType).toBeNull();
+    expect(stored?.signature.sizeBytes).toBeNull();
+  });
+
+  it('reintentar sin firma el mismo submissionId devuelve 200, no 409', async () => {
+    const payload = validPayload();
+    const first = await post(app, complaintRequest(payload, { signature: null }));
+    const second = await post(app, complaintRequest(payload, { signature: null }));
+    expect(first.statusCode).toBe(201);
+    expect(second.statusCode).toBe(200);
+    expect(second.json<ComplaintReceiptDto>().code).toBe(first.json<ComplaintReceiptDto>().code);
+  });
+
+  it('409 si el mismo submissionId llega después CON firma (el contenido cambió)', async () => {
+    const payload = validPayload();
+    const first = await post(app, complaintRequest(payload, { signature: null }));
+    expect(first.statusCode).toBe(201);
+
+    const res = await post(app, complaintRequest(payload));
+    expect(res.statusCode).toBe(409);
+    expect(res.json<{ error: { code: string } }>().error.code).toBe('IDEMPOTENCY_CONFLICT');
+  });
+});
+
 describe('POST /v1/complaints — idempotencia y honeypot', () => {
   it('reintentar el mismo submissionId devuelve 200 con el mismo código, sin duplicar', async () => {
     const payload = validPayload();
@@ -348,13 +396,6 @@ describe('POST /v1/complaints — idempotencia y honeypot', () => {
 });
 
 describe('POST /v1/complaints — validación de entrada', () => {
-  it('400 cuando falta la parte de firma', async () => {
-    const req = multipart([{ name: 'payload', value: JSON.stringify(validPayload()) }]);
-    const res = await post(app, req);
-    expect(res.statusCode).toBe(400);
-    expect(res.json<{ error: { code: string } }>().error.code).toBe('VALIDATION_ERROR');
-  });
-
   it('400 cuando el PNG de firma tiene el canvas vacío (sin trazo)', async () => {
     const res = await post(app, complaintRequest(validPayload(), { signature: makePng(false) }));
     expect(res.statusCode).toBe(400);

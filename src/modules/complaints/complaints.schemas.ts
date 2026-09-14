@@ -172,13 +172,18 @@ export const complaintMultipartDocSchema = Type.Object(
       contentMediaType: 'application/json',
       contentSchema: { $ref: '#/components/schemas/ComplaintPayload' },
     }),
-    consumerSignaturePng: Type.String({
-      format: 'binary',
-      description:
-        'Firma manuscrita del consumidor en PNG. Obligatoria; se valida por ' +
-        'firma mágica y tamaño (`COMPLAINTS_SIGNATURE_MAX_BYTES`). Nunca se ' +
-        'devuelve en la constancia ni aparece en logs o correo.',
-    }),
+    consumerSignaturePng: Type.Optional(
+      Type.String({
+        format: 'binary',
+        description:
+          'Firma manuscrita del consumidor en PNG. **Opcional** (ADR-014): si ' +
+          'se envía, se valida por firma mágica, trazo no vacío y tamaño ' +
+          '(`COMPLAINTS_SIGNATURE_MAX_BYTES`); si se omite, la aceptación queda ' +
+          'registrada por `confirmation` y `signature.method` pasa a ' +
+          '`CONFIRMACION_ELECTRONICA`. Nunca se devuelve en la constancia ni ' +
+          'aparece en logs o correo.',
+      }),
+    ),
     files: Type.Optional(
       Type.Array(Type.String({ format: 'binary' }), {
         description:
@@ -226,13 +231,18 @@ export const complaintReceiptSchema = Type.Object(
       },
       { additionalProperties: false },
     ),
+    // `method`/`contentHash` distinguen el sello con trazo manuscrito del sello
+    // por confirmación electrónica (ADR-014). `signedDocumentHash` está siempre.
     signature: Type.Object(
       {
         type: Type.Literal('CONSUMIDOR'),
-        method: Type.Literal('TRAZO_MANUSCRITO'),
+        method: Type.Union([
+          Type.Literal('TRAZO_MANUSCRITO'),
+          Type.Literal('CONFIRMACION_ELECTRONICA'),
+        ]),
         signedAtUtc: Type.String({ pattern: isoDateTimePattern }),
         signedDocumentHash: Type.String(),
-        contentHash: Type.String(),
+        contentHash: Type.Union([Type.String(), Type.Null()]),
         documentVersion: Type.String(),
       },
       { additionalProperties: false },

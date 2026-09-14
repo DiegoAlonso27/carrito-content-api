@@ -33,7 +33,7 @@ import type {
  *
  * Con el gate habilitado, el alta es `multipart/form-data` (§4): parte
  * `payload` (JSON de la hoja), `files[]` (adjuntos del consumidor) y
- * `consumerSignaturePng` (firma manuscrita obligatoria). Contrato funcional
+ * `consumerSignaturePng` (firma manuscrita OPCIONAL, ADR-014). Contrato funcional
  * heredado de formularios-backend-csharp.md; transporte/persistencia de esta
  * API. Reglas duras: idempotencia por `submissionId`, honeypot `website`,
  * atomicidad (un único documento), sin IP/UA, sin datos personales en logs, y
@@ -145,9 +145,12 @@ function registerEnabledRoutes(app: FastifyInstance): void {
         description:
           'Registra un reclamo o queja como documento único y atómico.\n\n' +
           'El cuerpo es `multipart/form-data`: parte `payload` (JSON de la hoja), ' +
-          '`consumerSignaturePng` (firma manuscrita obligatoria) y `files` (adjuntos ' +
+          '`consumerSignaturePng` (firma manuscrita **opcional**) y `files` (adjuntos ' +
           'del consumidor). El multipart se parsea y valida en la ruta, no con ' +
           '`schema.body`, así que el cuerpo documentado aquí es descriptivo.\n\n' +
+          'Sin trazo, `signature.method` es `CONFIRMACION_ELECTRONICA` y ' +
+          '`signature.contentHash` es `null`: la aceptación queda sellada por ' +
+          '`confirmation` y por `signedDocumentHash`, que no depende de la firma.\n\n' +
           '- `201`: alta nueva.\n' +
           '- `200`: reintento del mismo `submissionId`; devuelve la constancia previa.\n\n' +
           '- `409 IDEMPOTENCY_CONFLICT`: el mismo id trae otra hoja, firma o adjunto.\n\n' +
@@ -208,7 +211,9 @@ function registerEnabledRoutes(app: FastifyInstance): void {
         phoneDialCode: resolvedPhone.dialCode,
       };
 
-      validateSignaturePng(parsed.signature.buffer);
+      // La firma manuscrita es opcional (ADR-014); si viene, se valida igual.
+      const signatureBuffer = parsed.signature?.buffer ?? null;
+      if (signatureBuffer !== null) validateSignaturePng(signatureBuffer);
 
       const now = new Date();
       const attachments = buildAttachments(parsed.files);
@@ -254,11 +259,11 @@ function registerEnabledRoutes(app: FastifyInstance): void {
           confirmedAtUtc,
         },
         signature: {
-          method: 'TRAZO_MANUSCRITO',
-          contentType: 'image/png',
-          sizeBytes: parsed.signature.buffer.length,
-          content: parsed.signature.buffer,
-          contentHash: sha256Hex(parsed.signature.buffer),
+          method: signatureBuffer === null ? 'CONFIRMACION_ELECTRONICA' : 'TRAZO_MANUSCRITO',
+          contentType: signatureBuffer === null ? null : 'image/png',
+          sizeBytes: signatureBuffer?.length ?? null,
+          content: signatureBuffer,
+          contentHash: signatureBuffer === null ? null : sha256Hex(signatureBuffer),
           signedDocumentHash,
           documentVersion,
           signedAtUtc: now,
@@ -288,7 +293,7 @@ function registerEnabledRoutes(app: FastifyInstance): void {
 
       const existing = await repo.findBySubmissionId(payload.submissionId);
       if (existing !== null) {
-        if (!matchesExistingSubmission(existing, payload, consumer, parsed.signature.buffer, attachments))
+        if (!matchesExistingSubmission(existing, payload, consumer, signatureBuffer, attachments))
           throw idempotencyConflict();
         return reply.code(200).send(toReceiptDto(existing));
       }
@@ -300,7 +305,7 @@ function registerEnabledRoutes(app: FastifyInstance): void {
         // Carrera: el índice único eligió otro request. Se compara contra su
         // contenido antes de tratarlo como reintento válido.
         const winner = await repo.findBySubmissionId(payload.submissionId);
-        if (winner === null || !matchesExistingSubmission(winner, payload, consumer, parsed.signature.buffer, attachments))
+        if (winner === null || !matchesExistingSubmission(winner, payload, consumer, signatureBuffer, attachments))
           throw idempotencyConflict();
         return reply.code(200).send(dto);
       }
@@ -388,7 +393,7 @@ function matchesExistingSubmission(
   existing: import('mongodb').WithId<ComplaintMetadataDoc>,
   payload: ComplaintPayload,
   consumer: ConsumerPersisted,
-  signature: Buffer,
+  signature: Buffer | null,
   attachments: ComplaintAttachment[],
 ): boolean {
   const { signedDocumentHash } = buildCanonicalSheet({
@@ -406,9 +411,13 @@ function matchesExistingSubmission(
     attachments,
   });
 
+  // `null === null` cuando ninguno de los dos envíos trajo trazo; reenviar el
+  // mismo id con firma (o sin ella) sigue siendo un conflicto, no un reintento.
+  const contentHash = signature === null ? null : sha256Hex(signature);
+
   return (
     signedDocumentHash === existing.signature.signedDocumentHash
-    && sha256Hex(signature) === existing.signature.contentHash
+    && contentHash === existing.signature.contentHash
   );
 }
 

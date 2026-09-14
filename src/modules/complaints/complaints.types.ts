@@ -62,15 +62,25 @@ export type DispatchStatus = ComplaintReceiptDto['emailReceipt']['status'];
  */
 export type ConsumerPersisted = ConsumerInput & { phoneDialCode: string };
 
-/** Firma del consumidor: PNG del trazo + hashes de integridad (§5.8). */
+/**
+ * Sello de la hoja del consumidor: hashes de integridad (§5.8) y, si el
+ * consumidor la trazó, el PNG de la firma manuscrita.
+ *
+ * El trazo es OPCIONAL (ADR-014): la UI pública lo retiró y la aceptación
+ * queda registrada en `confirmation` (texto versionado + instante). Cuando no
+ * hay trazo, `method` es `CONFIRMACION_ELECTRONICA` y los cuatro campos del
+ * PNG son `null`. `signedDocumentHash` / `documentVersion` NO dependen del
+ * trazo: la hoja canónica nunca incluyó los bytes de la firma, así que el
+ * sello de integridad y la idempotencia siguen valiendo igual.
+ */
 export interface ConsumerSignature {
-  method: 'TRAZO_MANUSCRITO';
-  contentType: 'image/png';
-  sizeBytes: number;
+  method: 'TRAZO_MANUSCRITO' | 'CONFIRMACION_ELECTRONICA';
+  contentType: 'image/png' | null;
+  sizeBytes: number | null;
   /** PNG del trazo. Dato personal altamente sensible: nunca en DTO, logs ni correo. */
-  content: Buffer;
-  /** SHA-256 del PNG (detecta corrupción/sustitución). */
-  contentHash: string;
+  content: Buffer | null;
+  /** SHA-256 del PNG (detecta corrupción/sustitución); `null` sin trazo. */
+  contentHash: string | null;
   /** SHA-256 de la serialización canónica de la hoja firmada. */
   signedDocumentHash: string;
   /** Versión de la especificación de serialización canónica. */

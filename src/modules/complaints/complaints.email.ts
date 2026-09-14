@@ -91,7 +91,7 @@ function buildReceiptText(c: ComplaintDoc): string {
     `Tipo: ${c.detail.type}`,
     `Motivo: ${c.detail.reason}`,
     ``,
-    `Firma del consumidor: registrada (${c.signature.method}), hash ${c.signature.signedDocumentHash}`,
+    `Aceptación del consumidor: ${c.signature.method}, hash ${c.signature.signedDocumentHash}`,
     `Adjuntos: ${String(c.attachments.length)}`,
   ];
   return lines.join('\n');
