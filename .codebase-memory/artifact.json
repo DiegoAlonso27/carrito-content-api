@@ -1,11 +1,11 @@
 {
     "schema_version": 2,
-    "commit": "ad3397d7800f781fb73d6409ae1e4de3c59ff1a9",
-    "indexed_at": "2026-09-14T06:59:18Z",
+    "commit": "35dfcc7c4107a1a3e729a659fe64c63117b812fe",
+    "indexed_at": "2026-09-17T14:25:50Z",
     "project": "carrito-content-api",
     "nodes": 1607,
     "edges": 3793,
     "original_size": 6094848,
-    "compressed_size": 1148854,
+    "compressed_size": 1150891,
     "compression_level": 3
 }

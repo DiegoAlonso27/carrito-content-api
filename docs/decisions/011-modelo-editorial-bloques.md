@@ -6,7 +6,7 @@
 
 ## Contexto
 
-El contrato editorial aprobado (`web-tc-docs/plan-editorial-web-tc/`, docs 02–05)
+El contrato editorial aprobado (`_archive/historico/previous/plan-editorial-web-tc/`, docs 02–05)
 pide destinos compuestos por bloques reutilizables, con localidades, puntos de
 embarque y servicios de transporte como entidades propias.
 

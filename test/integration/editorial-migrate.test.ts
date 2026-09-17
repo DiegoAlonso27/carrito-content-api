@@ -29,7 +29,7 @@ import type { DestinationDoc } from '../../src/modules/editorial/editorial.types
  * Migración completa con los 32 destinos del catálogo aprobado.
  *
  * El catálogo canónico vive en
- * `web-tc-docs/plan-editorial-web-tc/catalogo-localidades.anotado.json`; aquí
+ * `_archive/historico/previous/plan-editorial-web-tc/catalogo-localidades.anotado.json`; aquí
  * se usa una copia como fixture para que el repo se pueda probar aislado.
  */
 const goldenPath = fileURLToPath(new URL('../contract/golden/content-cache.json', import.meta.url));
