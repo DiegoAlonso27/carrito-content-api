@@ -35,6 +35,7 @@ seguido de **Contexto**, **Decisión** y **Consecuencias**.
 | [012](012-export-editorial-v2.md) | Export editorial v2 (snapshot versionado) | aceptado | 2026-07-26 | Track B / Fase 3 (`editorial-export-v2`) |
 | [013](013-editor-editorial-interno.md) | Editor editorial interno opt-in tras allowlist de IP | aceptado | 2026-07-29 | posterior a Track B — endurecimiento operativo |
 | [014](014-firma-manuscrita-opcional.md) | Firma manuscrita opcional en el alta de reclamo | aceptado | 2026-09-08 | endurecimiento post-F6 (contrato compartido con `carrito-front`) |
+| [015](015-api-fuera-de-uso-contenido-manual-en-front.md) | content-api fuera de uso; el contenido editorial vive a mano en `carrito-front` | aceptado (temporal) | 2026-10-17 | operación (contrato compartido con `carrito-front`) |
 
 Ningún ADR de este repositorio ha sido reemplazado ni declarado obsoleto: la
 cadena es acumulativa. Las relaciones que sí existen entre ellos:

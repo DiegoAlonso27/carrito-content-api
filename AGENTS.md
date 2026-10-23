@@ -12,6 +12,9 @@ contenido editorial publicado, export compatible con `content-cache.json`
 Reclamaciones (Perú). Monolito modular. Sin panel administrativo en fase 1.
 
 - Plan por fases aprobado (F0–F8) y decisiones: registro del 2026-07-17.
+- **Estado actual (ADR-015, 2026-10-17):** la API no se usa para contenido
+  editorial; `carrito-front` edita su `content-cache.json` a mano. Este repo no
+  es fuente de verdad del contenido hasta que el usuario lo reactive.
 - El archivo `content-cache.json` de la raíz es el contrato/golden del export
   y la fuente de la migración inicial. No modificarlo ni formatearlo.
 - Requisitos funcionales de formularios heredados de
