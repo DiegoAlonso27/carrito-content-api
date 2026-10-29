@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { contactBodySchema, contactResponseSchema } from './contact.schemas.js';
 import { ContactRepo } from './contact.repo.js';
 import { resolveCountryPhone } from '../../shared/validation/country-phone.js';
+import { AppError } from '../../shared/errors/app-error.js';
 import { errorEnvelopeSchema } from '../../shared/errors/error-schema.js';
 import { describeResponse } from '../../shared/docs/openapi-annotations.js';
 import type {
@@ -82,7 +83,7 @@ export function contactRoutes(app: FastifyInstance): void {
           'Registra un mensaje del formulario público de contacto.\n\n' +
           '- `201`: alta nueva.\n' +
           '- `200`: reintento del mismo `submissionId`; devuelve el mismo registro ' +
-          '(idempotencia).\n\n' +
+          '(idempotencia). `409 IDEMPOTENCY_CONFLICT`: el mismo id trae otro contenido.\n\n' +
           'Los strings se recortan antes de validar. El teléfono viaja en dos campos: ' +
           '`telefonoPais` (ISO2 del catálogo de prefijos) y `telefono` (dígitos ' +
           'nacionales; admite `- ( ) espacio` como separadores, **no** `+`). El ' +
@@ -141,7 +142,14 @@ export function contactRoutes(app: FastifyInstance): void {
         aceptaTerminos: body.aceptaTerminos,
       };
 
-      const { dto, created } = await repo.submit(input);
+      const { dto, created, matchesContent } = await repo.submit(input);
+      if (!matchesContent) {
+        throw new AppError(
+          'IDEMPOTENCY_CONFLICT',
+          'El identificador de envío ya corresponde a otro contenido.',
+          409,
+        );
+      }
       // Solo el id (no personal) y si fue alta nueva, para correlacionar soporte.
       req.log.info({ contactMessageId: dto.id, created }, 'mensaje de contacto recibido');
       return reply.code(created ? 201 : 200).send(dto);

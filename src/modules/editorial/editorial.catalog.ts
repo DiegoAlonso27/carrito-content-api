@@ -3,7 +3,7 @@ import { TypeCompiler } from '@sinclair/typebox/compiler';
 
 /**
  * Contrato del catálogo anotado de la Fase 1
- * (`web-tc-docs/plan-editorial-web-tc/catalogo-localidades.anotado.json`).
+ * (`_archive/historico/previous/plan-editorial-web-tc/catalogo-localidades.anotado.json`).
  *
  * Es entrada externa a la migración: se valida en el borde con TypeBox como
  * cualquier otra. `additionalProperties: true` a propósito — el archivo lleva

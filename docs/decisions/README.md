@@ -34,6 +34,8 @@ seguido de **Contexto**, **Decisión** y **Consecuencias**.
 | [011](011-modelo-editorial-bloques.md) | Modelo editorial por bloques (Track B) | aceptado | 2026-07-26 | Track B / Fase 2 (`editorial-api-model`) |
 | [012](012-export-editorial-v2.md) | Export editorial v2 (snapshot versionado) | aceptado | 2026-07-26 | Track B / Fase 3 (`editorial-export-v2`) |
 | [013](013-editor-editorial-interno.md) | Editor editorial interno opt-in tras allowlist de IP | aceptado | 2026-07-29 | posterior a Track B — endurecimiento operativo |
+| [014](014-firma-manuscrita-opcional.md) | Firma manuscrita opcional en el alta de reclamo | aceptado | 2026-09-08 | endurecimiento post-F6 (contrato compartido con `carrito-front`) |
+| [015](015-api-fuera-de-uso-contenido-manual-en-front.md) | content-api fuera de uso; el contenido editorial vive a mano en `carrito-front` | aceptado (temporal) | 2026-10-17 | operación (contrato compartido con `carrito-front`) |
 
 Ningún ADR de este repositorio ha sido reemplazado ni declarado obsoleto: la
 cadena es acumulativa. Las relaciones que sí existen entre ellos:
@@ -53,6 +55,10 @@ cadena es acumulativa. Las relaciones que sí existen entre ellos:
   se apoyan en la separación de credenciales de
   [003](003-forms-credentials-production.md);
   **[010](010-phone-country-contract.md)** endurece el contrato de ambos.
+- **[014](014-firma-manuscrita-opcional.md) → [007](007-complaints-feature-gate.md)**:
+  relaja una pieza del módulo de reclamos (la firma manuscrita deja de ser
+  obligatoria) sin tocar el gate de fase ni el acuse legal que ADR-007 exige
+  para activarlo. También cruza la frontera con `carrito-front`.
 
 Convenciones: numeración incremental de **3 dígitos**; una decisión por archivo;
 si una decisión cambia se crea un ADR nuevo que reemplaza al anterior (no se

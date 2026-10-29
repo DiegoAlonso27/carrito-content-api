@@ -12,6 +12,9 @@ contenido editorial publicado, export compatible con `content-cache.json`
 Reclamaciones (Perú). Monolito modular. Sin panel administrativo en fase 1.
 
 - Plan por fases aprobado (F0–F8) y decisiones: registro del 2026-07-17.
+- **Estado actual (ADR-015, 2026-10-17):** la API no se usa para contenido
+  editorial; `carrito-front` edita su `content-cache.json` a mano. Este repo no
+  es fuente de verdad del contenido hasta que el usuario lo reactive.
 - El archivo `content-cache.json` de la raíz es el contrato/golden del export
   y la fuente de la migración inicial. No modificarlo ni formatearlo.
 - Requisitos funcionales de formularios heredados de
@@ -28,6 +31,9 @@ Reclamaciones (Perú). Monolito modular. Sin panel administrativo en fase 1.
   configuración aprobado por el usuario, nunca un despliegue.
 - Sin commits, push, ramas, tags ni cambios de historial sin autorización
   expresa del usuario en cada ocasión.
+- Antes de cada commit, reindexar el grafo de codebase-memory de este
+  proyecto (ver «Codebase Memory») e incluir `.codebase-memory/` en el
+  staging. Sin grafo fresco no se commitea.
 
 ## Seguridad y privacidad
 
@@ -83,10 +89,12 @@ Usar búsqueda de texto solo para literales, configs, no-código, o cuando el
 grafo no esté disponible o sea insuficiente. Si una consulta al grafo
 contradice el archivo real, **manda el archivo real**.
 
-Para refrescar el artefacto tras cambios estructurales:
+Antes de **cada** commit que toque archivos de este proyecto, reindexar el
+grafo e incluir el artefacto (`.codebase-memory/`) en el mismo commit. No
+commitear con el grafo desactualizado.
 
 ```powershell
-codebase-memory-mcp cli index_repository --repo-path "d:\PROYECTOS\transportes-chiclayo\carrito-content-api" --mode fast --persistence true
+codebase-memory-mcp cli index_repository --repo-path "d:\PROYECTOS\transportes-chiclayo\carrito-content-api" --mode full --persistence true --name carrito-content-api
 ```
 
 ## Registro de errores y aprendizajes

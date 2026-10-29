@@ -25,6 +25,8 @@ export type ContactSubmissionInput = Omit<ContactBody, 'website'> & {
 };
 
 export type ContactMessageDoc = ContactSubmissionInput & {
+  /** SHA-256 del contenido normalizado, sin submissionId (R2-02). */
+  contentHash: string;
   isViewed: boolean;
   viewedAtUtc: Date | null;
   viewedBy: string | null;

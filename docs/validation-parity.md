@@ -42,9 +42,16 @@ pasada, apoderado todo-o-null + obligatorio si menor de 18 (ambos lados),
 `service.type`, `description` 3–500, `reason`/`terminal` 1–100,
 `incidentDate` opcional y no futura, `detail`/`consumerRequest` 10–4000,
 `confirmation` literal `true`. Server-only presentes: honeypot dual (payload y
-parte multipart), rate limit, PNG de firma (magia + decodificación + trazo),
-sniff mágico de adjuntos, nombre de archivo seguro, idempotencia por
-`submissionId`, sin IP/UA.
+parte multipart), rate limit, PNG de firma **cuando se envía** (magia +
+decodificación + trazo), sniff mágico de adjuntos, nombre de archivo seguro,
+idempotencia por `submissionId`, sin IP/UA.
+
+Firma manuscrita (actualización 2026-09-08, ADR-014 de `carrito-content-api`):
+la parte `consumerSignaturePng` es **opcional** en ambos lados. El front retiró
+el canvas y `validateComplaintForm` ya no recibe `hasSignature`; la API acepta
+el alta sin trazo y sella la hoja como `CONFIRMACION_ELECTRONICA` con
+`contentHash: null`. No hay asimetría que corregir: ninguno de los dos lados
+exige el trazo, y el que sí llega se valida igual que antes.
 
 Gaps corregidos por este cambio (antes explotables por curl saltándose el
 front):

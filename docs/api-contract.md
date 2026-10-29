@@ -28,8 +28,8 @@ explica el porqué.
 | `GET /v1/content/:locale/collections/:slug/items` | Público                           | `200`, `304` | Items de una colección.                  |
 | `GET /v1/export/content-cache`                    | Protegido servidor-a-servidor     | `200`, `304` | Cache de build compatible con el golden. |
 | `GET /v1/export/editorial/:locale`                | Protegido servidor-a-servidor     | `200`, `304` | Snapshot editorial versionado (Track B). |
-| `POST /v1/contact`                                | Público si el feature está activo | `201`, `200` | Alta idempotente de contacto.            |
-| `POST /v1/complaints`                             | Público, bloqueado por defecto    | `201`, `200` | Alta de reclamo; hoy `503` por el gate.  |
+| `POST /v1/contact`                                | Público si el feature está activo | `201`, `200`, `409` | Alta idempotente de contacto.            |
+| `POST /v1/complaints`                             | Público, bloqueado por defecto    | `201`, `200`, `409` | Alta de reclamo; hoy `503` por el gate.  |
 | `GET /docs*`                                      | Opt-in; en prod, allowlist de IP  | `200`        | Swagger UI y spec OpenAPI 3.1.           |
 
 `POST /v1/complaints` **no tiene éxito alcanzable hoy**: con
@@ -108,6 +108,7 @@ colecciones, credenciales ni detalles de infraestructura.
 | `404` | `NOT_FOUND`                | Ruta, locale o colección no encontrados.                                                                       |
 | `405` | `METHOD_NOT_ALLOWED`       | Método no permitido cuando la capa HTTP lo reporta como 405.                                                   |
 | `409` | `CONTENT_VERSION_CONFLICT` | Solo en el `PUT` del editor interno: el `contentVersion` esperado ya no es el vigente.                         |
+| `409` | `IDEMPOTENCY_CONFLICT` | Un `submissionId` de contacto o reclamo ya existe, pero el contenido normalizado, firma o adjuntos no coinciden. |
 | `413` | `PAYLOAD_TOO_LARGE`        | Body, firma o adjuntos demasiado grandes.                                                                      |
 | `415` | `UNSUPPORTED_MEDIA_TYPE`   | Tipo de contenido no soportado.                                                                                |
 | `429` | `RATE_LIMITED`             | Presupuesto de la ruta agotado; incluye `Retry-After`.                                                         |
@@ -318,7 +319,14 @@ El request es `multipart/form-data` con:
 
 - `payload`: JSON con `submissionId`, consumidor, apoderado opcional, servicio,
   detalle y `confirmation: true`;
-- `consumerSignaturePng`: firma PNG obligatoria;
+- `consumerSignaturePng`: firma PNG **opcional** (ADR-014 de
+  `carrito-content-api`). Si se envía, se valida por firma mágica,
+  decodificación, dimensiones y trazo no vacío, y se acota con
+  `COMPLAINTS_SIGNATURE_MAX_BYTES`; si se omite, la aceptación queda registrada
+  por `confirmation` y el sello de la hoja pasa a
+  `signature.method = "CONFIRMACION_ELECTRONICA"` con `signature.contentHash`
+  en `null`. `signature.signedDocumentHash` y `documentVersion` no dependen del
+  trazo (la hoja canónica nunca incluyó los bytes de la firma);
 - `files`: cero o más adjuntos según límites configurados;
 - `website`: honeypot opcional, aceptado también dentro de `payload`.
 
@@ -347,7 +355,9 @@ La constancia expone `phoneCountry` pero nunca el snapshot interno del
 prefijo (`phoneDialCode`), que sí forma parte de la hoja canónica firmada.
 
 La constancia `201`/`200` contiene código, fechas, estado, snapshot del
-proveedor, hoja, hashes de firma/adjuntos y estado del correo. No contiene
+proveedor, hoja, el sello de la hoja (`signature`: método, `signedAtUtc`,
+`signedDocumentHash`, `contentHash` —`null` sin trazo— y `documentVersion`),
+hashes de adjuntos y estado del correo. No contiene
 `_id`, binarios ni detalles internos. Como la constancia refleja datos de la
 hoja al mismo remitente, el consumidor no debe registrarla en consola ni
 telemetría cliente.

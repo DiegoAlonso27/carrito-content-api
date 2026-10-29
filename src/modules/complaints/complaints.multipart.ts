@@ -4,9 +4,12 @@ import { AppError, ErrorCodes } from '../../shared/errors/app-error.js';
 /**
  * Parseo y validación del `multipart/form-data` del alta de reclamo:
  * una parte `payload` (JSON), cero o más `files` (adjuntos del consumidor) y
- * una parte obligatoria `consumerSignaturePng` (§4). Aplica la política de
- * archivos (P14, configurable): allowlist por firma mágica (nunca por
+ * una parte OPCIONAL `consumerSignaturePng` (§4, ADR-014). Aplica la política
+ * de archivos (P14, configurable): allowlist por firma mágica (nunca por
  * extensión ni Content-Type declarado), tamaño individual/total y cantidad.
+ *
+ * Si viene, la firma sigue sujeta a su cota de tamaño y a la validación de PNG
+ * de `complaints.signature.ts`; lo que dejó de ser un error es su ausencia.
  *
  * El límite de tamaño de parte se aplica también en el registro del plugin
  * (`limits.fileSize`), que aborta con 413 antes de bufferizar de más; aquí se
@@ -23,7 +26,8 @@ export interface ParsedFile {
 export interface ParsedComplaintMultipart {
   payloadRaw: string;
   honeypot: string;
-  signature: { buffer: Buffer };
+  /** `null` cuando el consumidor no adjunta trazo manuscrito (ADR-014). */
+  signature: { buffer: Buffer } | null;
   files: ParsedFile[];
 }
 
@@ -91,11 +95,6 @@ export async function parseComplaintMultipart(
   if (payloadRaw === null) {
     throw new AppError(ErrorCodes.validation, 'Datos inválidos.', 400, {
       payload: ['falta la parte payload'],
-    });
-  }
-  if (signature === null) {
-    throw new AppError(ErrorCodes.validation, 'Datos inválidos.', 400, {
-      consumerSignaturePng: ['la firma del consumidor es obligatoria'],
     });
   }
   if (rawFiles.length > limits.maxFiles) {

@@ -1,4 +1,5 @@
 import type { Db, Document, WithId } from 'mongodb';
+import { createHash } from 'node:crypto';
 import { MongoServerError } from 'mongodb';
 import { listedIndexNames } from '../../shared/db/indexes.js';
 import type {
@@ -33,6 +34,7 @@ const messagesValidator: Document = {
     bsonType: 'object',
     required: [
       'submissionId',
+      'contentHash',
       'nombreApellidos',
       'correo',
       'telefono',
@@ -46,6 +48,7 @@ const messagesValidator: Document = {
     ],
     properties: {
       submissionId: { bsonType: 'string' },
+      contentHash: { bsonType: 'string' },
       nombreApellidos: { bsonType: 'string' },
       correo: { bsonType: 'string' },
       telefono: { bsonType: 'string' },
@@ -124,6 +127,8 @@ export interface ContactSubmitResult {
   dto: ContactMessageDto;
   /** false = `submissionId` ya existía; se devolvió el registro previo (200), no se creó otro. */
   created: boolean;
+  /** false = el submissionId ya pertenece a otro contenido. */
+  matchesContent: boolean;
 }
 
 export class ContactRepo {
@@ -138,14 +143,16 @@ export class ContactRepo {
    */
   async submit(input: ContactSubmissionInput): Promise<ContactSubmitResult> {
     const col = this.db.collection<ContactMessageDoc>(contactCollections.messages);
+    const contentHash = contactContentHash(input);
 
     const existing = await col.findOne({ submissionId: input.submissionId });
     if (existing !== null) {
-      return { dto: toDto(existing), created: false };
+      return { dto: toDto(existing), created: false, matchesContent: existing.contentHash === contentHash };
     }
 
     const doc: ContactMessageDoc = {
       ...input,
+      contentHash,
       isViewed: false,
       viewedAtUtc: null,
       viewedBy: null,
@@ -154,15 +161,33 @@ export class ContactRepo {
 
     try {
       const { insertedId } = await col.insertOne(doc);
-      return { dto: toDto({ ...doc, _id: insertedId }), created: true };
+      return { dto: toDto({ ...doc, _id: insertedId }), created: true, matchesContent: true };
     } catch (err) {
       if (isDuplicateKeyError(err)) {
         const winner = await col.findOne({ submissionId: input.submissionId });
         if (winner !== null) {
-          return { dto: toDto(winner), created: false };
+          return {
+            dto: toDto(winner),
+            created: false,
+            matchesContent: winner.contentHash === contentHash,
+          };
         }
       }
       throw err;
     }
   }
+}
+
+/** Hash del envío lógico normalizado; submissionId es la clave, no contenido. */
+function contactContentHash(input: ContactSubmissionInput): string {
+  const canonical = JSON.stringify({
+    nombreApellidos: input.nombreApellidos,
+    correo: input.correo,
+    telefono: input.telefono,
+    telefonoPais: input.telefonoPais,
+    dni: input.dni,
+    mensaje: input.mensaje,
+    aceptaTerminos: input.aceptaTerminos,
+  });
+  return createHash('sha256').update(canonical, 'utf8').digest('hex');
 }
